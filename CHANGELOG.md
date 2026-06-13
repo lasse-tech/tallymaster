@@ -5,6 +5,18 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.20-alpha] - 2026-06-13
+
+### Fixed
+- Removed the persistent "Unrecognized XML: Binding" warnings. `Bindings.xml` is no
+  longer listed in the TOC; WoW auto-loads it from the addon root via its dedicated
+  bindings loader, avoiding the generic XML schema validator that produced the
+  warnings. (Also dropped the XML comment from the file.) Keybindings still work and
+  keep their own "Tallymaster" section.
+
+### Added
+- In-game addon icon: `Media/Satchel.tga` (referenced by the TOC `IconTexture`).
+
 ## [0.2.19-alpha] - 2026-06-13
 
 ### Fixed

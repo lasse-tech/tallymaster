@@ -2,7 +2,7 @@
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
-## Version: 0.2.19-alpha
+## Version: 0.2.20-alpha
 ## X-Email: lars@lasse-tech.de
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
@@ -35,5 +35,7 @@ UI\Options.lua
 # ElvUI integration (no-op if ElvUI absent)
 Skin\ElvUI.lua
 
-# Keybindings
-Bindings.xml
+# NOTE: Bindings.xml is intentionally NOT listed here. WoW auto-loads a file named
+# Bindings.xml from the addon root through its dedicated bindings loader. Listing it
+# in the TOC instead routes it through the generic XML schema validator, which spams
+# "Unrecognized XML: Binding" warnings (the <Binding> element isn't in that schema).

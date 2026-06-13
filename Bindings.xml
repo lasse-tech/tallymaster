@@ -1,14 +1,4 @@
 <Bindings>
-    <!--
-        `category` puts these bindings in their own section in the Key Bindings UI
-        (resolved to the localized name via _G.BINDING_CATEGORY_TALLYMASTER, set in
-        Core.lua). The XML schema validator flags `category` as an unrecognized
-        attribute; that is a cosmetic warning shared by every addon that uses it
-        (RaiderIO, BagSync, and others), and the binding system still honors it.
-
-        NOTE: XML comments must not contain a double hyphen, or the file fails to
-        parse and no bindings register at all.
-    -->
     <Binding name="TALLYMASTER_OPEN_ADD" category="BINDING_CATEGORY_TALLYMASTER">
         Tallymaster_Binding("add")
     </Binding>
