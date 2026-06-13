@@ -12,18 +12,15 @@ L["Name"] = true
 L["Count"] = true
 L["Toggle tracker"] = true
 
--- Keybinding display names (BINDING_HEADER_* / BINDING_NAME_*)
 L["Open Add window"] = true
 L["Toggle known items"] = true
 
--- Minimap button tooltip
 L["Click"] = true
 L["Shift-Click"] = true
 L["Ctrl-Click"] = true
 L["Right-Click"] = true
 L["Options"] = true
 
--- Item detail panel (Add window)
 L["Quality"] = true
 L["Item level"] = true
 L["Type"] = true
@@ -36,12 +33,10 @@ L["When on, this entry counts only the exact crafting quality you added. When of
 L["All categories"] = true
 L["Uncategorized"] = true
 
--- Ambiguous ID resolution
 L["The ID %d matches both an item and a currency. Which do you mean?"] = true
 L["Item"] = true
 L["Currency"] = true
 
--- Options
 L["Count scope"] = true
 L["Where item counts are summed from."] = true
 L["Per character"] = true
@@ -59,19 +54,16 @@ L["Show minimap button"] = true
 L["Allow ElvUI to skin this addon"] = true
 L["Requires a /reload to take effect."] = true
 
--- Type labels (used as default categories for non-item types)
 L["Currencies"] = true
 L["Mounts"] = true
 L["Transmog"] = true
 L["Battle Pets"] = true
 L["Knowledge"] = true
 
--- Empty tracker state
 L["No items tracked yet."] = true
 L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] = true
 L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."] = true
 
--- Messages
 L["Could not find anything matching '%s'."] = true
 L["Already tracking %s."] = true
 L["Now tracking %s."] = true

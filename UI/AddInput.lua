@@ -2,26 +2,14 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
---[[
-    The add box: type a name or ID, press Enter, the resolved entry is appended
-    to storage and shown on the tracker. Handles:
-      - ambiguous numeric IDs (item vs currency) via a choice popup,
-      - uncached item data (retry shortly),
-      - re-adding an already-known entry (just re-show it).
-
-    Uses InputBoxTemplate so ElvUI's S:HandleEditBox can skin it.
-]]
-
 local AddInput = {}
 T.AddInput = AddInput
 
 local frame
 
--- Commit a resolved entry to storage + tracker.
 function AddInput:Commit(entry)
     local existing = DB:GetEntry(entry.key)
     if existing then
-        -- Re-adding an item lets the user change its quality-counting mode.
         if entry.type == "item" then existing.respectQuality = entry.respectQuality end
         DB:SetVisible(existing.key, true)
         T.Addon:Print(L["Already tracking %s."]:format(DB:DisplayName(existing)))
@@ -50,8 +38,6 @@ local function askAmbiguous(result, id)
 end
 
 function AddInput:Submit(text)
-    -- Prefer the entry already resolved for the details preview (it preserves the
-    -- exact item/quality from a shift-click); fall back to a fresh name/ID query.
     local result
     if frame and frame.pending and frame.pendingText == text then
         result = { status = "ok", entry = frame.pending }
@@ -75,10 +61,6 @@ function AddInput:Submit(text)
     end
 end
 
--- Strip inline escape sequences WoW embeds in link text: atlas markup (crafting
--- quality stars |A...|a), textures (|T...|t) and colour codes (|c.../|r). Without
--- this, a shift-clicked quality item pastes e.g. "Name |A:...Tier3...|a" which no
--- name lookup can match.
 local function stripEscapes(s)
     if not s then return s end
     s = s:gsub("|A.-|a", "")
@@ -87,14 +69,10 @@ local function stripEscapes(s)
     return (s:gsub("^%s+", ""):gsub("%s+$", ""))
 end
 
--- Pull a readable display name out of a shift-clicked hyperlink, e.g.
--- "...|h[Greater Storm Sigil]|h..." -> "Greater Storm Sigil".
 local function linkToName(link)
     if not link then return nil end
     return stripEscapes(link:match("|h%[(.-)%]|h") or link:match("%[(.-)%]"))
 end
-
--- ---- item detail panel -----------------------------------------------------
 
 local BIND_LABELS = {
     [1] = ITEM_BIND_ON_PICKUP,
@@ -107,10 +85,6 @@ local function greyLabel(label, value)
     return "|cff808080" .. label .. ":|r " .. value
 end
 
--- Coin string with line-height icons. The ":0" size makes WoW scale each icon to
--- the font's line height and vertically centre it on the text, so they line up
--- with the digits. (GetCoinTextureString uses a fixed size + zero offset that sits
--- low next to a small font.)
 local GOLD_ICON   = "|TInterface\\MoneyFrame\\UI-GoldIcon:0|t"
 local SILVER_ICON = "|TInterface\\MoneyFrame\\UI-SilverIcon:0|t"
 local COPPER_ICON = "|TInterface\\MoneyFrame\\UI-CopperIcon:0|t"
@@ -127,7 +101,6 @@ local function money(copper)
     return table.concat(parts, " ")
 end
 
--- Multi-line, coloured summary of an item entry's captured details.
 local function formatDetails(e)
     local out = {}
 
@@ -164,7 +137,6 @@ local function formatDetails(e)
     return table.concat(out, "\n")
 end
 
--- Populate (or clear) the details panel + quality checkbox from a resolve result.
 function AddInput:Preview(result)
     if not frame then return end
     if result and result.status == "ok" and result.entry.type == "item" then
@@ -175,7 +147,7 @@ function AddInput:Preview(result)
         frame.icon:Show()
         frame.details:SetText(formatDetails(e))
         if e.craftingQuality then
-            frame.respect:SetChecked(false) -- default: count any quality
+            frame.respect:SetChecked(false)
             frame.respect:Show()
         else
             frame.respect:Hide()
@@ -189,7 +161,6 @@ function AddInput:Preview(result)
     end
 end
 
--- Debounced live preview for typed text (so details fill in as you type a name).
 function AddInput:SchedulePreview()
     self._previewToken = (self._previewToken or 0) + 1
     local token = self._previewToken
@@ -207,8 +178,6 @@ function AddInput:Create()
     frame = CreateFrame("Frame", "TallymasterAddFrame", UIParent, "BackdropTemplate")
     frame:SetSize(440, 224)
     frame:SetPoint("CENTER")
-    -- Match the Known items window (AceGUI uses FULLSCREEN_DIALOG) so the Add
-    -- window can appear in front of it when opened via shift-click-to-paste.
     frame:SetFrameStrata("FULLSCREEN_DIALOG")
     frame:SetToplevel(true)
     frame:SetMovable(true); frame:EnableMouse(true)
@@ -228,14 +197,8 @@ function AddInput:Create()
     frame.close = CreateFrame("Button", "TallymasterAddFrameCloseButton", frame, "UIPanelCloseButton")
     frame.close:SetPoint("TOPRIGHT", 2, 2)
 
-    -- Escape closes the window from anywhere (even when the edit box no longer
-    -- holds keyboard focus, e.g. after clicking outside).
     tinsert(UISpecialFrames, "TallymasterAddFrame")
 
-    -- Clicking anywhere outside the window releases keyboard focus, so game
-    -- keybinds (bags, etc.) work again while the window stays open. This is how
-    -- most addon input frames behave; WoW does not defocus an EditBox on its own
-    -- when you click away from it.
     frame:RegisterEvent("GLOBAL_MOUSE_DOWN")
     frame:SetScript("OnEvent", function(self, event)
         if event == "GLOBAL_MOUSE_DOWN" and self:IsShown()
@@ -249,9 +212,6 @@ function AddInput:Create()
     edit:SetPoint("TOPLEFT", 24, -54)
     edit:SetPoint("TOPRIGHT", -24, -54)
     edit:SetFontObject("GameFontHighlight")
-    -- Auto-focus OFF: with it on, the box re-grabs the keyboard so it can never be
-    -- released. We focus explicitly on open (Toggle/Paste) for immediate typing,
-    -- and release on outside-click or Escape.
     edit:SetAutoFocus(false)
     edit:SetScript("OnEnterPressed", function(self)
         local text = self:GetText()
@@ -260,8 +220,6 @@ function AddInput:Create()
     edit:SetScript("OnEscapePressed", function() frame:Hide() end)
     frame.edit = edit
 
-    -- Placeholder text rendered inside the box; hidden as soon as anything is
-    -- typed. Living inside the edit box means it can never be clipped by the frame.
     frame.editInstructions = edit:CreateFontString(nil, "ARTWORK", "GameFontDisable")
     frame.editInstructions:SetPoint("LEFT", edit, "LEFT", 6, 0)
     frame.editInstructions:SetPoint("RIGHT", edit, "RIGHT", -6, 0)
@@ -269,22 +227,18 @@ function AddInput:Create()
     frame.editInstructions:SetText(L["Type a name or ID, then press Enter"])
     edit:SetScript("OnTextChanged", function(self, userInput)
         frame.editInstructions:SetShown(self:GetText() == "")
-        -- Typed input: re-resolve for the details preview. SetText() (shift-click,
-        -- clear) passes userInput=false and is handled by its own caller.
         if userInput then
             frame.pending = nil
             AddInput:SchedulePreview()
         end
     end)
 
-    -- Item icon, shown to the left of the details for the resolved item.
     frame.icon = frame:CreateTexture(nil, "ARTWORK")
     frame.icon:SetSize(40, 40)
     frame.icon:SetPoint("TOPLEFT", 26, -90)
     frame.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
     frame.icon:Hide()
 
-    -- Details panel: a coloured, multi-line summary of the resolved item.
     frame.details = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     frame.details:SetPoint("TOPLEFT", 76, -92)
     frame.details:SetPoint("TOPRIGHT", -26, -92)
@@ -292,7 +246,6 @@ function AddInput:Create()
     frame.details:SetJustifyV("TOP")
     frame.details:SetSpacing(4)
 
-    -- "Respect quality" checkbox: shown only for items that have a crafting tier.
     local respect = CreateFrame("CheckButton", "TallymasterAddFrameRespectQuality", frame, "UICheckButtonTemplate")
     respect:SetSize(24, 24)
     respect:SetPoint("BOTTOMLEFT", 22, 16)
@@ -308,7 +261,6 @@ function AddInput:Create()
     respect:Hide()
     frame.respect = respect
 
-    -- Add button: same action as pressing Enter in the box.
     local addBtn = CreateFrame("Button", "TallymasterAddFrameAddButton", frame, "UIPanelButtonTemplate")
     addBtn:SetSize(100, 24)
     addBtn:SetPoint("BOTTOMRIGHT", -22, 14)
@@ -319,8 +271,6 @@ function AddInput:Create()
     end)
     frame.addButton = addBtn
 
-    -- Shift-clicking an item/currency anywhere pastes its name into the box
-    -- while the Add window is open.
     if not AddInput._linkHooked then
         AddInput._linkHooked = true
         hooksecurefunc("HandleModifiedItemClick", function(link)
@@ -331,14 +281,10 @@ function AddInput:Create()
             frame.edit:SetText(name)
             frame.edit:SetFocus()
             frame.edit:SetCursorPosition(#name)
-            -- Resolve the exact clicked item (preserves its crafting quality) and
-            -- show its details + the quality checkbox.
             AddInput:Preview(T.Resolve:ByLink(link))
         end)
     end
 
-    -- While the Add window is open, a shift-click is "copy the name", so suppress
-    -- the stack-split amount picker WoW would otherwise pop up for a stackable item.
     if StackSplitFrame and not AddInput._splitHooked then
         AddInput._splitHooked = true
         StackSplitFrame:HookScript("OnShow", function(self)
@@ -346,18 +292,13 @@ function AddInput:Create()
         end)
     end
 
-    -- Start hidden so the first Toggle() opens (and focuses) it.
     frame:Hide()
 end
 
--- Used by the known-items list "shift-click to paste". Accepts either a plain
--- name string (typed flow) or an existing entry table (from the Known items list).
--- Passing the entry avoids a name lookup, which would fail for items not cached
--- this session even though the entry already exists.
 function AddInput:Paste(entryOrName)
     self:Create()
     frame:Show()
-    frame:Raise() -- bring to front (e.g. above the Known items window)
+    frame:Raise()
     local isEntry = type(entryOrName) == "table"
     local name = (isEntry and entryOrName.originalName) or entryOrName or ""
     frame.edit:SetText(name)
@@ -365,8 +306,6 @@ function AddInput:Paste(entryOrName)
     frame.edit:HighlightText()
     if isEntry then
         self:Preview({ status = "ok", entry = entryOrName })
-        -- Ensure the known entry is used on submit regardless of its type, and
-        -- reflect its stored quality setting (rather than the add-time default).
         frame.pending = entryOrName
         frame.pendingText = name
         if entryOrName.craftingQuality and frame.respect then

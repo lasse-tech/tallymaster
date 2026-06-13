@@ -1,26 +1,10 @@
 local ADDON, T = ...
 local DB = T.DB
 
---[[
-    Counting: live totals per tracked entry.
-
-    Item count sources: bags + bank + reagent bank (via C_Item.GetItemCount,
-    which the client keeps current even when the bank frame is closed, once seen
-    this session) PLUS equipped slots and mail attachments (scanned/cached
-    separately, since GetItemCount excludes them).
-
-    Mail is only fully readable while the inbox is open, so its per-item counts
-    are cached and refreshed on MAIL_INBOX_UPDATE.
-
-    Other types report collection/holding counts via their own APIs.
-]]
-
 local Counting = {}
 T.Counting = Counting
 
-local mailCache = {} -- [itemID] = count, rebuilt while the inbox is open
-
--- ---- per-source item scanning ---------------------------------------------
+local mailCache = {}
 
 local function equippedCount(itemID)
     local n = 0
@@ -46,14 +30,11 @@ local function rebuildMailCache()
     end
 end
 
--- Total of one specific item id across bags/bank/reagent bank + equipped + mail.
 local function itemTotal(id)
     local n = C_Item.GetItemCount(id, true, false, true) or 0
     return n + equippedCount(id) + (mailCache[id] or 0)
 end
 
--- Container ids to scan when discovering quality-tier siblings by name. Built
--- once; invalid/unopened bags simply report 0 slots.
 local SCAN_BAGS
 local function scanBags()
     if SCAN_BAGS then return SCAN_BAGS end
@@ -72,10 +53,6 @@ local function scanBags()
     return SCAN_BAGS
 end
 
--- Sum across every crafting quality of an item: discover sibling item ids sharing
--- the base name in the player's containers, then total each (GetItemCount keeps
--- bank amounts current). A tier held ONLY in the bank and never carried may be
--- missed until the bank is opened -- the same caching caveat as GetItemCount.
 local function nameCount(entry)
     local seen = { [entry.id] = true }
     for _, bag in ipairs(scanBags()) do
@@ -92,12 +69,8 @@ local function nameCount(entry)
     return total
 end
 
--- ---- per-type totals -------------------------------------------------------
-
 local typeHandlers = {
     item = function(entry)
-        -- "Any quality" (default) sums all crafting tiers of the item; "respect
-        -- quality", or an item with no quality, counts just this exact item id.
         if entry.craftingQuality and not entry.respectQuality then
             return nameCount(entry)
         end
@@ -126,37 +99,29 @@ local typeHandlers = {
         return C_TransmogCollection.PlayerHasTransmog(entry.id) and 1 or 0
     end,
 
-    knowledge = function() return 0 end, -- TODO: profession knowledge currency mapping
+    knowledge = function() return 0 end,
 }
 
--- This character's live count, right now.
 function Counting:LiveCount(entry)
     local handler = typeHandlers[entry.type]
     if not handler then return 0 end
     return handler(entry) or 0
 end
 
--- Count to display, honoring the per-character / account-wide scope toggle.
 function Counting:DisplayCount(entry)
     local live = self:LiveCount(entry)
-    DB:StashCount(entry.key, live) -- keep this char's contribution fresh for account mode
+    DB:StashCount(entry.key, live)
     if DB:Profile().scope == "account" then
         return DB:SumAccountCount(entry.key)
     end
     return live
 end
 
--- Record THIS character's count for EVERY known entry, not just the ones it is
--- currently tracking. Without this, a character only contributes to the
--- account-wide total for items it happens to have visible on its own tracker, so
--- account-wide sums silently omit characters that aren't tracking that item.
 function Counting:StashAll()
     for key, entry in pairs(DB:Global().entries) do
         DB:StashCount(key, self:LiveCount(entry))
     end
 end
-
--- ---- events ----------------------------------------------------------------
 
 function Counting:Enable()
     local addon = T.Addon

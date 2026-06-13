@@ -2,25 +2,12 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
---[[
-    The always-on, on-screen list (Blizzard "Track Recipe" style).
-    - Only entries marked visible for this character are shown.
-    - Grouped by effective category; category headers fold/unfold.
-    - Within a group, sorted alphabetically or by count (profile.sortMode).
-    - Shift-click a row -> hide from tracker (kept in storage).
-
-    Rows are pooled. Built from a BackdropTemplate frame so ElvUI can skin it
-    (see Skin/ElvUI.lua). Widgets use stable names for the same reason.
-]]
-
 local Tracker = {}
 T.Tracker = Tracker
 
 local ROW_H, HEADER_H, WIDTH, PAD = 20, 18, 220, 8
 local frame, content, rowPool, headerPool
 
--- Shared tooltip for a tracked entry, used by the tracker rows and the Known items
--- list. Respects the "show tooltip" / "show counts in tooltip" settings.
 function T.ShowEntryTooltip(owner, entry)
     if not DB:Profile().showTooltip or not entry then return end
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
@@ -31,8 +18,6 @@ function T.ShowEntryTooltip(owner, entry)
     else
         GameTooltip:SetText(DB:DisplayName(entry))
     end
-    -- Per-character counts grouped by realm, plus the total (settings-gated, and
-    -- independent of the personal/account-wide display scope).
     local order, realms = {}, {}
     if DB:Profile().showTooltipCounts then
         order, realms = DB:AccountBreakdownByRealm(entry.key)
@@ -60,7 +45,7 @@ local function styleRow(row)
     row.icon:SetPoint("LEFT", 0, 0)
     row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    row.iconBorder = row:CreateTexture(nil, "OVERLAY") -- separate border for S:HandleIcon
+    row.iconBorder = row:CreateTexture(nil, "OVERLAY")
     row.iconBorder:SetAllPoints(row.icon)
 
     row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
@@ -100,8 +85,6 @@ function Tracker:Initialize()
     if frame then return end
     frame = CreateFrame("Frame", "TallymasterTrackerFrame", UIParent, "BackdropTemplate")
     frame:SetSize(WIDTH, 120)
-    -- Restore the remembered position. TOPLEFT-anchored so growing/shrinking the
-    -- list (collapse/expand) only changes height downward, never the position.
     local pos = DB:TrackerPos()
     frame:SetPoint(pos.point or "TOPLEFT", UIParent, pos.relPoint or pos.point or "TOPLEFT",
         pos.x or 16, pos.y or -220)
@@ -111,8 +94,6 @@ function Tracker:Initialize()
     frame:SetScript("OnDragStart", function(self) self.didDrag = true; self:StartMoving() end)
     frame:SetScript("OnDragStop", function(self)
         self:StopMovingOrSizing()
-        -- Re-anchor by the top-left corner and remember it, so the position sticks
-        -- across sessions and stays put when the list resizes.
         local left, top = self:GetLeft(), self:GetTop()
         if left and top then
             self:ClearAllPoints()
@@ -122,9 +103,6 @@ function Tracker:Initialize()
     end)
     frame:SetClampedToScreen(true)
 
-    -- Click the tracker background/title: left-click opens the Add window,
-    -- Shift+left-click hides the tracker. A drag (move) is not treated as a click.
-    -- Rows keep their own shift-click behaviour (hide that single entry).
     frame:SetScript("OnMouseUp", function(self, button)
         if button ~= "LeftButton" then return end
         if self.didDrag then self.didDrag = false; return end
@@ -150,7 +128,6 @@ function Tracker:Initialize()
     content:SetPoint("TOPLEFT", PAD, -HEADER_H - 4)
     content:SetPoint("TOPRIGHT", -PAD, -HEADER_H - 4)
 
-    -- Shown instead of the list when nothing is tracked yet.
     frame.empty = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     frame.empty:SetPoint("TOPLEFT", PAD, -HEADER_H - 6)
     frame.empty:SetPoint("TOPRIGHT", -PAD, -HEADER_H - 6)
@@ -173,7 +150,6 @@ function Tracker:Toggle()
     frame:SetShown(not frame:IsShown())
 end
 
--- Gather visible entries, grouped + sorted.
 local function buildGroups()
     local groups = {}
     for key in pairs(DB:Char().visible) do
@@ -203,7 +179,6 @@ local function buildGroups()
     return groups, catNames
 end
 
--- Place a single entry row at vertical offset y.
 local function renderRow(entry, y)
     local row = rowPool:Acquire()
     if not row.name then styleRow(row) end
@@ -215,7 +190,6 @@ local function renderRow(entry, y)
     row:Show()
 end
 
--- Sort a flat (ungrouped) entry list by the current sort mode.
 local function sortFlat(list)
     local byCount = DB:Profile().sortMode == "count"
     table.sort(list, function(a, b)
@@ -234,7 +208,6 @@ function Tracker:Refresh()
 
     local groups, catNames = buildGroups()
 
-    -- Nothing tracked: show the how-to-add hint instead of an empty list.
     if #catNames == 0 then
         frame.empty:Show()
         content:SetHeight(1)
@@ -268,7 +241,6 @@ function Tracker:Refresh()
             end
         end
     else
-        -- Flat list: no headers, all visible entries sorted together.
         local all = {}
         for _, list in pairs(groups) do
             for _, e in ipairs(list) do all[#all + 1] = e end

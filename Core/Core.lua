@@ -4,13 +4,8 @@ local AceAddon = LibStub("AceAddon-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
 T.L = L
 
--- Shared constant: bucket name for entries without a category.
 T.UNCATEGORIZED = L["Uncategorized"]
 
--- Keybinding display names. WoW renders the Key Bindings UI from these globals:
--- the section from BINDING_CATEGORY_<category> and each action from
--- BINDING_NAME_<name> (matching category/name in Bindings.xml). Without them the
--- UI shows raw tokens / dumps the bindings under "Other".
 _G.BINDING_CATEGORY_TALLYMASTER            = L["Tallymaster"]
 _G.BINDING_NAME_TALLYMASTER_OPEN_ADD       = L["Open Add window"]
 _G.BINDING_NAME_TALLYMASTER_TOGGLE_TRACKER = L["Toggle tracker"]
@@ -20,22 +15,20 @@ local Tallymaster = AceAddon:NewAddon(ADDON, "AceConsole-3.0", "AceEvent-3.0")
 T.Addon = Tallymaster
 
 local PLACEHOLDER_ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
-local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_Bag_10" -- used until Media\Satchel.blp exists
+local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_Bag_10"
 
 function Tallymaster:OnInitialize()
     self.db = LibStub("AceDB-3.0"):New("TallymasterDB", T.dbDefaults, true)
 
-    -- Options panel
     if T.SetupOptions then T.SetupOptions() end
 
-    -- Minimap launcher (LibDataBroker + LibDBIcon), both optional
     local LDB = LibStub("LibDataBroker-1.1", true)
     local LDBIcon = LibStub("LibDBIcon-1.0", true)
     if LDB then
         self.launcher = LDB:NewDataObject(ADDON, {
             type = "launcher",
             text = L["Tallymaster"],
-            icon = FALLBACK_ICON, -- TODO: switch to PLACEHOLDER_ICON once Media\Satchel.blp ships
+            icon = FALLBACK_ICON,
             OnClick = function(_, button)
                 if button == "RightButton" then
                     T.Addon:OpenOptions()
@@ -60,14 +53,11 @@ function Tallymaster:OnInitialize()
         end
     end
 
-    -- Slash commands
     self:RegisterChatCommand("tally", "HandleSlash")
     self:RegisterChatCommand("tallymaster", "HandleSlash")
 end
 
 function Tallymaster:OnEnable()
-    -- Re-localize stored categories/names to the current client language. Item
-    -- names may not be cached yet; resolve those as their data arrives.
     if T.DB and T.DB.Relocalize then
         local pending = T.DB:Relocalize()
         if pending and #pending > 0 then
@@ -112,21 +102,17 @@ function Tallymaster:OpenOptions()
     if ACD then ACD:Open(ADDON) end
 end
 
--- Central "something changed, redraw the tracker" entry point (throttled)
 local refreshPending = false
 function Tallymaster:RefreshTracker()
     if refreshPending then return end
     refreshPending = true
     C_Timer.After(0.1, function()
         refreshPending = false
-        -- Refresh this character's contribution to the account-wide totals for
-        -- every known entry before redrawing.
         if T.Counting and T.Counting.StashAll then T.Counting:StashAll() end
         if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh() end
     end)
 end
 
--- Keybinding entry point (see Bindings.xml)
 function Tallymaster_Binding(which)
     if which == "add" then
         T.AddInput:Toggle()

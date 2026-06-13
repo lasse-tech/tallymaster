@@ -1,15 +1,5 @@
 local ADDON, T = ...
 
---[[
-    ElvUI integration. No-op when ElvUI is absent. When present, we register a
-    plugin via LibElvUIPlugin-1.0 so our skin function runs at the right time and
-    we respect the user's settings (both ElvUI's "skin misc frames" toggle and
-    our own profile.elvuiSkin toggle).
-
-    Handlers used: StripTextures / SetTemplate, S:HandleButton, S:HandleEditBox,
-    S:HandleCloseButton, S:HandleTrimScrollBar, S:HandleIcon.
-]]
-
 function T.SkinElvUI()
     if not _G.ElvUI then return end
     if not T.DB:Profile().elvuiSkin then return end
@@ -25,7 +15,6 @@ function T.SkinElvUI()
             return
         end
 
-        -- Tracker frame
         local tracker = _G.TallymasterTrackerFrame
         if tracker and not tracker.__elvuiSkinned then
             tracker:StripTextures()
@@ -33,7 +22,6 @@ function T.SkinElvUI()
             tracker.__elvuiSkinned = true
         end
 
-        -- Add box
         local addFrame = _G.TallymasterAddFrame
         if addFrame and not addFrame.__elvuiSkinned then
             addFrame:StripTextures()

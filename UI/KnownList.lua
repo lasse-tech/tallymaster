@@ -2,28 +2,16 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
---[[
-    The storage browser: every entry ever added, regardless of tracker
-    visibility. Search box + category filter + a two-column scrolling list
-    (icon+name | count) with clickable, sortable column headers.
-      - Shift-click a row -> paste its name into the add box.
-      - Hover a row -> item tooltip (shared with the tracker).
-
-    Built with AceGUI for a skinnable, scrollable container.
-]]
-
 local AceGUI = LibStub("AceGUI-3.0")
 local KnownList = {}
 T.KnownList = KnownList
 
-local widget          -- AceGUI Frame
+local widget
 local searchText = ""
-local filterCategory = nil -- nil = all
-local sortKey, sortAsc = "name", true -- "name" | "count"
-local NAME_W, COUNT_W = 0.72, 0.28    -- relative column widths
+local filterCategory = nil
+local sortKey, sortAsc = "name", true
+local NAME_W, COUNT_W = 0.72, 0.28
 
--- Sort-direction arrows as texture markup. Unicode arrows (▲/▼) render as tofu in
--- the default UI font, so we use the built-in arrow textures instead.
 local ARROW_UP   = "|TInterface\\Buttons\\Arrow-Up-Up:14:14|t"
 local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:14:14|t"
 
@@ -57,7 +45,6 @@ local function sortEntries(list)
     end)
 end
 
--- Header label text with the active-column sort arrow appended.
 local function headerText(base, key)
     if sortKey ~= key then return base end
     return base .. " " .. (sortAsc and ARROW_UP or ARROW_DOWN)
@@ -65,16 +52,14 @@ end
 
 local function setSort(key)
     if sortKey == key then
-        sortAsc = not sortAsc           -- same column: flip direction
+        sortAsc = not sortAsc
     else
         sortKey = key
-        sortAsc = (key == "name")       -- name defaults A→Z; count defaults high→low
+        sortAsc = (key == "name")
     end
     KnownList:Refresh()
 end
 
--- One list row: icon+name in column 1, count in column 2. Shift-click either
--- column pastes the name into the add box; hovering shows the item tooltip.
 local function makeRow(scroll, entry)
     local row = AceGUI:Create("SimpleGroup")
     row:SetFullWidth(true)
@@ -99,7 +84,6 @@ local function makeRow(scroll, entry)
     name:SetCallback("OnClick", onClick)
     count:SetCallback("OnClick", onClick)
 
-    -- Item tooltip on hover (shared with the tracker; respects the settings).
     local function onEnter(widget) T.ShowEntryTooltip(widget.frame, entry) end
     local function onLeave() GameTooltip:Hide() end
     name:SetCallback("OnEnter", onEnter)
@@ -136,7 +120,7 @@ function KnownList:Create()
     widget:SetLayout("Flow")
     widget:SetWidth(360); widget:SetHeight(440)
     widget:SetCallback("OnClose", function(w) w:Hide() end)
-    _G["TallymasterKnownListFrame"] = widget.frame -- stable name for ElvUI skinning
+    _G["TallymasterKnownListFrame"] = widget.frame
 
     local search = AceGUI:Create("EditBox")
     search:SetLabel(L["Search"])
@@ -163,8 +147,6 @@ function KnownList:Create()
     end)
     widget:AddChild(filter)
 
-    -- Clickable column headers: click "Name" or "Count" to sort by that column;
-    -- click again to flip the direction (arrow shows the active column/direction).
     local header = AceGUI:Create("SimpleGroup")
     header:SetFullWidth(true)
     header:SetLayout("Flow")
@@ -185,7 +167,6 @@ function KnownList:Create()
     widget:AddChild(header)
     widget.hName, widget.hCount = hName, hCount
 
-    -- Divider line so the header doesn't visually merge with the first row.
     local divider = AceGUI:Create("Heading")
     divider:SetFullWidth(true)
     widget:AddChild(divider)

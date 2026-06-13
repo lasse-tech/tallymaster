@@ -2,7 +2,6 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
--- AceConfig options table + registration into the Blizzard addon settings.
 function T.SetupOptions()
     local AceConfig = LibStub("AceConfig-3.0", true)
     local AceConfigDialog = LibStub("AceConfigDialog-3.0", true)
