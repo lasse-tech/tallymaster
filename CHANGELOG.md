@@ -5,6 +5,12 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.4-alpha] - 2026-06-13
+
+### Added
+- An "Add" button in the Add window (bottom-right), doing the same as pressing
+  Enter. Skinned by ElvUI when active.
+
 ## [0.2.3-alpha] - 2026-06-13
 
 ### Fixed

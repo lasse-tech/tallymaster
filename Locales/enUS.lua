@@ -5,6 +5,7 @@ if not L then return end
 L["Tallymaster"] = true
 L["Add item, currency or collectible"] = true
 L["Type a name or ID, then press Enter"] = true
+L["Add"] = true
 L["Known items"] = true
 L["Search"] = true
 L["Name"] = true

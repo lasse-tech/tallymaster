@@ -283,6 +283,17 @@ function AddInput:Create()
     respect:Hide()
     frame.respect = respect
 
+    -- Add button: same action as pressing Enter in the box.
+    local addBtn = CreateFrame("Button", "TallymasterAddFrameAddButton", frame, "UIPanelButtonTemplate")
+    addBtn:SetSize(100, 24)
+    addBtn:SetPoint("BOTTOMRIGHT", -22, 14)
+    addBtn:SetText(L["Add"])
+    addBtn:SetScript("OnClick", function()
+        local text = frame.edit:GetText()
+        if text and text ~= "" then AddInput:Submit(text) end
+    end)
+    frame.addButton = addBtn
+
     -- Shift-clicking an item/currency anywhere pastes its name into the box
     -- while the Add window is open.
     if not AddInput._linkHooked then

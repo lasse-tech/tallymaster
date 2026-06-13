@@ -40,6 +40,7 @@ function T.SkinElvUI()
             addFrame:SetTemplate("Transparent")
             if _G.TallymasterAddFrameEditBox then S:HandleEditBox(_G.TallymasterAddFrameEditBox) end
             if _G.TallymasterAddFrameCloseButton then S:HandleCloseButton(_G.TallymasterAddFrameCloseButton) end
+            if _G.TallymasterAddFrameAddButton then S:HandleButton(_G.TallymasterAddFrameAddButton) end
             addFrame.__elvuiSkinned = true
         end
     end
