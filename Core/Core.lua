@@ -49,10 +49,10 @@ function Tallymaster:OnInitialize()
             end,
             OnTooltipShow = function(tt)
                 tt:AddLine(L["Tallymaster"])
-                tt:AddLine("|cffffff00Click|r " .. L["Add item, currency or collectible"], 1, 1, 1)
-                tt:AddLine("|cffffff00Shift-Click|r " .. L["Toggle tracker"], 1, 1, 1)
-                tt:AddLine("|cffffff00Ctrl-Click|r " .. L["Known items"], 1, 1, 1)
-                tt:AddLine("|cffffff00Right-Click|r Options", 1, 1, 1)
+                tt:AddLine("|cffffff00" .. L["Click"] .. "|r " .. L["Add item, currency or collectible"], 1, 1, 1)
+                tt:AddLine("|cffffff00" .. L["Shift-Click"] .. "|r " .. L["Toggle tracker"], 1, 1, 1)
+                tt:AddLine("|cffffff00" .. L["Ctrl-Click"] .. "|r " .. L["Known items"], 1, 1, 1)
+                tt:AddLine("|cffffff00" .. L["Right-Click"] .. "|r " .. L["Options"], 1, 1, 1)
             end,
         })
         if LDBIcon then

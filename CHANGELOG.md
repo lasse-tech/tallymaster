@@ -5,6 +5,14 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.18-alpha] - 2026-06-13
+
+### Added
+- German (deDE) localization. The addon now uses German automatically when the game
+  client is set to German, and English otherwise (via AceLocale). Also moved the
+  previously hardcoded minimap tooltip labels (Click/Shift-Click/etc.) into the
+  locale so they translate too.
+
 ## [0.2.17-alpha] - 2026-06-13
 
 ### Fixed

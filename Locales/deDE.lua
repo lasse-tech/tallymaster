@@ -1,0 +1,78 @@
+local ADDON = ...
+local L = LibStub("AceLocale-3.0"):NewLocale(ADDON, "deDE")
+if not L then return end
+
+L["Tallymaster"] = "Tallymaster"
+L["Add item, currency or collectible"] = "Gegenstand, Währung oder Sammelobjekt hinzufügen"
+L["Type a name or ID, then press Enter"] = "Namen oder ID eingeben, dann Enter drücken"
+L["Add"] = "Hinzufügen"
+L["Known items"] = "Bekannte Gegenstände"
+L["Search"] = "Suche"
+L["Name"] = "Name"
+L["Count"] = "Anzahl"
+L["Toggle tracker"] = "Tracker ein-/ausblenden"
+
+-- Keybinding display names (BINDING_HEADER_* / BINDING_NAME_*)
+L["Open Add window"] = "Hinzufügen-Fenster öffnen"
+L["Toggle known items"] = "Bekannte Gegenstände ein-/ausblenden"
+
+-- Minimap button tooltip
+L["Click"] = "Klick"
+L["Shift-Click"] = "Umschalt+Klick"
+L["Ctrl-Click"] = "Strg+Klick"
+L["Right-Click"] = "Rechtsklick"
+L["Options"] = "Optionen"
+
+-- Item detail panel (Add window)
+L["Quality"] = "Qualität"
+L["Item level"] = "Gegenstandsstufe"
+L["Type"] = "Typ"
+L["Stack"] = "Stapel"
+L["Sell"] = "Verkauf"
+L["Expansion"] = "Erweiterung"
+L["Bind"] = "Bindung"
+L["Respect quality (count only this tier)"] = "Qualität beachten (nur diese Stufe zählen)"
+L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."] = "Wenn aktiviert, zählt dieser Eintrag nur die exakte Handwerksqualität, die du hinzugefügt hast. Wenn deaktiviert, werden alle Qualitäten des Gegenstands gezählt."
+L["All categories"] = "Alle Kategorien"
+L["Uncategorized"] = "Nicht kategorisiert"
+
+-- Ambiguous ID resolution
+L["The ID %d matches both an item and a currency. Which do you mean?"] = "Die ID %d passt sowohl zu einem Gegenstand als auch zu einer Währung. Was meinst du?"
+L["Item"] = "Gegenstand"
+L["Currency"] = "Währung"
+
+-- Options
+L["Count scope"] = "Zählbereich"
+L["Where item counts are summed from."] = "Woher die Gegenstandsanzahl summiert wird."
+L["Per character"] = "Pro Charakter"
+L["Account-wide (all characters)"] = "Accountweit (alle Charaktere)"
+L["Sort order"] = "Sortierreihenfolge"
+L["Alphabetical"] = "Alphabetisch"
+L["By count"] = "Nach Anzahl"
+L["Group by category"] = "Nach Kategorie gruppieren"
+L["When off, the tracker shows a single flat list instead of category groups."] = "Wenn deaktiviert, zeigt der Tracker eine einfache Liste anstelle von Kategoriegruppen."
+L["Show item tooltip"] = "Gegenstands-Tooltip anzeigen"
+L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."] = "Zeigt einen Tooltip, wenn du im Tracker über einen Gegenstand fährst. Im accountweiten Modus wird die Anzahl jedes Charakters aufgelistet."
+L["Show counts in tooltip"] = "Anzahl im Tooltip anzeigen"
+L["Include each character's count (grouped by realm) in the tracker tooltip."] = "Fügt die Anzahl jedes Charakters (nach Realm gruppiert) zum Tracker-Tooltip hinzu."
+L["Show minimap button"] = "Minimap-Knopf anzeigen"
+L["Allow ElvUI to skin this addon"] = "ElvUI erlauben, dieses Addon zu gestalten"
+L["Requires a /reload to take effect."] = "Erfordert ein /reload, um wirksam zu werden."
+
+-- Type labels (used as default categories for non-item types)
+L["Currencies"] = "Währungen"
+L["Mounts"] = "Reittiere"
+L["Transmog"] = "Transmogrifikation"
+L["Battle Pets"] = "Kampfhaustiere"
+L["Knowledge"] = "Wissen"
+
+-- Empty tracker state
+L["No items tracked yet."] = "Noch keine Gegenstände verfolgt."
+L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] = "Gib /tally ein, klicke auf das Minimap-Symbol oder nutze die Tastenbelegung zum Hinzufügen und gib dann den Namen oder die ID eines Gegenstands ein."
+L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."] = "Tipp: Bei geöffnetem Hinzufügen-Fenster kannst du mit Umschalt+Klick auf einen Gegenstand in deinen Taschen dessen Namen ins Feld übernehmen."
+
+-- Messages
+L["Could not find anything matching '%s'."] = "Konnte nichts finden, das zu '%s' passt."
+L["Already tracking %s."] = "%s wird bereits verfolgt."
+L["Now tracking %s."] = "%s wird jetzt verfolgt."
+L["Still loading data for that ID — try again in a moment."] = "Daten für diese ID werden noch geladen – versuche es gleich erneut."

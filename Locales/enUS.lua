@@ -16,6 +16,13 @@ L["Toggle tracker"] = true
 L["Open Add window"] = true
 L["Toggle known items"] = true
 
+-- Minimap button tooltip
+L["Click"] = true
+L["Shift-Click"] = true
+L["Ctrl-Click"] = true
+L["Right-Click"] = true
+L["Options"] = true
+
 -- Item detail panel (Add window)
 L["Quality"] = true
 L["Item level"] = true
