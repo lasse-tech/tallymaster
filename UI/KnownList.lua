@@ -117,7 +117,7 @@ local function makeRow(scroll, entry)
 
     local name = AceGUI:Create("InteractiveLabel")
     name:SetRelativeWidth(NAME_W)
-    name:SetText(rowLabelText(entry))
+    name:SetText(rowLabelText(entry) .. DB:TierMarkup(entry))
     name:SetImage(entry.icon or 134400)
     name:SetImageSize(18, 18)
 

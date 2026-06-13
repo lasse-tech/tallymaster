@@ -17,6 +17,19 @@ local ADDON, T = ...
         customName   = nil,             -- user override; nil = use original
         category     = "Other",         -- account-wide; nil/"" => Uncategorized
         icon         = 134414,          -- fileID for display
+
+        -- Item-only details captured at add time (see Resolve:itemDetails):
+        itemQuality     = 1,            -- rarity enum (Poor..Legendary)
+        craftingQuality = 3,            -- crafting tier 1-3, or nil if none
+        respectQuality  = false,        -- true = count only this exact tier;
+                                        -- false = count any quality (by name)
+        itemLevel       = 0,
+        itemType        = "Tradegoods", -- localized top-level type
+        itemSubType     = "Cooking",    -- localized subtype
+        stackCount      = 200,          -- max stack size
+        sellPrice       = 0,            -- vendor sell price (copper)
+        bindType        = 0,            -- 0 none,1 BoP,2 BoE,3 BoU,4 quest
+        expansionID     = 10,           -- expansion enum
     }
 ]]
 
@@ -85,6 +98,16 @@ function DB:DisplayName(entry)
         return entry.customName
     end
     return entry.originalName
+end
+
+-- Crafting-quality star markup for display, shown only when this entry tracks one
+-- exact tier (respectQuality). For "any quality" entries the count is an aggregate,
+-- so no single tier icon is shown.
+function DB:TierMarkup(entry)
+    if entry.respectQuality and entry.craftingQuality and CreateAtlasMarkup then
+        return " " .. CreateAtlasMarkup("Professions-ChatIcon-Quality-Tier" .. entry.craftingQuality, 14, 14)
+    end
+    return ""
 end
 
 -- Effective category: "" / nil => Uncategorized bucket

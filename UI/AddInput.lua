@@ -21,6 +21,8 @@ local frame
 function AddInput:Commit(entry)
     local existing = DB:GetEntry(entry.key)
     if existing then
+        -- Re-adding an item lets the user change its quality-counting mode.
+        if entry.type == "item" then existing.respectQuality = entry.respectQuality end
         DB:SetVisible(existing.key, true)
         T.Addon:Print(L["Already tracking %s."]:format(DB:DisplayName(existing)))
     else
@@ -48,10 +50,22 @@ local function askAmbiguous(result, id)
 end
 
 function AddInput:Submit(text)
-    local result = T.Resolve:Query(text)
+    -- Prefer the entry already resolved for the details preview (it preserves the
+    -- exact item/quality from a shift-click); fall back to a fresh name/ID query.
+    local result
+    if frame and frame.pending and frame.pendingText == text then
+        result = { status = "ok", entry = frame.pending }
+    else
+        result = T.Resolve:Query(text)
+    end
+
     if result.status == "ok" then
-        self:Commit(result.entry)
-        if frame then frame.edit:SetText(""); frame:Hide() end
+        local entry = result.entry
+        if entry.type == "item" and entry.craftingQuality and frame and frame.respect then
+            entry.respectQuality = frame.respect:GetChecked() and true or false
+        end
+        self:Commit(entry)
+        if frame then frame.edit:SetText(""); self:Preview(nil); frame:Hide() end
     elseif result.status == "ambiguous" then
         askAmbiguous(result, tonumber(text))
     elseif result.status == "loading" then
@@ -80,10 +94,103 @@ local function linkToName(link)
     return stripEscapes(link:match("|h%[(.-)%]|h") or link:match("%[(.-)%]"))
 end
 
+-- ---- item detail panel -----------------------------------------------------
+
+local BIND_LABELS = {
+    [1] = ITEM_BIND_ON_PICKUP,
+    [2] = ITEM_BIND_ON_EQUIP,
+    [3] = ITEM_BIND_ON_USE,
+    [4] = ITEM_BIND_QUEST,
+}
+
+local function greyLabel(label, value)
+    return "|cff808080" .. label .. ":|r " .. value
+end
+
+local function money(copper)
+    if not copper or copper == 0 then return "—" end
+    if C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString then
+        return C_CurrencyInfo.GetCoinTextureString(copper)
+    end
+    return tostring(copper)
+end
+
+-- Multi-line, coloured summary of an item entry's captured details.
+local function formatDetails(e)
+    local out = {}
+
+    if e.itemQuality then
+        local c = _G.ITEM_QUALITY_COLORS and _G.ITEM_QUALITY_COLORS[e.itemQuality]
+        local hex = (c and c.hex) or "|cffffffff"
+        local qn = _G["ITEM_QUALITY" .. e.itemQuality .. "_DESC"] or ""
+        local tier = ""
+        if e.craftingQuality and CreateAtlasMarkup then
+            tier = " " .. CreateAtlasMarkup("Professions-ChatIcon-Quality-Tier" .. e.craftingQuality, 16, 16)
+        end
+        out[#out + 1] = greyLabel(L["Quality"], hex .. qn .. "|r" .. tier)
+    end
+
+    do
+        local t = e.itemType or ""
+        if e.itemSubType and e.itemSubType ~= "" then t = t .. " / " .. e.itemSubType end
+        out[#out + 1] = greyLabel(L["Item level"], tostring(e.itemLevel or 0))
+            .. "    " .. greyLabel(L["Type"], t)
+    end
+
+    out[#out + 1] = greyLabel(L["Stack"], tostring(e.stackCount or 1))
+        .. "    " .. greyLabel(L["Sell"], money(e.sellPrice))
+
+    do
+        local parts = {}
+        local exp = e.expansionID and _G["EXPANSION_NAME" .. e.expansionID]
+        if exp then parts[#parts + 1] = greyLabel(L["Expansion"], exp) end
+        local bind = BIND_LABELS[e.bindType or 0]
+        if bind then parts[#parts + 1] = greyLabel(L["Bind"], bind) end
+        if #parts > 0 then out[#out + 1] = table.concat(parts, "    ") end
+    end
+
+    return table.concat(out, "\n")
+end
+
+-- Populate (or clear) the details panel + quality checkbox from a resolve result.
+function AddInput:Preview(result)
+    if not frame then return end
+    if result and result.status == "ok" and result.entry.type == "item" then
+        local e = result.entry
+        frame.pending = e
+        frame.pendingText = frame.edit:GetText()
+        frame.details:SetText(formatDetails(e))
+        if e.craftingQuality then
+            frame.respect:SetChecked(false) -- default: count any quality
+            frame.respect:Show()
+        else
+            frame.respect:Hide()
+        end
+    else
+        frame.pending = nil
+        frame.pendingText = nil
+        frame.details:SetText("")
+        frame.respect:Hide()
+    end
+end
+
+-- Debounced live preview for typed text (so details fill in as you type a name).
+function AddInput:SchedulePreview()
+    self._previewToken = (self._previewToken or 0) + 1
+    local token = self._previewToken
+    C_Timer.After(0.3, function()
+        if token ~= self._previewToken then return end
+        if not frame or not frame:IsShown() then return end
+        local text = frame.edit:GetText()
+        if not text or text == "" then self:Preview(nil); return end
+        self:Preview(T.Resolve:Query(text))
+    end)
+end
+
 function AddInput:Create()
     if frame then return end
     frame = CreateFrame("Frame", "TallymasterAddFrame", UIParent, "BackdropTemplate")
-    frame:SetSize(420, 110)
+    frame:SetSize(440, 224)
     frame:SetPoint("CENTER")
     frame:SetFrameStrata("DIALOG")
     frame:SetMovable(true); frame:EnableMouse(true)
@@ -142,9 +249,39 @@ function AddInput:Create()
     frame.editInstructions:SetPoint("RIGHT", edit, "RIGHT", -6, 0)
     frame.editInstructions:SetJustifyH("LEFT")
     frame.editInstructions:SetText(L["Type a name or ID, then press Enter"])
-    edit:SetScript("OnTextChanged", function(self)
+    edit:SetScript("OnTextChanged", function(self, userInput)
         frame.editInstructions:SetShown(self:GetText() == "")
+        -- Typed input: re-resolve for the details preview. SetText() (shift-click,
+        -- clear) passes userInput=false and is handled by its own caller.
+        if userInput then
+            frame.pending = nil
+            AddInput:SchedulePreview()
+        end
     end)
+
+    -- Details panel: a coloured, multi-line summary of the resolved item.
+    frame.details = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    frame.details:SetPoint("TOPLEFT", 26, -92)
+    frame.details:SetPoint("TOPRIGHT", -26, -92)
+    frame.details:SetJustifyH("LEFT")
+    frame.details:SetJustifyV("TOP")
+    frame.details:SetSpacing(4)
+
+    -- "Respect quality" checkbox: shown only for items that have a crafting tier.
+    local respect = CreateFrame("CheckButton", "TallymasterAddFrameRespectQuality", frame, "UICheckButtonTemplate")
+    respect:SetSize(24, 24)
+    respect:SetPoint("BOTTOMLEFT", 22, 16)
+    respect.text = respect:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    respect.text:SetPoint("LEFT", respect, "RIGHT", 2, 1)
+    respect.text:SetText(L["Respect quality (count only this tier)"])
+    respect:SetScript("OnEnter", function(self)
+        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."], 1, 1, 1, true)
+        GameTooltip:Show()
+    end)
+    respect:SetScript("OnLeave", function() GameTooltip:Hide() end)
+    respect:Hide()
+    frame.respect = respect
 
     -- Shift-clicking an item/currency anywhere pastes its name into the box
     -- while the Add window is open.
@@ -158,6 +295,9 @@ function AddInput:Create()
             frame.edit:SetText(name)
             frame.edit:SetFocus()
             frame.edit:SetCursorPosition(#name)
+            -- Resolve the exact clicked item (preserves its crafting quality) and
+            -- show its details + the quality checkbox.
+            AddInput:Preview(T.Resolve:ByLink(link))
         end)
     end
 
@@ -181,6 +321,7 @@ function AddInput:Paste(text)
     frame.edit:SetText(text or "")
     frame.edit:SetFocus()
     frame.edit:HighlightText()
+    self:Preview(T.Resolve:Query(text or ""))
 end
 
 function AddInput:Toggle()
@@ -191,5 +332,6 @@ function AddInput:Toggle()
         frame:Show()
         frame.edit:SetText("")
         frame.edit:SetFocus()
+        self:Preview(nil)
     end
 end

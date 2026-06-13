@@ -5,6 +5,24 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.0-alpha] - 2026-06-13
+
+### Added
+- Item detail capture: when an item is added (typed, by ID, or shift-clicked), the
+  Add window now shows a details panel — quality (rarity + crafting tier), item
+  level & type/subtype, stack size & sell price, expansion & bind type — and these
+  are stored on the entry. Details preview live as you type and on shift-click.
+- Crafting-quality handling. A "Respect quality" checkbox appears for items that
+  have a crafting tier:
+  - Off (default): the entry counts **any quality** of the item, summed across all
+    tiers (sibling tiers discovered by name across your containers).
+  - On: the entry counts **only that exact tier**. The tracked entry then shows the
+    tier star in the tracker and Known items list.
+
+### Fixed
+- (carried from 0.1.21) Shift-clicking a quality item no longer pastes the tier
+  atlas markup into the box.
+
 ## [0.1.21-alpha] - 2026-06-13
 
 ### Fixed

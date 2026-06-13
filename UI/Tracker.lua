@@ -203,7 +203,7 @@ function Tracker:Refresh()
                 if not row.name then styleRow(row) end
                 row.entryKey = entry.key
                 row.icon:SetTexture(entry.icon or 134400)
-                row.name:SetText(DB:DisplayName(entry))
+                row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
                 row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
                 row:SetPoint("TOPLEFT", 0, -y)
                 row:Show()

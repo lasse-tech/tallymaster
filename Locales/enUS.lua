@@ -14,6 +14,17 @@ L["Toggle tracker"] = true
 -- Keybinding display names (BINDING_HEADER_* / BINDING_NAME_*)
 L["Open Add window"] = true
 L["Toggle known items"] = true
+
+-- Item detail panel (Add window)
+L["Quality"] = true
+L["Item level"] = true
+L["Type"] = true
+L["Stack"] = true
+L["Sell"] = true
+L["Expansion"] = true
+L["Bind"] = true
+L["Respect quality (count only this tier)"] = true
+L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."] = true
 L["All categories"] = true
 L["Uncategorized"] = true
 L["Delete"] = true

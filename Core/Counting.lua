@@ -46,16 +46,62 @@ local function rebuildMailCache()
     end
 end
 
+-- Total of one specific item id across bags/bank/reagent bank + equipped + mail.
+local function itemTotal(id)
+    local n = C_Item.GetItemCount(id, true, false, true) or 0
+    return n + equippedCount(id) + (mailCache[id] or 0)
+end
+
+-- Container ids to scan when discovering quality-tier siblings by name. Built
+-- once; invalid/unopened bags simply report 0 slots.
+local SCAN_BAGS
+local function scanBags()
+    if SCAN_BAGS then return SCAN_BAGS end
+    SCAN_BAGS = { 0, 1, 2, 3, 4 }
+    local bi = Enum and Enum.BagIndex
+    if bi then
+        if bi.ReagentBag then SCAN_BAGS[#SCAN_BAGS + 1] = bi.ReagentBag end
+        for _, k in ipairs({ "Bank", "Reagentbank",
+            "CharacterBankTab_1", "CharacterBankTab_2", "CharacterBankTab_3",
+            "CharacterBankTab_4", "CharacterBankTab_5", "CharacterBankTab_6" }) do
+            if bi[k] then SCAN_BAGS[#SCAN_BAGS + 1] = bi[k] end
+        end
+    else
+        SCAN_BAGS[#SCAN_BAGS + 1] = 5
+    end
+    return SCAN_BAGS
+end
+
+-- Sum across every crafting quality of an item: discover sibling item ids sharing
+-- the base name in the player's containers, then total each (GetItemCount keeps
+-- bank amounts current). A tier held ONLY in the bank and never carried may be
+-- missed until the bank is opened -- the same caching caveat as GetItemCount.
+local function nameCount(entry)
+    local seen = { [entry.id] = true }
+    for _, bag in ipairs(scanBags()) do
+        local slots = C_Container.GetContainerNumSlots(bag) or 0
+        for slot = 1, slots do
+            local sid = C_Container.GetContainerItemID(bag, slot)
+            if sid and not seen[sid] and C_Item.GetItemInfo(sid) == entry.originalName then
+                seen[sid] = true
+            end
+        end
+    end
+    local total = 0
+    for sid in pairs(seen) do total = total + itemTotal(sid) end
+    return total
+end
+
 -- ---- per-type totals -------------------------------------------------------
 
 local typeHandlers = {
     item = function(entry)
-        local id = entry.id
-        -- bags + bank + reagent bank
-        local n = C_Item.GetItemCount(id, true, false, true) or 0
-        n = n + equippedCount(id)
-        n = n + (mailCache[id] or 0)
-        return n
+        -- "Any quality" (default) sums all crafting tiers of the item; "respect
+        -- quality", or an item with no quality, counts just this exact item id.
+        if entry.craftingQuality and not entry.respectQuality then
+            return nameCount(entry)
+        end
+        return itemTotal(entry.id)
     end,
 
     currency = function(entry)

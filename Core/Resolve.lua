@@ -23,7 +23,9 @@ local Resolve = {}
 T.Resolve = Resolve
 
 local function buildEntry(entryType, id, name, icon)
-    local entry = {
+    -- Non-item types (currency/mount/pet/...). Item entries use itemEntry() below,
+    -- which also captures the richer item detail fields.
+    return {
         key          = DB:MakeKey(entryType, id),
         type         = entryType,
         id           = id,
@@ -32,19 +34,60 @@ local function buildEntry(entryType, id, name, icon)
         category     = T.Categories:Auto(entryType, id),
         icon         = icon,
     }
-    return entry
+end
+
+-- Crafting quality (Tier 1-3) of a specific item, or nil. Reagents and crafted
+-- gear expose it through different TradeSkillUI calls; try both.
+local function craftingQuality(itemInfo)
+    if not C_TradeSkillUI then return nil end
+    local q
+    if C_TradeSkillUI.GetItemReagentQualityByItemInfo then
+        q = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemInfo)
+    end
+    if not q and C_TradeSkillUI.GetItemCraftedQualityByItemInfo then
+        q = C_TradeSkillUI.GetItemCraftedQualityByItemInfo(itemInfo)
+    end
+    return q
+end
+
+-- Build a full item entry. `link` (when known, e.g. from a shift-click) lets us
+-- read the crafting quality of that exact item; otherwise we resolve from the id.
+local function itemEntry(id, link)
+    local info = link or id
+    local name, _, quality, itemLevel, _, itemType, itemSubType, stackCount,
+          _, icon, sellPrice, _, _, bindType, expacID = C_Item.GetItemInfo(info)
+    if not name then return nil end
+    return {
+        key             = DB:MakeKey("item", id),
+        type            = "item",
+        id              = id,
+        originalName    = name,
+        customName      = nil,
+        category        = T.Categories:Auto("item", id),
+        icon            = icon,
+        itemQuality     = quality,
+        craftingQuality = craftingQuality(info),
+        respectQuality  = false,
+        itemLevel       = itemLevel,
+        itemType        = itemType,
+        itemSubType     = itemSubType,
+        stackCount      = stackCount,
+        sellPrice       = sellPrice,
+        bindType        = bindType,
+        expansionID     = expacID,
+    }
 end
 
 -- ---- per-type lookups ------------------------------------------------------
 
-local function tryItem(id)
+local function tryItem(id, link)
     local instantName = C_Item.GetItemInfoInstant(id)
     if not instantName then return nil, false end -- not a valid item id at all
-    local name, _, _, _, _, _, _, _, _, icon = C_Item.GetItemInfo(id)
-    if not name then
+    local entry = itemEntry(id, link)
+    if not entry then
         return nil, true -- valid id but not cached yet -> loading
     end
-    return buildEntry("item", id, name, icon), false
+    return entry, false
 end
 
 local function tryCurrency(id)
@@ -79,7 +122,7 @@ function Resolve:ByName(name)
     if link then
         local id = tonumber(link:match("item:(%d+)"))
         if id then
-            local entry = tryItem(id)
+            local entry = tryItem(id, link)
             if entry then return { status = "ok", entry = entry } end
         end
     end
@@ -103,6 +146,18 @@ function Resolve:ByName(name)
     -- TODO: collectible-by-name (mount/pet/transmog) via C_MountJournal /
     --       C_PetJournal search. Tracked as a follow-up; the entry builder and
     --       Counting module already support these types by ID.
+    return { status = "notfound" }
+end
+
+-- Resolve a specific item hyperlink (e.g. from a shift-click), preserving the
+-- exact item id and crafting quality of the clicked item.
+function Resolve:ByLink(link)
+    if not link then return { status = "notfound" } end
+    local id = tonumber(link:match("item:(%d+)"))
+    if not id then return { status = "notfound" } end
+    local entry, loading = tryItem(id, link)
+    if entry then return { status = "ok", entry = entry } end
+    if loading then return { status = "loading" } end
     return { status = "notfound" }
 end
 
