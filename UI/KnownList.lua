@@ -25,6 +25,11 @@ local filterCategory = nil -- nil = all
 local sortKey, sortAsc = "name", true -- "name" | "count"
 local NAME_W, COUNT_W = 0.72, 0.28    -- relative column widths
 
+-- Sort-direction arrows as texture markup. Unicode arrows (▲/▼) render as tofu in
+-- the default UI font, so we use the built-in arrow textures instead.
+local ARROW_UP   = "|TInterface\\Buttons\\Arrow-Up-Up:14:14|t"
+local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:14:14|t"
+
 local function rowLabelText(entry)
     if entry.customName and entry.customName ~= "" then
         return ("%s |cff808080(%s)|r"):format(entry.customName, entry.originalName)
@@ -95,7 +100,7 @@ end
 -- Header label text with the active-column sort arrow appended.
 local function headerText(base, key)
     if sortKey ~= key then return base end
-    return base .. (sortAsc and "  ▲" or "  ▼")
+    return base .. " " .. (sortAsc and ARROW_UP or ARROW_DOWN)
 end
 
 local function setSort(key)
@@ -213,6 +218,11 @@ function KnownList:Create()
     header:AddChild(hCount)
     widget:AddChild(header)
     widget.hName, widget.hCount = hName, hCount
+
+    -- Divider line so the header doesn't visually merge with the first row.
+    local divider = AceGUI:Create("Heading")
+    divider:SetFullWidth(true)
+    widget:AddChild(divider)
 
     local scroll = AceGUI:Create("ScrollFrame")
     scroll:SetLayout("List")
