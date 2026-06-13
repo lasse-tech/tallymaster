@@ -174,16 +174,54 @@ function DB:AccountBreakdownByRealm(key)
     return order, realms
 end
 
--- One-time repair: an earlier bug stored numeric classIDs (e.g. 0) as the
--- category for item entries. Re-derive a proper string category for any entry
--- whose stored category isn't a non-empty string.
-function DB:RepairCategories()
-    for _, entry in pairs(self:Global().entries) do
-        local c = entry.category
-        if c ~= nil and (type(c) ~= "string" or tonumber(c) ~= nil) then
-            entry.category = T.Categories:Auto(entry.type, entry.id)
+-- Current-locale display name for an entry, from its live type API. Returns nil
+-- if not available yet (e.g. an item whose data isn't cached this session).
+function DB:CurrentName(entry)
+    local id = entry.id
+    if entry.type == "item" then
+        return (C_Item.GetItemInfo(id))
+    elseif entry.type == "currency" then
+        local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo(id)
+        if info and info.name and info.name ~= "" then return info.name end
+    elseif entry.type == "mount" then
+        if C_MountJournal then return (C_MountJournal.GetMountInfoByID(id)) end
+    elseif entry.type == "pet" then
+        if C_PetJournal and C_PetJournal.GetPetInfoBySpeciesID then
+            return (C_PetJournal.GetPetInfoBySpeciesID(id))
         end
     end
+    return nil
+end
+
+-- Re-localize stored entries to the current client language: re-derive auto
+-- categories and re-resolve display names whenever the locale changed since the
+-- data was last stamped (also repairs bogus numeric categories from an old bug).
+-- Stored names/categories are localized strings captured at add time, so without
+-- this they'd stay in the language they were first added in. Returns the item ids
+-- whose names weren't cached yet, for an async second pass.
+function DB:Relocalize()
+    local g = self:Global()
+    local locale = GetLocale()
+    local switched = g.locale ~= locale
+    local pending = {}
+    for _, entry in pairs(g.entries) do
+        local c = entry.category
+        local badCat = c ~= nil and (type(c) ~= "string" or tonumber(c) ~= nil)
+        if switched or badCat then
+            entry.category = T.Categories:Auto(entry.type, entry.id)
+        end
+        if switched then
+            local name = self:CurrentName(entry)
+            if name then
+                entry.originalName = name
+            elseif entry.type == "item" and C_Item and C_Item.RequestLoadItemDataByID then
+                pending[#pending + 1] = entry.id
+                C_Item.RequestLoadItemDataByID(entry.id)
+            end
+        end
+    end
+    g.locale = locale
+    return pending
 end
 
 -- All known categories: auto-derived from entries + user-created, sorted

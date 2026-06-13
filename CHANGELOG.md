@@ -5,6 +5,14 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.19-alpha] - 2026-06-13
+
+### Fixed
+- Tracked entries' category headers and names stayed in the language they were
+  first added in (e.g. English category headers on a German client). Stored
+  categories/names are now re-derived/re-resolved to the current client language
+  when it changes; item names not yet cached are resolved as their data arrives.
+
 ## [0.2.18-alpha] - 2026-06-13
 
 ### Added

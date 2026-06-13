@@ -66,7 +66,28 @@ function Tallymaster:OnInitialize()
 end
 
 function Tallymaster:OnEnable()
-    if T.DB and T.DB.RepairCategories then T.DB:RepairCategories() end
+    -- Re-localize stored categories/names to the current client language. Item
+    -- names may not be cached yet; resolve those as their data arrives.
+    if T.DB and T.DB.Relocalize then
+        local pending = T.DB:Relocalize()
+        if pending and #pending > 0 then
+            local want = {}
+            for _, id in ipairs(pending) do want[id] = true end
+            local waiter = CreateFrame("Frame")
+            waiter:RegisterEvent("GET_ITEM_INFO_RECEIVED")
+            waiter:SetScript("OnEvent", function(self, _, itemID, success)
+                if not want[itemID] then return end
+                want[itemID] = nil
+                if success then
+                    local name = C_Item.GetItemInfo(itemID)
+                    local e = name and T.DB:GetEntry("item:" .. itemID)
+                    if e then e.originalName = name end
+                end
+                if not next(want) then self:UnregisterEvent("GET_ITEM_INFO_RECEIVED") end
+                T.Addon:RefreshTracker()
+            end)
+        end
+    end
     if T.Counting and T.Counting.Enable then T.Counting:Enable() end
     if T.Tracker and T.Tracker.Initialize then T.Tracker:Initialize() end
     if T.SkinElvUI then T.SkinElvUI() end
