@@ -37,8 +37,14 @@ function T.SetupOptions()
                 },
                 get = get, set = set,
             },
-            minimapToggle = {
+            showCategories = {
                 type = "toggle", order = 3,
+                name = L["Group by category"],
+                desc = L["When off, the tracker shows a single flat list instead of category groups."],
+                get = get, set = set,
+            },
+            minimapToggle = {
+                type = "toggle", order = 4,
                 name = L["Show minimap button"],
                 get = function() return not DB:Profile().minimap.hide end,
                 set = function(_, value)
@@ -50,7 +56,7 @@ function T.SetupOptions()
                 end,
             },
             elvuiSkin = {
-                type = "toggle", order = 4,
+                type = "toggle", order = 5,
                 name = L["Allow ElvUI to skin this addon"],
                 desc = L["Requires a /reload to take effect."],
                 get = get, set = set,

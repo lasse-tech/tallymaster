@@ -37,8 +37,11 @@ T.dbDefaults = {
     profile = {
         scope    = "char",     -- "char" | "account"
         sortMode = "alpha",    -- "alpha" | "count"
+        showCategories = true, -- group the tracker by category (false = flat list)
         elvuiSkin = true,
         minimap  = { hide = false },
+        -- Remembered tracker position; TOPLEFT-anchored so it resizes downward.
+        tracker  = { point = "TOPLEFT", relPoint = "TOPLEFT", x = 16, y = -220 },
     },
     global = {
         entries        = {},   -- [key] = entry
@@ -98,6 +101,13 @@ function DB:DisplayName(entry)
         return entry.customName
     end
     return entry.originalName
+end
+
+-- Remembered tracker position.
+function DB:TrackerPos() return self:Profile().tracker end
+function DB:SaveTrackerPos(point, relPoint, x, y)
+    local t = self:Profile().tracker
+    t.point, t.relPoint, t.x, t.y = point, relPoint, x, y
 end
 
 -- Crafting-quality star markup for display, shown only when this entry tracks one

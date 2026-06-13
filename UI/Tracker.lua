@@ -76,12 +76,26 @@ function Tracker:Initialize()
     if frame then return end
     frame = CreateFrame("Frame", "TallymasterTrackerFrame", UIParent, "BackdropTemplate")
     frame:SetSize(WIDTH, 120)
-    frame:SetPoint("CENTER", 300, 0)
+    -- Restore the remembered position. TOPLEFT-anchored so growing/shrinking the
+    -- list (collapse/expand) only changes height downward, never the position.
+    local pos = DB:TrackerPos()
+    frame:SetPoint(pos.point or "TOPLEFT", UIParent, pos.relPoint or pos.point or "TOPLEFT",
+        pos.x or 16, pos.y or -220)
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
     frame:SetScript("OnDragStart", function(self) self.didDrag = true; self:StartMoving() end)
-    frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
+    frame:SetScript("OnDragStop", function(self)
+        self:StopMovingOrSizing()
+        -- Re-anchor by the top-left corner and remember it, so the position sticks
+        -- across sessions and stays put when the list resizes.
+        local left, top = self:GetLeft(), self:GetTop()
+        if left and top then
+            self:ClearAllPoints()
+            self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+            DB:SaveTrackerPos("TOPLEFT", "BOTTOMLEFT", left, top)
+        end
+    end)
     frame:SetClampedToScreen(true)
 
     -- Click the tracker background/title: left-click opens the Add window,
@@ -165,6 +179,30 @@ local function buildGroups()
     return groups, catNames
 end
 
+-- Place a single entry row at vertical offset y.
+local function renderRow(entry, y)
+    local row = rowPool:Acquire()
+    if not row.name then styleRow(row) end
+    row.entryKey = entry.key
+    row.icon:SetTexture(entry.icon or 134400)
+    row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
+    row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
+    row:SetPoint("TOPLEFT", 0, -y)
+    row:Show()
+end
+
+-- Sort a flat (ungrouped) entry list by the current sort mode.
+local function sortFlat(list)
+    local byCount = DB:Profile().sortMode == "count"
+    table.sort(list, function(a, b)
+        if byCount then
+            local ca, cb = T.Counting:DisplayCount(a), T.Counting:DisplayCount(b)
+            if ca ~= cb then return ca > cb end
+        end
+        return DB:DisplayName(a):lower() < DB:DisplayName(b):lower()
+    end)
+end
+
 function Tracker:Refresh()
     if not frame then return end
     rowPool:ReleaseAll()
@@ -185,30 +223,36 @@ function Tracker:Refresh()
 
     local y = 0
 
-    for _, cat in ipairs(catNames) do
-        local folded = DB:IsFolded(cat)
-        local h = headerPool:Acquire()
-        if not h.label then styleHeader(h) end
-        h.category = cat
-        h:SetPoint("TOPLEFT", 0, -y)
-        local arrow = folded and "|TInterface\\Buttons\\UI-PlusButton-Up:12|t"
-                              or  "|TInterface\\Buttons\\UI-MinusButton-Up:12|t"
-        h.label:SetText(arrow .. " " .. cat)
-        h:Show()
-        y = y + HEADER_H
+    if DB:Profile().showCategories then
+        for _, cat in ipairs(catNames) do
+            local folded = DB:IsFolded(cat)
+            local h = headerPool:Acquire()
+            if not h.label then styleHeader(h) end
+            h.category = cat
+            h:SetPoint("TOPLEFT", 0, -y)
+            local arrow = folded and "|TInterface\\Buttons\\UI-PlusButton-Up:12|t"
+                                  or  "|TInterface\\Buttons\\UI-MinusButton-Up:12|t"
+            h.label:SetText(arrow .. " " .. cat)
+            h:Show()
+            y = y + HEADER_H
 
-        if not folded then
-            for _, entry in ipairs(groups[cat]) do
-                local row = rowPool:Acquire()
-                if not row.name then styleRow(row) end
-                row.entryKey = entry.key
-                row.icon:SetTexture(entry.icon or 134400)
-                row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
-                row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
-                row:SetPoint("TOPLEFT", 0, -y)
-                row:Show()
-                y = y + ROW_H
+            if not folded then
+                for _, entry in ipairs(groups[cat]) do
+                    renderRow(entry, y)
+                    y = y + ROW_H
+                end
             end
+        end
+    else
+        -- Flat list: no headers, all visible entries sorted together.
+        local all = {}
+        for _, list in pairs(groups) do
+            for _, e in ipairs(list) do all[#all + 1] = e end
+        end
+        sortFlat(all)
+        for _, entry in ipairs(all) do
+            renderRow(entry, y)
+            y = y + ROW_H
         end
     end
 
