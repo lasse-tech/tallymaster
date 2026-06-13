@@ -5,6 +5,15 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.14-alpha] - 2026-06-13
+
+### Added
+- The Add window now shows the item's icon next to the details.
+
+### Fixed
+- The sell-price coin icon is sized to the details font so it aligns with the text
+  (was using the default 14px size).
+
 ## [0.2.13-alpha] - 2026-06-13
 
 ### Removed

@@ -107,10 +107,14 @@ local function greyLabel(label, value)
     return "|cff808080" .. label .. ":|r " .. value
 end
 
+-- Coin icons default to 14px, which sits too large/low next to the small details
+-- font; size them to the font height so they line up.
+local DETAIL_FONT_HEIGHT = math.floor((select(2, _G.GameFontHighlightSmall:GetFont())) or 12)
+
 local function money(copper)
     if not copper or copper == 0 then return "—" end
-    if C_CurrencyInfo and C_CurrencyInfo.GetCoinTextureString then
-        return C_CurrencyInfo.GetCoinTextureString(copper)
+    if GetCoinTextureString then
+        return GetCoinTextureString(copper, DETAIL_FONT_HEIGHT)
     end
     return tostring(copper)
 end
@@ -159,6 +163,8 @@ function AddInput:Preview(result)
         local e = result.entry
         frame.pending = e
         frame.pendingText = frame.edit:GetText()
+        frame.icon:SetTexture(e.icon or 134400)
+        frame.icon:Show()
         frame.details:SetText(formatDetails(e))
         if e.craftingQuality then
             frame.respect:SetChecked(false) -- default: count any quality
@@ -169,6 +175,7 @@ function AddInput:Preview(result)
     else
         frame.pending = nil
         frame.pendingText = nil
+        frame.icon:Hide()
         frame.details:SetText("")
         frame.respect:Hide()
     end
@@ -259,9 +266,16 @@ function AddInput:Create()
         end
     end)
 
+    -- Item icon, shown to the left of the details for the resolved item.
+    frame.icon = frame:CreateTexture(nil, "ARTWORK")
+    frame.icon:SetSize(40, 40)
+    frame.icon:SetPoint("TOPLEFT", 26, -90)
+    frame.icon:SetTexCoord(0.07, 0.93, 0.07, 0.93)
+    frame.icon:Hide()
+
     -- Details panel: a coloured, multi-line summary of the resolved item.
     frame.details = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
-    frame.details:SetPoint("TOPLEFT", 26, -92)
+    frame.details:SetPoint("TOPLEFT", 76, -92)
     frame.details:SetPoint("TOPRIGHT", -26, -92)
     frame.details:SetJustifyH("LEFT")
     frame.details:SetJustifyV("TOP")
