@@ -28,10 +28,6 @@ L["Respect quality (count only this tier)"] = true
 L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."] = true
 L["All categories"] = true
 L["Uncategorized"] = true
-L["Delete"] = true
-L["Rename"] = true
-L["Rename %s"] = true
-L["Enter a new display name (leave empty to reset)"] = true
 
 -- Ambiguous ID resolution
 L["The ID %d matches both an item and a currency. Which do you mean?"] = true

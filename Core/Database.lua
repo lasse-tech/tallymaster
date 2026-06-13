@@ -97,11 +97,8 @@ function DB:SetVisible(key, visible)
     self:Char().visible[key] = visible and true or nil
 end
 
--- Display name: custom if set, else original
+-- Display name. (Renaming was removed, so this is always the original name.)
 function DB:DisplayName(entry)
-    if entry.customName and entry.customName ~= "" then
-        return entry.customName
-    end
     return entry.originalName
 end
 

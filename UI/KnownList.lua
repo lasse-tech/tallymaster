@@ -7,12 +7,9 @@ local DB = T.DB
     visibility. Search box + category filter + a two-column scrolling list
     (icon+name | count) with clickable, sortable column headers.
       - Shift-click a row -> paste its name into the add box.
-      - Right-click a row -> context menu: Delete, Rename.
-    Renaming sets entry.customName (original kept). Display here is
-    "Custom (Original)" when a custom name is set.
+      - Hover a row -> item tooltip (shared with the tracker).
 
-    Built with AceGUI for a skinnable, scrollable container. Context menus use
-    the modern MenuUtil API (EasyMenu is removed in modern clients).
+    Built with AceGUI for a skinnable, scrollable container.
 ]]
 
 local AceGUI = LibStub("AceGUI-3.0")
@@ -30,13 +27,6 @@ local NAME_W, COUNT_W = 0.72, 0.28    -- relative column widths
 local ARROW_UP   = "|TInterface\\Buttons\\Arrow-Up-Up:14:14|t"
 local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:14:14|t"
 
-local function rowLabelText(entry)
-    if entry.customName and entry.customName ~= "" then
-        return ("%s |cff808080(%s)|r"):format(entry.customName, entry.originalName)
-    end
-    return entry.originalName
-end
-
 local function matchesFilters(entry)
     if filterCategory and DB:EffectiveCategory(entry) ~= filterCategory then
         return false
@@ -46,36 +36,6 @@ local function matchesFilters(entry)
         if not hay:find(searchText, 1, true) then return false end
     end
     return true
-end
-
-local function openRowMenu(anchor, entry)
-    MenuUtil.CreateContextMenu(anchor, function(_, root)
-        root:CreateTitle(DB:DisplayName(entry))
-        root:CreateButton(L["Rename"], function()
-            StaticPopupDialogs["TALLYMASTER_RENAME"] = StaticPopupDialogs["TALLYMASTER_RENAME"] or {
-                text = L["Enter a new display name (leave empty to reset)"],
-                button1 = ACCEPT, button2 = CANCEL,
-                hasEditBox = true, whileDead = true, timeout = 0, hideOnEscape = true,
-                OnShow = function(self) self.editBox:SetText(self.data.customName or "") end,
-                OnAccept = function(self)
-                    local e = DB:GetEntry(self.data.key)
-                    if e then
-                        local txt = self.editBox:GetText()
-                        e.customName = (txt ~= "" and txt) or nil
-                        T.Addon:RefreshTracker()
-                        KnownList:Refresh()
-                    end
-                end,
-            }
-            local d = StaticPopup_Show("TALLYMASTER_RENAME", DB:DisplayName(entry))
-            if d then d.data = entry end
-        end)
-        root:CreateButton(L["Delete"], function()
-            DB:DeleteEntry(entry.key)
-            T.Addon:RefreshTracker()
-            KnownList:Refresh()
-        end)
-    end)
 end
 
 local function sortEntries(list)
@@ -113,8 +73,8 @@ local function setSort(key)
     KnownList:Refresh()
 end
 
--- One list row: icon+name in column 1, count in column 2. The whole row reacts
--- to shift-click (paste) and right-click (context menu) on either column.
+-- One list row: icon+name in column 1, count in column 2. Shift-click either
+-- column pastes the name into the add box; hovering shows the item tooltip.
 local function makeRow(scroll, entry)
     local row = AceGUI:Create("SimpleGroup")
     row:SetFullWidth(true)
@@ -122,7 +82,7 @@ local function makeRow(scroll, entry)
 
     local name = AceGUI:Create("InteractiveLabel")
     name:SetRelativeWidth(NAME_W)
-    name:SetText(rowLabelText(entry) .. DB:TierMarkup(entry))
+    name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
     name:SetImage(entry.icon or 134400)
     name:SetImageSize(18, 18)
 
@@ -131,10 +91,8 @@ local function makeRow(scroll, entry)
     count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
     if count.label then count.label:SetJustifyH("RIGHT") end
 
-    local function onClick(_, _, button)
-        if button == "RightButton" then
-            openRowMenu(name.frame, entry)
-        elseif IsShiftKeyDown() then
+    local function onClick()
+        if IsShiftKeyDown() then
             T.AddInput:Paste(entry.originalName)
         end
     end
