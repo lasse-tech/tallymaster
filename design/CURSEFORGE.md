@@ -55,11 +55,4 @@ Count scope (per-character / account-wide), sort order, group-by-category, on-sc
 
 ## Notes & feedback
 
-Hi, I'm **Lars Gossard** — I built Tallymaster because I was tired of digging through bags and mail across a dozen alts just to answer "how many of these do I actually have?" It's still in **active alpha**, so it's evolving fast and I'd genuinely love to hear what's working, what's broken, and what you'd like to see next.
-
-Got a bug, an idea, or just want to say hi? Reach me:
-
-- **Email:** lars@lasse-tech.de
-- **GitHub** (source, issues, changelog): https://github.com/lasse-tech/tallymaster
-
-Thanks for giving Tallymaster a try — happy hoarding!
+Got a bug, an idea, or just want to say hi? Email me at lars@lasse-tech.de.
