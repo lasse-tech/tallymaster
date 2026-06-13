@@ -7,6 +7,8 @@ L["Add item, currency or collectible"] = true
 L["Type a name or ID, then press Enter"] = true
 L["Known items"] = true
 L["Search"] = true
+L["Name"] = true
+L["Count"] = true
 L["Toggle tracker"] = true
 
 -- Keybinding display names (BINDING_HEADER_* / BINDING_NAME_*)
@@ -45,7 +47,7 @@ L["Knowledge"] = true
 
 -- Empty tracker state
 L["No items tracked yet."] = true
-L["Type /tally or use the Add keybinding, then enter an item's name or ID."] = true
+L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] = true
 L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."] = true
 
 -- Messages

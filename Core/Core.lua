@@ -39,18 +39,18 @@ function Tallymaster:OnInitialize()
                 if button == "RightButton" then
                     T.Addon:OpenOptions()
                 elseif IsShiftKeyDown() then
-                    T.KnownList:Toggle()
-                elseif IsControlKeyDown() then
-                    T.AddInput:Toggle()
-                else
                     T.Tracker:Toggle()
+                elseif IsControlKeyDown() then
+                    T.KnownList:Toggle()
+                else
+                    T.AddInput:Toggle()
                 end
             end,
             OnTooltipShow = function(tt)
                 tt:AddLine(L["Tallymaster"])
-                tt:AddLine("|cffffff00Click|r " .. L["Toggle tracker"], 1, 1, 1)
-                tt:AddLine("|cffffff00Ctrl-Click|r " .. L["Add item, currency or collectible"], 1, 1, 1)
-                tt:AddLine("|cffffff00Shift-Click|r " .. L["Known items"], 1, 1, 1)
+                tt:AddLine("|cffffff00Click|r " .. L["Add item, currency or collectible"], 1, 1, 1)
+                tt:AddLine("|cffffff00Shift-Click|r " .. L["Toggle tracker"], 1, 1, 1)
+                tt:AddLine("|cffffff00Ctrl-Click|r " .. L["Known items"], 1, 1, 1)
                 tt:AddLine("|cffffff00Right-Click|r Options", 1, 1, 1)
             end,
         })

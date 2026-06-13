@@ -5,6 +5,27 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.20-alpha] - 2026-06-13
+
+### Added
+- The Known items window now has two columns (icon+name | count) with clickable
+  column headers: click "Name" or "Count" to sort by it, click again to reverse.
+  Name defaults to A→Z, Count to highest-first; the active header shows an arrow.
+
+## [0.1.19-alpha] - 2026-06-13
+
+### Changed
+- Minimap icon clicks rearranged: left-click opens the Add window, Shift-click
+  toggles the tracker, Ctrl-click opens Known items, Right-click opens Options.
+  Tooltip updated; the empty-tracker hint again lists the minimap as an add method.
+
+## [0.1.18-alpha] - 2026-06-13
+
+### Added
+- Click the tracker's background/title to open the Add window; Shift+left-click
+  hides the tracker. Dragging to move is no longer mistaken for a click. (Rows
+  keep their per-entry shift-click-to-hide behaviour.)
+
 ## [0.1.17-alpha] - 2026-06-13
 
 ### Fixed

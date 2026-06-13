@@ -80,15 +80,20 @@ function Tracker:Initialize()
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", frame.StartMoving)
-    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetScript("OnDragStart", function(self) self.didDrag = true; self:StartMoving() end)
+    frame:SetScript("OnDragStop", function(self) self:StopMovingOrSizing() end)
     frame:SetClampedToScreen(true)
 
-    -- Shift-click the tracker itself (background/title) to hide it. Rows keep their
-    -- own shift-click behaviour (hide that single entry).
+    -- Click the tracker background/title: left-click opens the Add window,
+    -- Shift+left-click hides the tracker. A drag (move) is not treated as a click.
+    -- Rows keep their own shift-click behaviour (hide that single entry).
     frame:SetScript("OnMouseUp", function(self, button)
-        if button == "LeftButton" and IsShiftKeyDown() then
+        if button ~= "LeftButton" then return end
+        if self.didDrag then self.didDrag = false; return end
+        if IsShiftKeyDown() then
             self:Hide()
+        else
+            T.AddInput:Toggle()
         end
     end)
     frame:SetBackdrop({
@@ -114,7 +119,7 @@ function Tracker:Initialize()
     frame.empty:SetJustifyH("LEFT")
     frame.empty:SetSpacing(3)
     frame.empty:SetText(L["No items tracked yet."] .. "\n\n"
-        .. L["Type /tally or use the Add keybinding, then enter an item's name or ID."] .. "\n\n"
+        .. L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] .. "\n\n"
         .. L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."])
     frame.empty:Hide()
 
