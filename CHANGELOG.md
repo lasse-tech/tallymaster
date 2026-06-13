@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.11-alpha] - 2026-06-13
+
+### Added
+- Settings option "Show counts in tooltip" (default on) to show/hide the
+  per-character count breakdown within the tracker tooltip, independently of the
+  tooltip itself.
+
 ## [0.2.10-alpha] - 2026-06-13
 
 ### Fixed

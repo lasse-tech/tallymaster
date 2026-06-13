@@ -57,9 +57,12 @@ local function styleRow(row)
         else
             GameTooltip:SetText(DB:DisplayName(entry))
         end
-        -- Per-character counts grouped by realm, plus the total. Always shown
-        -- (independent of the personal/account-wide display scope).
-        local order, realms = DB:AccountBreakdownByRealm(entry.key)
+        -- Per-character counts grouped by realm, plus the total. Shown regardless
+        -- of the personal/account-wide display scope, unless disabled in settings.
+        local order, realms = {}, {}
+        if DB:Profile().showTooltipCounts then
+            order, realms = DB:AccountBreakdownByRealm(entry.key)
+        end
         if #order > 0 then
             GameTooltip:AddLine(" ")
             GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)

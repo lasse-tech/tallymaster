@@ -39,6 +39,7 @@ T.dbDefaults = {
         sortMode = "alpha",    -- "alpha" | "count"
         showCategories = true, -- group the tracker by category (false = flat list)
         showTooltip = true,    -- show a tooltip when hovering a tracker row
+        showTooltipCounts = true, -- include the per-character count breakdown in it
         elvuiSkin = true,
         minimap  = { hide = false },
         -- Remembered tracker position; TOPLEFT-anchored so it resizes downward.
