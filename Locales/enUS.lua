@@ -50,7 +50,6 @@ L["Group by category"] = true
 L["When off, the tracker shows a single flat list instead of category groups."] = true
 L["Show item tooltip"] = true
 L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."] = true
-L["Account-wide"] = true
 L["Show minimap button"] = true
 L["Allow ElvUI to skin this addon"] = true
 L["Requires a /reload to take effect."] = true

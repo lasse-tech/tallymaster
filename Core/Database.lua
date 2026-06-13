@@ -151,18 +151,29 @@ function DB:SumAccountCount(key)
     return total
 end
 
--- Per-character contributions for an entry, highest first (for the tooltip).
-function DB:AccountBreakdown(key)
-    local list = {}
+-- Per-character contributions for an entry, grouped by realm (for the tooltip).
+-- Char keys are "Name-Realm"; we split on the first '-' (character names have no
+-- hyphen). Returns a realm-sorted list and a map realm -> {name, count} (count desc).
+function DB:AccountBreakdownByRealm(key)
+    local realms, order = {}, {}
     for charKey, counts in pairs(self:Global().charCounts) do
         local n = counts[key]
-        if n and n > 0 then list[#list + 1] = { char = charKey, count = n } end
+        if n and n > 0 then
+            local name, realm = charKey:match("^(.-)%-(.+)$")
+            name = name or charKey
+            realm = realm or "?"
+            if not realms[realm] then realms[realm] = {}; order[#order + 1] = realm end
+            table.insert(realms[realm], { name = name, count = n })
+        end
     end
-    table.sort(list, function(a, b)
-        if a.count ~= b.count then return a.count > b.count end
-        return a.char < b.char
-    end)
-    return list
+    table.sort(order)
+    for _, list in pairs(realms) do
+        table.sort(list, function(a, b)
+            if a.count ~= b.count then return a.count > b.count end
+            return a.name < b.name
+        end)
+    end
+    return order, realms
 end
 
 -- One-time repair: an earlier bug stored numeric classIDs (e.g. 0) as the

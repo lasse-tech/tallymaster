@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.8-alpha] - 2026-06-13
+
+### Changed
+- Account-wide tooltip: the header is now the addon name ("Tallymaster") instead of
+  "Account-wide", and characters are grouped under realm headers with the realm
+  stripped from each character name.
+
 ## [0.2.7-alpha] - 2026-06-13
 
 ### Added
