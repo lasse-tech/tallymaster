@@ -97,6 +97,9 @@ function Tallymaster:RefreshTracker()
     refreshPending = true
     C_Timer.After(0.1, function()
         refreshPending = false
+        -- Refresh this character's contribution to the account-wide totals for
+        -- every known entry before redrawing.
+        if T.Counting and T.Counting.StashAll then T.Counting:StashAll() end
         if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh() end
     end)
 end

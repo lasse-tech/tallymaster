@@ -5,6 +5,14 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.5-alpha] - 2026-06-13
+
+### Fixed
+- Account-wide counting now works. Each character records its count for every
+  known entry on refresh (not only the items it is itself tracking), so the
+  account-wide total includes all characters. Previously a character only
+  contributed for items visible on its own tracker, so the sum omitted others.
+
 ## [0.2.4-alpha] - 2026-06-13
 
 ### Added

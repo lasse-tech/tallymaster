@@ -146,6 +146,16 @@ function Counting:DisplayCount(entry)
     return live
 end
 
+-- Record THIS character's count for EVERY known entry, not just the ones it is
+-- currently tracking. Without this, a character only contributes to the
+-- account-wide total for items it happens to have visible on its own tracker, so
+-- account-wide sums silently omit characters that aren't tracking that item.
+function Counting:StashAll()
+    for key, entry in pairs(DB:Global().entries) do
+        DB:StashCount(key, self:LiveCount(entry))
+    end
+end
+
 -- ---- events ----------------------------------------------------------------
 
 function Counting:Enable()
