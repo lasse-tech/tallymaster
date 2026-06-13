@@ -93,7 +93,7 @@ local function makeRow(scroll, entry)
 
     local function onClick()
         if IsShiftKeyDown() then
-            T.AddInput:Paste(entry.originalName)
+            T.AddInput:Paste(entry)
         end
     end
     name:SetCallback("OnClick", onClick)

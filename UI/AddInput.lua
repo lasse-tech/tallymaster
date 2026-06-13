@@ -342,15 +342,31 @@ function AddInput:Create()
     frame:Hide()
 end
 
--- Used by the known-items list "shift-click to paste".
-function AddInput:Paste(text)
+-- Used by the known-items list "shift-click to paste". Accepts either a plain
+-- name string (typed flow) or an existing entry table (from the Known items list).
+-- Passing the entry avoids a name lookup, which would fail for items not cached
+-- this session even though the entry already exists.
+function AddInput:Paste(entryOrName)
     self:Create()
     frame:Show()
     frame:Raise() -- bring to front (e.g. above the Known items window)
-    frame.edit:SetText(text or "")
+    local isEntry = type(entryOrName) == "table"
+    local name = (isEntry and entryOrName.originalName) or entryOrName or ""
+    frame.edit:SetText(name)
     frame.edit:SetFocus()
     frame.edit:HighlightText()
-    self:Preview(T.Resolve:Query(text or ""))
+    if isEntry then
+        self:Preview({ status = "ok", entry = entryOrName })
+        -- Ensure the known entry is used on submit regardless of its type, and
+        -- reflect its stored quality setting (rather than the add-time default).
+        frame.pending = entryOrName
+        frame.pendingText = name
+        if entryOrName.craftingQuality and frame.respect then
+            frame.respect:SetChecked(entryOrName.respectQuality and true or false)
+        end
+    else
+        self:Preview(T.Resolve:Query(name))
+    end
 end
 
 function AddInput:Toggle()

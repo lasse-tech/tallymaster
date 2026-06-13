@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.16-alpha] - 2026-06-13
+
+### Fixed
+- Shift-clicking a row in the Known items list failed with "Could not find ..." for
+  items not cached this session, because it re-resolved by name. It now passes the
+  existing entry straight through (no name lookup), preserving its quality setting.
+
 ## [0.2.15-alpha] - 2026-06-13
 
 ### Fixed
