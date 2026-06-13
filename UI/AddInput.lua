@@ -107,16 +107,24 @@ local function greyLabel(label, value)
     return "|cff808080" .. label .. ":|r " .. value
 end
 
--- Coin icons default to 14px, which sits too large/low next to the small details
--- font; size them to the font height so they line up.
-local DETAIL_FONT_HEIGHT = math.floor((select(2, _G.GameFontHighlightSmall:GetFont())) or 12)
+-- Coin string with line-height icons. The ":0" size makes WoW scale each icon to
+-- the font's line height and vertically centre it on the text, so they line up
+-- with the digits. (GetCoinTextureString uses a fixed size + zero offset that sits
+-- low next to a small font.)
+local GOLD_ICON   = "|TInterface\\MoneyFrame\\UI-GoldIcon:0|t"
+local SILVER_ICON = "|TInterface\\MoneyFrame\\UI-SilverIcon:0|t"
+local COPPER_ICON = "|TInterface\\MoneyFrame\\UI-CopperIcon:0|t"
 
 local function money(copper)
     if not copper or copper == 0 then return "—" end
-    if GetCoinTextureString then
-        return GetCoinTextureString(copper, DETAIL_FONT_HEIGHT)
-    end
-    return tostring(copper)
+    local g = math.floor(copper / 10000)
+    local s = math.floor((copper % 10000) / 100)
+    local c = copper % 100
+    local parts = {}
+    if g > 0 then parts[#parts + 1] = g .. GOLD_ICON end
+    if s > 0 then parts[#parts + 1] = s .. SILVER_ICON end
+    if c > 0 or #parts == 0 then parts[#parts + 1] = c .. COPPER_ICON end
+    return table.concat(parts, " ")
 end
 
 -- Multi-line, coloured summary of an item entry's captured details.
