@@ -19,6 +19,40 @@ T.Tracker = Tracker
 local ROW_H, HEADER_H, WIDTH, PAD = 20, 18, 220, 8
 local frame, content, rowPool, headerPool
 
+-- Shared tooltip for a tracked entry, used by the tracker rows and the Known items
+-- list. Respects the "show tooltip" / "show counts in tooltip" settings.
+function T.ShowEntryTooltip(owner, entry)
+    if not DB:Profile().showTooltip or not entry then return end
+    GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    if entry.type == "item" then
+        GameTooltip:SetItemByID(entry.id)
+    elseif entry.type == "currency" then
+        GameTooltip:SetCurrencyByID(entry.id)
+    else
+        GameTooltip:SetText(DB:DisplayName(entry))
+    end
+    -- Per-character counts grouped by realm, plus the total (settings-gated, and
+    -- independent of the personal/account-wide display scope).
+    local order, realms = {}, {}
+    if DB:Profile().showTooltipCounts then
+        order, realms = DB:AccountBreakdownByRealm(entry.key)
+    end
+    if #order > 0 then
+        GameTooltip:AddLine(" ")
+        GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
+        local total = 0
+        for _, realm in ipairs(order) do
+            GameTooltip:AddLine(realm, 0.6, 0.8, 1)
+            for _, c in ipairs(realms[realm]) do
+                GameTooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
+                total = total + c.count
+            end
+        end
+        GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
+    end
+    GameTooltip:Show()
+end
+
 local function styleRow(row)
     row:SetSize(WIDTH - PAD * 2, ROW_H)
     row.icon = row:CreateTexture(nil, "ARTWORK")
@@ -46,37 +80,7 @@ local function styleRow(row)
         end
     end)
     row:SetScript("OnEnter", function(self)
-        if not DB:Profile().showTooltip then return end
-        local entry = DB:GetEntry(self.entryKey)
-        if not entry then return end
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        if entry.type == "item" then
-            GameTooltip:SetItemByID(entry.id)
-        elseif entry.type == "currency" then
-            GameTooltip:SetCurrencyByID(entry.id)
-        else
-            GameTooltip:SetText(DB:DisplayName(entry))
-        end
-        -- Per-character counts grouped by realm, plus the total. Shown regardless
-        -- of the personal/account-wide display scope, unless disabled in settings.
-        local order, realms = {}, {}
-        if DB:Profile().showTooltipCounts then
-            order, realms = DB:AccountBreakdownByRealm(entry.key)
-        end
-        if #order > 0 then
-            GameTooltip:AddLine(" ")
-            GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
-            local total = 0
-            for _, realm in ipairs(order) do
-                GameTooltip:AddLine(realm, 0.6, 0.8, 1)
-                for _, c in ipairs(realms[realm]) do
-                    GameTooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
-                    total = total + c.count
-                end
-            end
-            GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
-        end
-        GameTooltip:Show()
+        T.ShowEntryTooltip(self, DB:GetEntry(self.entryKey))
     end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end

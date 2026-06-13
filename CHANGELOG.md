@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.12-alpha] - 2026-06-13
+
+### Added
+- Hovering an item in the Known items window now shows the same tooltip as the
+  tracker (item info + per-character count breakdown), respecting the "Show item
+  tooltip" and "Show counts in tooltip" settings. The tooltip logic is now shared.
+
 ## [0.2.11-alpha] - 2026-06-13
 
 ### Added

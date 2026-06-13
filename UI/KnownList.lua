@@ -141,6 +141,14 @@ local function makeRow(scroll, entry)
     name:SetCallback("OnClick", onClick)
     count:SetCallback("OnClick", onClick)
 
+    -- Item tooltip on hover (shared with the tracker; respects the settings).
+    local function onEnter(widget) T.ShowEntryTooltip(widget.frame, entry) end
+    local function onLeave() GameTooltip:Hide() end
+    name:SetCallback("OnEnter", onEnter)
+    name:SetCallback("OnLeave", onLeave)
+    count:SetCallback("OnEnter", onEnter)
+    count:SetCallback("OnLeave", onLeave)
+
     row:AddChild(name)
     row:AddChild(count)
     scroll:AddChild(row)
