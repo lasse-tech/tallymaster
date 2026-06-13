@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.10-alpha] - 2026-06-13
+
+### Fixed
+- Bindings.xml failed to parse (a double hyphen inside an XML comment is illegal),
+  so no keybindings registered and the section disappeared entirely. Reworded the
+  comment; the "Tallymaster" keybindings section is back.
+
 ## [0.2.9-alpha] - 2026-06-13
 
 ### Changed
