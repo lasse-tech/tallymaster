@@ -5,6 +5,12 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.9-alpha] - 2026-06-13
+
+### Changed
+- The per-character (per-realm) count breakdown in the tracker tooltip is now shown
+  regardless of the count scope, including when set to Per character.
+
 ## [0.2.8-alpha] - 2026-06-13
 
 ### Changed

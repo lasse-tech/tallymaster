@@ -57,22 +57,21 @@ local function styleRow(row)
         else
             GameTooltip:SetText(DB:DisplayName(entry))
         end
-        -- Account-wide: per-character counts grouped by realm, plus the total.
-        if DB:Profile().scope == "account" then
-            local order, realms = DB:AccountBreakdownByRealm(entry.key)
-            if #order > 0 then
-                GameTooltip:AddLine(" ")
-                GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
-                local total = 0
-                for _, realm in ipairs(order) do
-                    GameTooltip:AddLine(realm, 0.6, 0.8, 1)
-                    for _, c in ipairs(realms[realm]) do
-                        GameTooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
-                        total = total + c.count
-                    end
+        -- Per-character counts grouped by realm, plus the total. Always shown
+        -- (independent of the personal/account-wide display scope).
+        local order, realms = DB:AccountBreakdownByRealm(entry.key)
+        if #order > 0 then
+            GameTooltip:AddLine(" ")
+            GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
+            local total = 0
+            for _, realm in ipairs(order) do
+                GameTooltip:AddLine(realm, 0.6, 0.8, 1)
+                for _, c in ipairs(realms[realm]) do
+                    GameTooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
+                    total = total + c.count
                 end
-                GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
             end
+            GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
         end
         GameTooltip:Show()
     end)
