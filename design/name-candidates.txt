@@ -1,0 +1,16 @@
+Tallymaster — Name candidates
+=========================================
+Generated 2026-06-13. Pick one; check CurseForge/Wago for collisions before committing.
+
+ 1. Tallymaster    — quartermaster-ish, fits the counting theme
+ 2. Hoardwatch     — "watch your hoard"; collector vibe
+ 3. Quartermaster  — the NPC role that tracks supplies (likely name collisions)
+ 4. TroveKeeper    — trove = stash; keeper = it remembers
+ 5. ItemLedger     — clear, descriptive (likely name collisions)
+ 6. Reckoner       — "to reckon" = to count; short, punchy
+ 7. TrackPocket    — nods to Blizzard's "Track recipe" feature
+ 8. Stashboard     — stash + dashboard pun
+ 9. TallyHo        — playful, memorable, easy slash command
+10. Countinghouse  — old word for where coin/goods are tallied
+
+Top picks for marketability + clean /slash command: Tallymaster, Stashboard.

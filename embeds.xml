@@ -1,0 +1,18 @@
+<Ui xmlns="http://www.blizzard.com/wow/ui/">
+    <!--
+        Library load order. These folders are pulled by the BigWigs/CurseForge
+        packager from .pkgmeta, or dropped in manually under Libs/ for local testing.
+        If a path is missing, that library simply won't load; Tallymaster guards
+        every LibStub call so a missing optional lib degrades gracefully.
+    -->
+    <Script file="Libs\LibStub\LibStub.lua"/>
+    <Include file="Libs\CallbackHandler-1.0\CallbackHandler-1.0.xml"/>
+    <Include file="Libs\Ace3\Ace3.xml"/>
+    <Script file="Libs\LibDataBroker-1.1\LibDataBroker-1.1.lua"/>
+    <Include file="Libs\LibDBIcon-1.0\LibDBIcon-1.0.lua"/>
+    <!--
+        LibElvUIPlugin-1.0 is intentionally NOT embedded. It requires ElvUI to load,
+        and ElvUI registers it with LibStub itself. Skin\ElvUI.lua picks it up via
+        LibStub("LibElvUIPlugin-1.0", true) when ElvUI is present, and no-ops otherwise.
+    -->
+</Ui>

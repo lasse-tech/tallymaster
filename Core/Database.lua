@@ -1,0 +1,144 @@
+local ADDON, T = ...
+
+--[[
+    Storage model
+    -------------
+    Entry definitions, custom names and categories are ACCOUNT-WIDE (db.global),
+    even when counts are shown per character. Which entries are currently shown
+    on the on-screen tracker is PER CHARACTER (db.char.visible).
+
+    Entry key: "<type>:<id>"  e.g. "item:6948", "currency:1166".
+
+    entry = {
+        key          = "item:6948",
+        type         = "item" | "currency" | "mount" | "pet" | "transmog" | "knowledge",
+        id           = 6948,
+        originalName = "Hearthstone",   -- immutable, captured at add time
+        customName   = nil,             -- user override; nil = use original
+        category     = "Other",         -- account-wide; nil/"" => Uncategorized
+        icon         = 134414,          -- fileID for display
+    }
+]]
+
+T.dbDefaults = {
+    profile = {
+        scope    = "char",     -- "char" | "account"
+        sortMode = "alpha",    -- "alpha" | "count"
+        elvuiSkin = true,
+        minimap  = { hide = false },
+    },
+    global = {
+        entries        = {},   -- [key] = entry
+        categoryFold   = {},   -- [categoryName] = true (folded)
+        customCategories = {}, -- [name] = true (user-created categories, for the picker)
+        charCounts     = {},   -- [charKey] = { [entryKey] = number }  (for account-wide sum)
+    },
+    char = {
+        visible = {},          -- [key] = true  (shown on the on-screen tracker)
+    },
+}
+
+local DB = {}
+T.DB = DB
+
+function DB:Get()        return T.Addon.db end
+function DB:Profile()    return T.Addon.db.profile end
+function DB:Global()     return T.Addon.db.global end
+function DB:Char()       return T.Addon.db.char end
+
+function DB:CharKey()
+    local name = UnitName("player")
+    local realm = GetRealmName()
+    return (name or "?") .. "-" .. (realm or "?")
+end
+
+function DB:MakeKey(entryType, id)
+    return entryType .. ":" .. tostring(id)
+end
+
+function DB:GetEntry(key)
+    return self:Global().entries[key]
+end
+
+function DB:AddEntry(entry)
+    self:Global().entries[entry.key] = entry
+    return entry
+end
+
+function DB:DeleteEntry(key)
+    self:Global().entries[key] = nil
+    self:Char().visible[key] = nil
+    for _, counts in pairs(self:Global().charCounts) do
+        counts[key] = nil
+    end
+end
+
+-- Visible = shown on the on-screen tracker (per character)
+function DB:IsVisible(key) return self:Char().visible[key] == true end
+function DB:SetVisible(key, visible)
+    self:Char().visible[key] = visible and true or nil
+end
+
+-- Display name: custom if set, else original
+function DB:DisplayName(entry)
+    if entry.customName and entry.customName ~= "" then
+        return entry.customName
+    end
+    return entry.originalName
+end
+
+-- Effective category: "" / nil => Uncategorized bucket
+function DB:EffectiveCategory(entry)
+    if entry.category and entry.category ~= "" then
+        return entry.category
+    end
+    return T.UNCATEGORIZED
+end
+
+function DB:IsFolded(category) return self:Global().categoryFold[category] == true end
+function DB:ToggleFold(category)
+    local g = self:Global()
+    g.categoryFold[category] = (not g.categoryFold[category]) or nil
+end
+
+-- Account-wide count cache (used when scope == "account")
+function DB:StashCount(key, count)
+    local g = self:Global()
+    local ck = self:CharKey()
+    g.charCounts[ck] = g.charCounts[ck] or {}
+    g.charCounts[ck][key] = count
+end
+
+function DB:SumAccountCount(key)
+    local total = 0
+    for _, counts in pairs(self:Global().charCounts) do
+        total = total + (counts[key] or 0)
+    end
+    return total
+end
+
+-- One-time repair: an earlier bug stored numeric classIDs (e.g. 0) as the
+-- category for item entries. Re-derive a proper string category for any entry
+-- whose stored category isn't a non-empty string.
+function DB:RepairCategories()
+    for _, entry in pairs(self:Global().entries) do
+        local c = entry.category
+        if c ~= nil and (type(c) ~= "string" or tonumber(c) ~= nil) then
+            entry.category = T.Categories:Auto(entry.type, entry.id)
+        end
+    end
+end
+
+-- All known categories: auto-derived from entries + user-created, sorted
+function DB:AllCategories()
+    local seen, list = {}, {}
+    for _, entry in pairs(self:Global().entries) do
+        local c = self:EffectiveCategory(entry)
+        if not seen[c] then seen[c] = true; list[#list+1] = c end
+    end
+    for name in pairs(self:Global().customCategories) do
+        if not seen[name] then seen[name] = true; list[#list+1] = name end
+    end
+    table.sort(list)
+    return list
+end

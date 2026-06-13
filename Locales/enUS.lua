@@ -1,0 +1,55 @@
+local ADDON = ...
+local L = LibStub("AceLocale-3.0"):NewLocale(ADDON, "enUS", true, true)
+if not L then return end
+
+L["Tallymaster"] = true
+L["Add item, currency or collectible"] = true
+L["Type a name or ID, then press Enter"] = true
+L["Known items"] = true
+L["Search"] = true
+L["Toggle tracker"] = true
+
+-- Keybinding display names (BINDING_HEADER_* / BINDING_NAME_*)
+L["Open Add window"] = true
+L["Toggle known items"] = true
+L["All categories"] = true
+L["Uncategorized"] = true
+L["Delete"] = true
+L["Rename"] = true
+L["Rename %s"] = true
+L["Enter a new display name (leave empty to reset)"] = true
+
+-- Ambiguous ID resolution
+L["The ID %d matches both an item and a currency. Which do you mean?"] = true
+L["Item"] = true
+L["Currency"] = true
+
+-- Options
+L["Count scope"] = true
+L["Where item counts are summed from."] = true
+L["Per character"] = true
+L["Account-wide (all characters)"] = true
+L["Sort order"] = true
+L["Alphabetical"] = true
+L["By count"] = true
+L["Show minimap button"] = true
+L["Allow ElvUI to skin this addon"] = true
+L["Requires a /reload to take effect."] = true
+
+-- Type labels (used as default categories for non-item types)
+L["Currencies"] = true
+L["Mounts"] = true
+L["Transmog"] = true
+L["Battle Pets"] = true
+L["Knowledge"] = true
+
+-- Empty tracker state
+L["No items tracked yet."] = true
+L["Type /tally or use the Add keybinding, then enter an item's name or ID."] = true
+L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."] = true
+
+-- Messages
+L["Could not find anything matching '%s'."] = true
+L["Already tracking %s."] = true
+L["Now tracking %s."] = true
+L["Still loading data for that ID — try again in a moment."] = true

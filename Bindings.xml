@@ -1,0 +1,11 @@
+<Bindings>
+    <Binding name="TALLYMASTER_OPEN_ADD" header="TALLYMASTER">
+        Tallymaster_Binding("add")
+    </Binding>
+    <Binding name="TALLYMASTER_TOGGLE_TRACKER">
+        Tallymaster_Binding("tracker")
+    </Binding>
+    <Binding name="TALLYMASTER_TOGGLE_KNOWN">
+        Tallymaster_Binding("known")
+    </Binding>
+</Bindings>

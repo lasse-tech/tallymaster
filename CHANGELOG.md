@@ -1,0 +1,139 @@
+# Changelog
+
+All notable changes to Tallymaster are documented in this file.
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+
+## [0.1.17-alpha] - 2026-06-13
+
+### Fixed
+- Key Bindings UI showed raw tokens (HEADER_TALLYMASTER, TALLYMASTER_OPEN_ADD, ...).
+  Defined the `BINDING_HEADER_TALLYMASTER` and `BINDING_NAME_*` globals so the header
+  and each action show readable, localized names ("Tallymaster", "Open Add window",
+  "Toggle tracker", "Toggle known items").
+
+## [0.1.16-alpha] - 2026-06-13
+
+### Fixed
+- Item categories were stored as a numeric classID instead of the type name
+  (e.g. a Consumable showed up under category "0"). `Categories:Auto` now reads the
+  2nd return of `GetItemInfoInstant` (itemType) rather than the 6th (classID).
+- Added `DB:RepairCategories()` (run on enable) to re-derive proper categories for
+  entries already saved with a numeric category from the old bug.
+
+## [0.1.15-alpha] - 2026-06-13
+
+### Fixed
+- Shift-clicking an item while the Add window is open no longer pops up the
+  stack-split amount picker; it just copies the name (StackSplitFrame is suppressed
+  while the Add window is shown).
+
+## [0.1.14-alpha] - 2026-06-13
+
+### Changed
+- The minimap icon's left-click now toggles the on-screen tracker (was: open Add
+  window). Add moved to Ctrl-click; Shift-click (Known items) and Right-click
+  (Options) are unchanged. Tooltip updated accordingly. The empty-tracker hint no
+  longer lists the minimap as an add method.
+
+## [0.1.13-alpha] - 2026-06-13
+
+### Added
+- Shift-clicking the tracker's background/title now hides the whole tracker. (Rows
+  keep their existing shift-click behaviour of hiding that single entry.)
+
+## [0.1.12-alpha] - 2026-06-13
+
+### Changed
+- The empty-tracker hint now also tells the user that, with the Add window open,
+  Shift-clicking an item in their bags copies its name into the input box.
+
+## [0.1.11-alpha] - 2026-06-13
+
+### Changed
+- The empty-tracker hint now also mentions clicking the minimap icon as a way to
+  open the Add window, alongside /tally and the Add keybinding.
+
+## [0.1.10-alpha] - 2026-06-13
+
+### Fixed
+- Reworked Add-window focus handling (the 0.1.9 Escape approach didn't release the
+  keyboard). Root cause was `SetAutoFocus(true)`, which kept re-grabbing the
+  keyboard. Now: auto-focus is off (the box is focused explicitly on open for
+  immediate typing); clicking anywhere outside the window releases keyboard focus so
+  game keybinds like opening bags work again (via `GLOBAL_MOUSE_DOWN`); and Escape
+  closes the window. Also start the frame hidden so the first toggle opens it.
+
+## [0.1.9-alpha] - 2026-06-13
+
+### Changed
+- The Add window no longer holds the keyboard hostage. It still auto-focuses for
+  immediate typing, but pressing Escape now releases keyboard focus (so game
+  keybinds like opening bags work again) while keeping the window open; a second
+  Escape closes it (registered via `UISpecialFrames`).
+
+## [0.1.8-alpha] - 2026-06-13
+
+### Added
+- The tracker now shows a how-to-add hint ("No items tracked yet. Type /tally or use
+  the Add keybinding...") instead of an empty list when nothing is tracked yet.
+
+## [0.1.7-alpha] - 2026-06-13
+
+### Added
+- Shift-clicking an item or currency while the Add window is open now pastes that
+  item's name into the input field (via a `HandleModifiedItemClick` hook).
+
+## [0.1.6-alpha] - 2026-06-13
+
+### Changed
+- Enlarged the Add window and moved the instruction text into the input box as a
+  proper placeholder, so it is no longer clipped/unreadable. The placeholder hides
+  as soon as you start typing.
+
+## [0.1.5-alpha] - 2026-06-13
+
+### Fixed
+- Fixed `Binding header TALLYMASTER was attempted to be loaded more than once`. The
+  `header` attribute defines a Key Bindings UI header row and belongs only on the
+  first binding of a group; it is now declared once on `TALLYMASTER_OPEN_ADD` and
+  removed from the other two bindings in `Bindings.xml`.
+
+## [0.1.4-alpha] - 2026-06-13
+
+### Fixed
+- Stopped embedding `LibElvUIPlugin-1.0`, which raised an `Error loading ... 
+  LibElvUIPlugin-1.0.lua` whenever ElvUI was absent (the library requires ElvUI to
+  load). It is now removed from `embeds.xml` and `.pkgmeta`. `Skin/ElvUI.lua` already
+  resolves it at runtime via `LibStub("LibElvUIPlugin-1.0", true)` — which ElvUI
+  registers itself when installed — and no-ops gracefully when ElvUI is absent.
+
+## [0.1.3-alpha] - 2026-06-13
+
+### Fixed
+- Removed the obsolete `PLAYERREAGENTBANKSLOTS_CHANGED` event registration in
+  `Core/Counting.lua`. That event was removed in patch 11.2 when the standalone
+  Reagent Bank was replaced by tabbed banks, causing Ace3 to error on registration.
+  Reagent items now live in regular bank tabs, whose updates are still caught by the
+  existing `BAG_UPDATE_DELAYED` and `PLAYERBANKSLOTS_CHANGED` handlers.
+
+## [0.1.2-alpha] - 2026-06-13
+
+### Fixed
+- Fixed keybinding actions throwing `unexpected symbol near '/'`. Binding bodies in
+  `Bindings.xml` run as raw Lua, so the `/run` chat-command prefix was invalid;
+  the bindings now call `Tallymaster_Binding(...)` directly.
+
+## [0.1.1-alpha] - 2026-06-13
+
+### Fixed
+- Removed the unrecognized `category` XML attribute from `Bindings.xml`, which raised
+  `Unrecognized XML attribute: category` (and a cascading `Unrecognized XML: Binding`)
+  warnings on load. Bindings are grouped via the `header` attribute instead.
+
+## [0.1.0-alpha]
+
+### Added
+- Initial alpha release: live on-screen tracker for items, currencies and
+  collectibles, grouped by category.

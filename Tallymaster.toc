@@ -1,0 +1,37 @@
+## Interface: 120000
+## Title: Tallymaster
+## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
+## Author: gossardla
+## Version: 0.1.17-alpha
+## SavedVariables: TallymasterDB
+## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
+## X-Curse-Project-ID:
+## X-Wago-ID:
+
+# NOTE: Interface 120000 targets WoW Midnight (12.0). Bump to the exact build
+#       (e.g. 120000 -> 12000x) when the live patch number is known.
+
+# Libraries (populated by the packager via .pkgmeta, or dropped in manually for local dev)
+embeds.xml
+
+# Localization
+Locales\enUS.lua
+
+# Core
+Core\Database.lua
+Core\Core.lua
+Core\Categories.lua
+Core\Resolve.lua
+Core\Counting.lua
+
+# UI
+UI\Tracker.lua
+UI\AddInput.lua
+UI\KnownList.lua
+UI\Options.lua
+
+# ElvUI integration (no-op if ElvUI absent)
+Skin\ElvUI.lua
+
+# Keybindings
+Bindings.xml

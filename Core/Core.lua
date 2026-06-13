@@ -1,0 +1,113 @@
+local ADDON, T = ...
+
+local AceAddon = LibStub("AceAddon-3.0")
+local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
+T.L = L
+
+-- Shared constant: bucket name for entries without a category.
+T.UNCATEGORIZED = L["Uncategorized"]
+
+-- Keybinding display names. WoW renders the Key Bindings UI from these globals:
+-- the header from BINDING_HEADER_<header> and each action from BINDING_NAME_<name>
+-- (matching header/name in Bindings.xml). Without them the UI shows raw tokens.
+_G.BINDING_HEADER_TALLYMASTER             = L["Tallymaster"]
+_G.BINDING_NAME_TALLYMASTER_OPEN_ADD      = L["Open Add window"]
+_G.BINDING_NAME_TALLYMASTER_TOGGLE_TRACKER = L["Toggle tracker"]
+_G.BINDING_NAME_TALLYMASTER_TOGGLE_KNOWN  = L["Toggle known items"]
+
+local Tallymaster = AceAddon:NewAddon(ADDON, "AceConsole-3.0", "AceEvent-3.0")
+T.Addon = Tallymaster
+
+local PLACEHOLDER_ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
+local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_Bag_10" -- used until Media\Satchel.blp exists
+
+function Tallymaster:OnInitialize()
+    self.db = LibStub("AceDB-3.0"):New("TallymasterDB", T.dbDefaults, true)
+
+    -- Options panel
+    if T.SetupOptions then T.SetupOptions() end
+
+    -- Minimap launcher (LibDataBroker + LibDBIcon), both optional
+    local LDB = LibStub("LibDataBroker-1.1", true)
+    local LDBIcon = LibStub("LibDBIcon-1.0", true)
+    if LDB then
+        self.launcher = LDB:NewDataObject(ADDON, {
+            type = "launcher",
+            text = L["Tallymaster"],
+            icon = FALLBACK_ICON, -- TODO: switch to PLACEHOLDER_ICON once Media\Satchel.blp ships
+            OnClick = function(_, button)
+                if button == "RightButton" then
+                    T.Addon:OpenOptions()
+                elseif IsShiftKeyDown() then
+                    T.KnownList:Toggle()
+                elseif IsControlKeyDown() then
+                    T.AddInput:Toggle()
+                else
+                    T.Tracker:Toggle()
+                end
+            end,
+            OnTooltipShow = function(tt)
+                tt:AddLine(L["Tallymaster"])
+                tt:AddLine("|cffffff00Click|r " .. L["Toggle tracker"], 1, 1, 1)
+                tt:AddLine("|cffffff00Ctrl-Click|r " .. L["Add item, currency or collectible"], 1, 1, 1)
+                tt:AddLine("|cffffff00Shift-Click|r " .. L["Known items"], 1, 1, 1)
+                tt:AddLine("|cffffff00Right-Click|r Options", 1, 1, 1)
+            end,
+        })
+        if LDBIcon then
+            LDBIcon:Register(ADDON, self.launcher, self.db.profile.minimap)
+        end
+    end
+
+    -- Slash commands
+    self:RegisterChatCommand("tally", "HandleSlash")
+    self:RegisterChatCommand("tallymaster", "HandleSlash")
+end
+
+function Tallymaster:OnEnable()
+    if T.DB and T.DB.RepairCategories then T.DB:RepairCategories() end
+    if T.Counting and T.Counting.Enable then T.Counting:Enable() end
+    if T.Tracker and T.Tracker.Initialize then T.Tracker:Initialize() end
+    if T.SkinElvUI then T.SkinElvUI() end
+    self:RefreshTracker()
+end
+
+function Tallymaster:HandleSlash(input)
+    input = (input or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
+    if input == "known" or input == "list" then
+        T.KnownList:Toggle()
+    elseif input == "config" or input == "options" then
+        self:OpenOptions()
+    elseif input == "show" or input == "tracker" then
+        T.Tracker:Toggle()
+    else
+        T.AddInput:Toggle()
+    end
+end
+
+function Tallymaster:OpenOptions()
+    local ACD = LibStub("AceConfigDialog-3.0", true)
+    if ACD then ACD:Open(ADDON) end
+end
+
+-- Central "something changed, redraw the tracker" entry point (throttled)
+local refreshPending = false
+function Tallymaster:RefreshTracker()
+    if refreshPending then return end
+    refreshPending = true
+    C_Timer.After(0.1, function()
+        refreshPending = false
+        if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh() end
+    end)
+end
+
+-- Keybinding entry point (see Bindings.xml)
+function Tallymaster_Binding(which)
+    if which == "add" then
+        T.AddInput:Toggle()
+    elseif which == "tracker" then
+        T.Tracker:Toggle()
+    elseif which == "known" then
+        T.KnownList:Toggle()
+    end
+end
