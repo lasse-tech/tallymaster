@@ -5,6 +5,12 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.15-alpha] - 2026-06-13
+
+### Fixed
+- The Add window opened behind the Known items window when shift-clicking a row to
+  paste. It now uses the same FULLSCREEN_DIALOG strata and is raised on open.
+
 ## [0.2.14-alpha] - 2026-06-13
 
 ### Added
