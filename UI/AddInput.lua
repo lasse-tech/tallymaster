@@ -61,11 +61,23 @@ function AddInput:Submit(text)
     end
 end
 
+-- Strip inline escape sequences WoW embeds in link text: atlas markup (crafting
+-- quality stars |A...|a), textures (|T...|t) and colour codes (|c.../|r). Without
+-- this, a shift-clicked quality item pastes e.g. "Name |A:...Tier3...|a" which no
+-- name lookup can match.
+local function stripEscapes(s)
+    if not s then return s end
+    s = s:gsub("|A.-|a", "")
+    s = s:gsub("|T.-|t", "")
+    s = s:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", "")
+    return (s:gsub("^%s+", ""):gsub("%s+$", ""))
+end
+
 -- Pull a readable display name out of a shift-clicked hyperlink, e.g.
 -- "...|h[Greater Storm Sigil]|h..." -> "Greater Storm Sigil".
 local function linkToName(link)
     if not link then return nil end
-    return link:match("|h%[(.-)%]|h") or link:match("%[(.-)%]")
+    return stripEscapes(link:match("|h%[(.-)%]|h") or link:match("%[(.-)%]"))
 end
 
 function AddInput:Create()

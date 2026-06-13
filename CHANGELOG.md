@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.21-alpha] - 2026-06-13
+
+### Fixed
+- Shift-clicking an item with a crafting quality (Tier 1-3 stars) pasted the inline
+  atlas markup into the box, so the item couldn't be resolved. The pasted name now
+  strips inline escapes (atlas |A..|a, textures |T..|t, colour codes).
+
 ## [0.1.20-alpha] - 2026-06-13
 
 ### Added
