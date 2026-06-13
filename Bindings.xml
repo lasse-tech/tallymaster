@@ -1,11 +1,18 @@
 <Bindings>
-    <Binding name="TALLYMASTER_OPEN_ADD" header="TALLYMASTER">
+    <!--
+        `category` puts these bindings in their own section in the Key Bindings UI
+        (resolved to the localized name via _G.BINDING_CATEGORY_TALLYMASTER, set in
+        Core.lua). The XML schema validator flags `category` as unrecognized -- a
+        cosmetic warning shared by every addon that uses it (RaiderIO, BagSync, ...);
+        the binding system still uses it.
+    -->
+    <Binding name="TALLYMASTER_OPEN_ADD" category="BINDING_CATEGORY_TALLYMASTER">
         Tallymaster_Binding("add")
     </Binding>
-    <Binding name="TALLYMASTER_TOGGLE_TRACKER">
+    <Binding name="TALLYMASTER_TOGGLE_TRACKER" category="BINDING_CATEGORY_TALLYMASTER">
         Tallymaster_Binding("tracker")
     </Binding>
-    <Binding name="TALLYMASTER_TOGGLE_KNOWN">
+    <Binding name="TALLYMASTER_TOGGLE_KNOWN" category="BINDING_CATEGORY_TALLYMASTER">
         Tallymaster_Binding("known")
     </Binding>
 </Bindings>

@@ -8,12 +8,13 @@ T.L = L
 T.UNCATEGORIZED = L["Uncategorized"]
 
 -- Keybinding display names. WoW renders the Key Bindings UI from these globals:
--- the header from BINDING_HEADER_<header> and each action from BINDING_NAME_<name>
--- (matching header/name in Bindings.xml). Without them the UI shows raw tokens.
-_G.BINDING_HEADER_TALLYMASTER             = L["Tallymaster"]
-_G.BINDING_NAME_TALLYMASTER_OPEN_ADD      = L["Open Add window"]
+-- the section from BINDING_CATEGORY_<category> and each action from
+-- BINDING_NAME_<name> (matching category/name in Bindings.xml). Without them the
+-- UI shows raw tokens / dumps the bindings under "Other".
+_G.BINDING_CATEGORY_TALLYMASTER            = L["Tallymaster"]
+_G.BINDING_NAME_TALLYMASTER_OPEN_ADD       = L["Open Add window"]
 _G.BINDING_NAME_TALLYMASTER_TOGGLE_TRACKER = L["Toggle tracker"]
-_G.BINDING_NAME_TALLYMASTER_TOGGLE_KNOWN  = L["Toggle known items"]
+_G.BINDING_NAME_TALLYMASTER_TOGGLE_KNOWN   = L["Toggle known items"]
 
 local Tallymaster = AceAddon:NewAddon(ADDON, "AceConsole-3.0", "AceEvent-3.0")
 T.Addon = Tallymaster

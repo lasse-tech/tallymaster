@@ -43,8 +43,14 @@ function T.SetupOptions()
                 desc = L["When off, the tracker shows a single flat list instead of category groups."],
                 get = get, set = set,
             },
-            minimapToggle = {
+            showTooltip = {
                 type = "toggle", order = 4,
+                name = L["Show item tooltip"],
+                desc = L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."],
+                get = get, set = set,
+            },
+            minimapToggle = {
+                type = "toggle", order = 5,
                 name = L["Show minimap button"],
                 get = function() return not DB:Profile().minimap.hide end,
                 set = function(_, value)
@@ -56,7 +62,7 @@ function T.SetupOptions()
                 end,
             },
             elvuiSkin = {
-                type = "toggle", order = 5,
+                type = "toggle", order = 6,
                 name = L["Allow ElvUI to skin this addon"],
                 desc = L["Requires a /reload to take effect."],
                 get = get, set = set,

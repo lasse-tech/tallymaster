@@ -38,6 +38,7 @@ T.dbDefaults = {
         scope    = "char",     -- "char" | "account"
         sortMode = "alpha",    -- "alpha" | "count"
         showCategories = true, -- group the tracker by category (false = flat list)
+        showTooltip = true,    -- show a tooltip when hovering a tracker row
         elvuiSkin = true,
         minimap  = { hide = false },
         -- Remembered tracker position; TOPLEFT-anchored so it resizes downward.
@@ -148,6 +149,20 @@ function DB:SumAccountCount(key)
         total = total + (counts[key] or 0)
     end
     return total
+end
+
+-- Per-character contributions for an entry, highest first (for the tooltip).
+function DB:AccountBreakdown(key)
+    local list = {}
+    for charKey, counts in pairs(self:Global().charCounts) do
+        local n = counts[key]
+        if n and n > 0 then list[#list + 1] = { char = charKey, count = n } end
+    end
+    table.sort(list, function(a, b)
+        if a.count ~= b.count then return a.count > b.count end
+        return a.char < b.char
+    end)
+    return list
 end
 
 -- One-time repair: an earlier bug stored numeric classIDs (e.g. 0) as the

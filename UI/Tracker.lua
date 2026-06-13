@@ -46,6 +46,7 @@ local function styleRow(row)
         end
     end)
     row:SetScript("OnEnter", function(self)
+        if not DB:Profile().showTooltip then return end
         local entry = DB:GetEntry(self.entryKey)
         if not entry then return end
         GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -55,6 +56,20 @@ local function styleRow(row)
             GameTooltip:SetCurrencyByID(entry.id)
         else
             GameTooltip:SetText(DB:DisplayName(entry))
+        end
+        -- Account-wide: show each character's contribution and the total.
+        if DB:Profile().scope == "account" then
+            local breakdown = DB:AccountBreakdown(entry.key)
+            if #breakdown > 0 then
+                GameTooltip:AddLine(" ")
+                GameTooltip:AddLine(L["Account-wide"], 1, 0.82, 0)
+                local total = 0
+                for _, e in ipairs(breakdown) do
+                    GameTooltip:AddDoubleLine(e.char, BreakUpLargeNumbers(e.count), 0.9, 0.9, 0.9, 1, 1, 1)
+                    total = total + e.count
+                end
+                GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
+            end
         end
         GameTooltip:Show()
     end)

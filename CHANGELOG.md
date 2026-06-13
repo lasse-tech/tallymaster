@@ -5,6 +5,23 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.7-alpha] - 2026-06-13
+
+### Added
+- Tracker tooltips now list each character's count and the total when the count
+  scope is Account-wide.
+- Settings option "Show item tooltip" (default on) to enable/disable the tracker
+  hover tooltip.
+
+## [0.2.6-alpha] - 2026-06-13
+
+### Fixed
+- Keybindings now appear in their own "Tallymaster" section of the Key Bindings UI
+  (instead of under "Other" with a stray HEADER_TALLYMASTER row). This needs the
+  `category` attribute in Bindings.xml, which re-introduces a cosmetic
+  "Unrecognized XML attribute: category" schema-validation warning — the same one
+  every addon with binding categories (RaiderIO, BagSync, ...) produces; harmless.
+
 ## [0.2.5-alpha] - 2026-06-13
 
 ### Fixed
