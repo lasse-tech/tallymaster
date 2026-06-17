@@ -28,6 +28,7 @@ end
 function T.ShowEntryTooltip(owner, entry)
     if not DB:Profile().showTooltip or not entry then return end
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
+    T._ownTooltip = true
     if entry.type == "item" then
         GameTooltip:SetItemByID(entry.id)
     elseif entry.type == "currency" then
@@ -35,6 +36,7 @@ function T.ShowEntryTooltip(owner, entry)
     else
         GameTooltip:SetText(DB:DisplayName(entry))
     end
+    T._ownTooltip = false
     if DB:Profile().showTooltipCounts then
         T.AppendCountBreakdown(GameTooltip, entry.key)
     end
@@ -44,6 +46,7 @@ end
 if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
     TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
         if tooltip ~= GameTooltip then return end
+        if T._ownTooltip then return end
         if not (T.Addon and T.Addon.db) then return end
         if not DB:Profile().gameTooltipCounts then return end
         local id = data and data.id

@@ -5,6 +5,13 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.23-alpha] - 2026-06-13
+
+### Fixed
+- The count breakdown appeared twice on the tracker/Known-items tooltip: our custom
+  tooltip sets the item, which also triggered the new game-tooltip hook. The hook now
+  skips our own tooltip calls, so the breakdown shows once.
+
 ## [0.2.22-alpha] - 2026-06-13
 
 ### Added
