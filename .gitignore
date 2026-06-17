@@ -7,6 +7,9 @@
 # Local editor / tooling state
 /.claude/
 
+# Intermediate screenshot-cropping scratch files
+/design/_crops/
+
 # OS cruft
 .DS_Store
 Thumbs.db
