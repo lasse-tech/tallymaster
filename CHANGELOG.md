@@ -5,6 +5,15 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.22-alpha] - 2026-06-13
+
+### Added
+- The per-character (per-realm) count breakdown now also appears on the standard
+  game item tooltip (hovering an item in bags, etc.) for tracked items, so you can
+  see how many you have across all characters without opening the addon. New setting
+  "Show counts on item tooltips" (default on). The tracker/Known-items tooltip and
+  this one now share the same breakdown code.
+
 ## [0.2.21-alpha] - 2026-06-13
 
 ### Changed

@@ -8,6 +8,23 @@ T.Tracker = Tracker
 local ROW_H, HEADER_H, WIDTH, PAD = 20, 18, 220, 8
 local frame, content, rowPool, headerPool
 
+function T.AppendCountBreakdown(tooltip, key)
+    local order, realms = DB:AccountBreakdownByRealm(key)
+    if #order == 0 then return false end
+    tooltip:AddLine(" ")
+    tooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
+    local total = 0
+    for _, realm in ipairs(order) do
+        tooltip:AddLine(realm, 0.6, 0.8, 1)
+        for _, c in ipairs(realms[realm]) do
+            tooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
+            total = total + c.count
+        end
+    end
+    tooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
+    return true
+end
+
 function T.ShowEntryTooltip(owner, entry)
     if not DB:Profile().showTooltip or not entry then return end
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
@@ -18,24 +35,23 @@ function T.ShowEntryTooltip(owner, entry)
     else
         GameTooltip:SetText(DB:DisplayName(entry))
     end
-    local order, realms = {}, {}
     if DB:Profile().showTooltipCounts then
-        order, realms = DB:AccountBreakdownByRealm(entry.key)
-    end
-    if #order > 0 then
-        GameTooltip:AddLine(" ")
-        GameTooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
-        local total = 0
-        for _, realm in ipairs(order) do
-            GameTooltip:AddLine(realm, 0.6, 0.8, 1)
-            for _, c in ipairs(realms[realm]) do
-                GameTooltip:AddDoubleLine("  " .. c.name, BreakUpLargeNumbers(c.count), 0.9, 0.9, 0.9, 1, 1, 1)
-                total = total + c.count
-            end
-        end
-        GameTooltip:AddDoubleLine(TOTAL or "Total", BreakUpLargeNumbers(total), 1, 0.82, 0, 1, 0.82, 0)
+        T.AppendCountBreakdown(GameTooltip, entry.key)
     end
     GameTooltip:Show()
+end
+
+if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and Enum.TooltipDataType then
+    TooltipDataProcessor.AddTooltipPostCall(Enum.TooltipDataType.Item, function(tooltip, data)
+        if tooltip ~= GameTooltip then return end
+        if not (T.Addon and T.Addon.db) then return end
+        if not DB:Profile().gameTooltipCounts then return end
+        local id = data and data.id
+        if not id then return end
+        local entry = DB:GetEntry("item:" .. id)
+        if not entry then return end
+        if T.AppendCountBreakdown(tooltip, entry.key) then tooltip:Show() end
+    end)
 end
 
 local function styleRow(row)

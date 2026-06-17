@@ -7,6 +7,7 @@ T.dbDefaults = {
         showCategories = true,
         showTooltip = true,
         showTooltipCounts = true,
+        gameTooltipCounts = true,
         elvuiSkin = true,
         minimap  = { hide = false },
         tracker  = { point = "TOPLEFT", relPoint = "TOPLEFT", x = 16, y = -220 },
