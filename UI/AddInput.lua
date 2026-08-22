@@ -293,6 +293,8 @@ function AddInput:Create()
     end
 
     frame:Hide()
+
+    if T.SkinElvUI then T.SkinElvUI() end
 end
 
 function AddInput:Paste(entryOrName)

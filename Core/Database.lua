@@ -26,6 +26,49 @@ T.dbDefaults = {
 local DB = {}
 T.DB = DB
 
+local function copyDefaults(target, defaults)
+    for key, value in pairs(defaults) do
+        if type(value) == "table" then
+            if type(target[key]) ~= "table" then target[key] = {} end
+            copyDefaults(target[key], value)
+        elseif target[key] == nil then
+            target[key] = value
+        end
+    end
+end
+
+function DB:Initialize()
+    local sv = _G.TallymasterDB
+    if type(sv) ~= "table" then
+        sv = {}
+        _G.TallymasterDB = sv
+    end
+
+    local charKey = (UnitName("player") or "?") .. " - " .. (GetRealmName() or "?")
+
+    sv.profileKeys = sv.profileKeys or {}
+    local profileKey = sv.profileKeys[charKey] or "Default"
+    sv.profileKeys[charKey] = profileKey
+
+    sv.profiles = sv.profiles or {}
+    sv.profiles[profileKey] = sv.profiles[profileKey] or {}
+    sv.global = sv.global or {}
+    sv.char = sv.char or {}
+    sv.char[charKey] = sv.char[charKey] or {}
+
+    local db = {
+        profile = sv.profiles[profileKey],
+        global  = sv.global,
+        char    = sv.char[charKey],
+    }
+    copyDefaults(db.profile, T.dbDefaults.profile)
+    copyDefaults(db.global, T.dbDefaults.global)
+    copyDefaults(db.char, T.dbDefaults.char)
+
+    T.Addon.db = db
+    return db
+end
+
 function DB:Get()        return T.Addon.db end
 function DB:Profile()    return T.Addon.db.profile end
 function DB:Global()     return T.Addon.db.global end

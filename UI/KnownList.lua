@@ -2,15 +2,20 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
-local AceGUI = LibStub("AceGUI-3.0")
 local KnownList = {}
 T.KnownList = KnownList
 
-local widget
+local FRAME_W, FRAME_H = 360, 440
+local PAD = 14
+local ROW_H = 22
+local SCROLLBAR_W = 22
+local COUNT_W = 80
+local CONTENT_W = FRAME_W - PAD * 2 - SCROLLBAR_W
+
+local frame, rowPool
 local searchText = ""
 local filterCategory = nil
 local sortKey, sortAsc = "name", true
-local NAME_W, COUNT_W = 0.72, 0.28
 
 local ARROW_UP   = "|TInterface\\Buttons\\Arrow-Up-Up:14:14|t"
 local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:14:14|t"
@@ -60,131 +65,188 @@ local function setSort(key)
     KnownList:Refresh()
 end
 
-local function makeRow(scroll, entry)
-    local row = AceGUI:Create("SimpleGroup")
-    row:SetFullWidth(true)
-    row:SetLayout("Flow")
+local function styleRow(row)
+    row:SetSize(CONTENT_W, ROW_H)
 
-    local name = AceGUI:Create("InteractiveLabel")
-    name:SetRelativeWidth(NAME_W)
-    name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
-    name:SetImage(entry.icon or 134400)
-    name:SetImageSize(18, 18)
+    local hl = row:CreateTexture(nil, "HIGHLIGHT")
+    hl:SetAllPoints()
+    hl:SetColorTexture(1, 1, 1, 0.1)
 
-    local count = AceGUI:Create("InteractiveLabel")
-    count:SetRelativeWidth(COUNT_W)
-    count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
-    if count.label then count.label:SetJustifyH("RIGHT") end
+    row.icon = row:CreateTexture(nil, "ARTWORK")
+    row.icon:SetSize(ROW_H - 4, ROW_H - 4)
+    row.icon:SetPoint("LEFT", 0, 0)
+    row.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 
-    local function onClick()
-        if IsShiftKeyDown() then
-            T.AddInput:Paste(entry)
-        end
-    end
-    name:SetCallback("OnClick", onClick)
-    count:SetCallback("OnClick", onClick)
+    row.count = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.count:SetPoint("RIGHT", -2, 0)
+    row.count:SetWidth(COUNT_W)
+    row.count:SetJustifyH("RIGHT")
 
-    local function onEnter(widget) T.ShowEntryTooltip(widget.frame, entry) end
-    local function onLeave() GameTooltip:Hide() end
-    name:SetCallback("OnEnter", onEnter)
-    name:SetCallback("OnLeave", onLeave)
-    count:SetCallback("OnEnter", onEnter)
-    count:SetCallback("OnLeave", onLeave)
+    row.name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    row.name:SetPoint("LEFT", row.icon, "RIGHT", 5, 0)
+    row.name:SetPoint("RIGHT", row.count, "LEFT", -4, 0)
+    row.name:SetJustifyH("LEFT")
+    row.name:SetWordWrap(false)
 
-    row:AddChild(name)
-    row:AddChild(count)
-    scroll:AddChild(row)
+    row:RegisterForClicks("AnyUp")
+    row:SetScript("OnClick", function(self)
+        if not IsShiftKeyDown() then return end
+        local entry = DB:GetEntry(self.entryKey)
+        if entry then T.AddInput:Paste(entry) end
+    end)
+    row:SetScript("OnEnter", function(self)
+        T.ShowEntryTooltip(self, DB:GetEntry(self.entryKey))
+    end)
+    row:SetScript("OnLeave", function() GameTooltip:Hide() end)
+end
+
+local function makeHeaderButton(parent, width, justify, onClick)
+    local button = CreateFrame("Button", nil, parent)
+    button:SetSize(width, 18)
+    button.label = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    button.label:SetAllPoints()
+    button.label:SetJustifyH(justify)
+    button.label:SetTextColor(1, 0.82, 0)
+    button:RegisterForClicks("AnyUp")
+    button:SetScript("OnClick", onClick)
+    return button
+end
+
+local function updateFilterText()
+    frame.filter:SetDefaultText(filterCategory or L["All categories"])
 end
 
 function KnownList:Refresh()
-    if not widget or not widget:IsShown() then return end
-    local scroll = widget.scroll
-    scroll:ReleaseChildren()
+    if not frame or not frame:IsShown() then return end
 
-    if widget.hName then widget.hName:SetText(headerText(L["Name"], "name")) end
-    if widget.hCount then widget.hCount:SetText(headerText(L["Count"], "count")) end
+    frame.hName.label:SetText(headerText(L["Name"], "name"))
+    frame.hCount.label:SetText(headerText(L["Count"], "count"))
+    updateFilterText()
+
+    rowPool:ReleaseAll()
 
     local entries = {}
     for _, entry in pairs(DB:Global().entries) do
         if matchesFilters(entry) then entries[#entries + 1] = entry end
     end
     sortEntries(entries)
-    for _, entry in ipairs(entries) do makeRow(scroll, entry) end
-    scroll:DoLayout()
+
+    local y = 0
+    for _, entry in ipairs(entries) do
+        local row = rowPool:Acquire()
+        if not row.name then styleRow(row) end
+        row.entryKey = entry.key
+        row.icon:SetTexture(entry.icon or 134400)
+        row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
+        row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
+        row:SetPoint("TOPLEFT", 0, -y)
+        row:Show()
+        y = y + ROW_H
+    end
+
+    frame.content:SetSize(CONTENT_W, math.max(y, 1))
 end
 
 function KnownList:Create()
-    if widget then return end
-    widget = AceGUI:Create("Frame")
-    widget:SetTitle(L["Known items"])
-    widget:SetLayout("Flow")
-    widget:SetWidth(360); widget:SetHeight(440)
-    widget:SetCallback("OnClose", function(w) w:Hide() end)
-    _G["TallymasterKnownListFrame"] = widget.frame
+    if frame then return end
 
-    local search = AceGUI:Create("EditBox")
-    search:SetLabel(L["Search"])
-    search:SetRelativeWidth(0.55)
-    search:SetCallback("OnTextChanged", function(_, _, text)
-        searchText = (text or ""):lower()
+    frame = CreateFrame("Frame", "TallymasterKnownListFrame", UIParent, "BackdropTemplate")
+    frame:SetSize(FRAME_W, FRAME_H)
+    frame:SetPoint("CENTER")
+    frame:SetFrameStrata("HIGH")
+    frame:SetToplevel(true)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+    frame:SetBackdrop({
+        bgFile = "Interface\\DialogFrame\\UI-DialogBox-Background",
+        edgeFile = "Interface\\DialogFrame\\UI-DialogBox-Border",
+        edgeSize = 16, insets = { left = 4, right = 4, top = 4, bottom = 4 },
+    })
+
+    frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+    frame.title:SetPoint("TOP", 0, -14)
+    frame.title:SetText(L["Known items"])
+
+    frame.close = CreateFrame("Button", "TallymasterKnownListCloseButton", frame, "UIPanelCloseButton")
+    frame.close:SetPoint("TOPRIGHT", 2, 2)
+
+    tinsert(UISpecialFrames, "TallymasterKnownListFrame")
+
+    local searchLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+    searchLabel:SetPoint("TOPLEFT", PAD + 6, -42)
+    searchLabel:SetText(L["Search"])
+
+    local search = CreateFrame("EditBox", "TallymasterKnownListSearchBox", frame, "InputBoxTemplate")
+    search:SetHeight(22)
+    search:SetPoint("TOPLEFT", PAD + 6, -58)
+    search:SetWidth(178)
+    search:SetFontObject("GameFontHighlightSmall")
+    search:SetAutoFocus(false)
+    search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
+    search:SetScript("OnTextChanged", function(self)
+        searchText = (self:GetText() or ""):lower()
         KnownList:Refresh()
     end)
-    widget:AddChild(search)
+    frame.search = search
 
-    local filter = AceGUI:Create("Dropdown")
-    filter:SetLabel(L["All categories"])
-    filter:SetRelativeWidth(0.45)
-    local list = { __all = L["All categories"] }
-    local order = { "__all" }
-    for _, cat in ipairs(DB:AllCategories()) do
-        list[cat] = cat; order[#order + 1] = cat
-    end
-    filter:SetList(list, order)
-    filter:SetValue("__all")
-    filter:SetCallback("OnValueChanged", function(_, _, key)
-        filterCategory = (key ~= "__all") and key or nil
-        KnownList:Refresh()
+    local filter = CreateFrame("DropdownButton", nil, frame, "WowStyle1DropdownTemplate")
+    filter:SetPoint("TOPRIGHT", -PAD, -58)
+    filter:SetSize(146, 22)
+    filter:SetupMenu(function(_, rootDescription)
+        rootDescription:CreateRadio(L["All categories"],
+            function() return filterCategory == nil end,
+            function()
+                filterCategory = nil
+                KnownList:Refresh()
+            end)
+        for _, cat in ipairs(DB:AllCategories()) do
+            rootDescription:CreateRadio(cat,
+                function(value) return filterCategory == value end,
+                function(value)
+                    filterCategory = value
+                    KnownList:Refresh()
+                end, cat)
+        end
     end)
-    widget:AddChild(filter)
+    frame.filter = filter
 
-    local header = AceGUI:Create("SimpleGroup")
-    header:SetFullWidth(true)
-    header:SetLayout("Flow")
+    frame.hName = makeHeaderButton(frame, CONTENT_W - COUNT_W, "LEFT", function() setSort("name") end)
+    frame.hName:SetPoint("TOPLEFT", PAD, -90)
+    frame.hCount = makeHeaderButton(frame, COUNT_W, "RIGHT", function() setSort("count") end)
+    frame.hCount:SetPoint("TOPLEFT", frame.hName, "TOPRIGHT", 0, 0)
 
-    local hName = AceGUI:Create("InteractiveLabel")
-    hName:SetRelativeWidth(NAME_W)
-    hName:SetColor(1, 0.82, 0)
-    hName:SetCallback("OnClick", function() setSort("name") end)
+    local divider = frame:CreateTexture(nil, "ARTWORK")
+    divider:SetColorTexture(1, 1, 1, 0.15)
+    divider:SetHeight(1)
+    divider:SetPoint("TOPLEFT", PAD, -110)
+    divider:SetPoint("TOPRIGHT", -PAD, -110)
 
-    local hCount = AceGUI:Create("InteractiveLabel")
-    hCount:SetRelativeWidth(COUNT_W)
-    hCount:SetColor(1, 0.82, 0)
-    if hCount.label then hCount.label:SetJustifyH("RIGHT") end
-    hCount:SetCallback("OnClick", function() setSort("count") end)
+    local scroll = CreateFrame("ScrollFrame", "TallymasterKnownListScrollFrame", frame,
+        "UIPanelScrollFrameTemplate")
+    scroll:SetPoint("TOPLEFT", PAD, -116)
+    scroll:SetPoint("BOTTOMRIGHT", -PAD - SCROLLBAR_W, PAD)
 
-    header:AddChild(hName)
-    header:AddChild(hCount)
-    widget:AddChild(header)
-    widget.hName, widget.hCount = hName, hCount
+    local content = CreateFrame("Frame", nil, scroll)
+    content:SetSize(CONTENT_W, 1)
+    scroll:SetScrollChild(content)
+    frame.scroll, frame.content = scroll, content
 
-    local divider = AceGUI:Create("Heading")
-    divider:SetFullWidth(true)
-    widget:AddChild(divider)
+    rowPool = CreateFramePool("Button", content, nil, function(_, row) row:Hide() end)
 
-    local scroll = AceGUI:Create("ScrollFrame")
-    scroll:SetLayout("List")
-    scroll:SetFullWidth(true)
-    scroll:SetFullHeight(true)
-    widget:AddChild(scroll)
-    widget.scroll = scroll
+    frame:Hide()
+
+    if T.SkinElvUI then T.SkinElvUI() end
 end
 
 function KnownList:Toggle()
     self:Create()
-    if widget:IsShown() then
-        widget:Hide()
+    if frame:IsShown() then
+        frame:Hide()
     else
-        widget:Show()
+        frame:Show()
         self:Refresh()
     end
 end

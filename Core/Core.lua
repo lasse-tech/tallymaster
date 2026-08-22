@@ -1,8 +1,6 @@
 local ADDON, T = ...
 
-local AceAddon = LibStub("AceAddon-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale(ADDON)
-T.L = L
+local L = T.L
 
 T.UNCATEGORIZED = L["Uncategorized"]
 
@@ -11,14 +9,13 @@ _G.BINDING_NAME_TALLYMASTER_OPEN_ADD       = L["Open Add window"]
 _G.BINDING_NAME_TALLYMASTER_TOGGLE_TRACKER = L["Toggle tracker"]
 _G.BINDING_NAME_TALLYMASTER_TOGGLE_KNOWN   = L["Toggle known items"]
 
-local Tallymaster = AceAddon:NewAddon(ADDON, "AceConsole-3.0", "AceEvent-3.0")
-T.Addon = Tallymaster
+local Tallymaster = T.Addon
 
 local PLACEHOLDER_ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
 local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_Bag_10"
 
 function Tallymaster:OnInitialize()
-    self.db = LibStub("AceDB-3.0"):New("TallymasterDB", T.dbDefaults, true)
+    T.DB:Initialize()
 
     if T.SetupOptions then T.SetupOptions() end
 
@@ -98,8 +95,7 @@ function Tallymaster:HandleSlash(input)
 end
 
 function Tallymaster:OpenOptions()
-    local ACD = LibStub("AceConfigDialog-3.0", true)
-    if ACD then ACD:Open(ADDON) end
+    if T.OpenOptions then T.OpenOptions() end
 end
 
 local refreshPending = false

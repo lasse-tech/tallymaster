@@ -1,6 +1,6 @@
-local ADDON = ...
-local L = LibStub("AceLocale-3.0"):NewLocale(ADDON, "deDE")
-if not L then return end
+local ADDON, T = ...
+if GetLocale() ~= "deDE" then return end
+local L = T.L
 
 L["Tallymaster"] = "Tallymaster"
 L["Add item, currency or collectible"] = "Gegenstand, Währung oder Sammelobjekt hinzufügen"

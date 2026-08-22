@@ -5,6 +5,33 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.3.0-alpha] - 2026-08-23
+
+### Changed
+- **Removed the Ace3 dependency.** Everything Ace3 provided is now implemented
+  directly against the Blizzard API:
+  - `AceAddon-3.0` / `AceEvent-3.0` / `AceConsole-3.0` → `Core/Addon.lua`
+    (ADDON_LOADED/PLAYER_LOGIN lifecycle, an event dispatcher, `Print`,
+    `RegisterChatCommand`).
+  - `AceDB-3.0` → `DB:Initialize()` in `Core/Database.lua`. It keeps the exact same
+    SavedVariables layout (`profileKeys` / `profiles` / `global` / `char`), so
+    existing `TallymasterDB` data carries over untouched — no migration needed.
+  - `AceLocale-3.0` → `Locales/Locale.lua`, a plain table that falls back to the
+    English key when a string is missing.
+  - `AceConfig-3.0` / `AceConfigDialog-3.0` → the Blizzard Settings API. Options now
+    live under Game Menu → Options → AddOns → Tallymaster instead of in a separate
+    Ace dialog.
+  - `AceGUI-3.0` → the Known items window is now a plain frame (search box,
+    `WowStyle1DropdownTemplate` category filter, sortable headers, scroll frame with
+    pooled rows).
+- `Libs/` now only carries `LibStub`, `CallbackHandler-1.0`, `LibDataBroker-1.1` and
+  `LibDBIcon-1.0`, needed solely for the minimap button.
+
+### Fixed
+- ElvUI skinning now also covers the Add and Known items windows. Both are created
+  lazily, so they did not exist yet when the skin ran at login; the skin is now
+  idempotent and re-applied when those frames are built.
+
 ## [0.2.25-alpha] - 2026-08-23
 
 ### Changed

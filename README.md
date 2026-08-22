@@ -20,12 +20,16 @@ Folder name and in-game title are both **Tallymaster**.
   shows the custom name; the Known items list shows `Custom (Original)`.
 - **Scope toggle** — counts per character (default) or summed account-wide.
 - **ElvUI-skinnable** — registers an ElvUI plugin skin, gated behind a toggle.
+- **No Ace3** — addon lifecycle, events, slash commands, saved variables,
+  localization, the options panel and the Known items window all run directly on the
+  Blizzard API. Only `LibStub`, `CallbackHandler-1.0`, `LibDataBroker-1.1` and
+  `LibDBIcon-1.0` are embedded, and only for the minimap button.
 
 ## Usage
 - `/tally` — open the add box
 - `/tally known` — open the storage browser
 - `/tally show` — toggle the on-screen tracker
-- `/tally config` — open options
+- `/tally config` — open options (Game Menu → Options → AddOns → Tallymaster)
 - Keybinds for all three under Key Bindings → Tallymaster.
 
 ## Status
@@ -38,9 +42,10 @@ Folder name and in-game title are both **Tallymaster**.
 
 ## Source layout
 ```
-Core/      Database, Core (init/slash/minimap), Categories, Resolve, Counting
+Core/      Addon (lifecycle/events/slash), Database, Core (init/minimap),
+           Categories, Resolve, Counting
 UI/        Tracker (on-screen list), AddInput, KnownList, Options
 Skin/      ElvUI integration
-Locales/   enUS
+Locales/   Locale (runtime), enUS, deDE
 design/    spec, name candidates, icon SVGs (not shipped)
 ```

@@ -2,7 +2,7 @@
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
-## Version: 0.2.25-alpha
+## Version: 0.3.0-alpha
 ## X-Email: lars@lasse-tech.de
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
@@ -11,9 +11,11 @@
 
 embeds.xml
 
+Locales\Locale.lua
 Locales\enUS.lua
 Locales\deDE.lua
 
+Core\Addon.lua
 Core\Database.lua
 Core\Core.lua
 Core\Categories.lua
