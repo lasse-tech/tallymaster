@@ -5,6 +5,19 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.0] - 2026-08-23
+
+First stable release. Everything below 0.3.0-alpha was pre-release; the feature set
+is unchanged from it.
+
+### Fixed
+- README documented a **Rename** feature and a right-click "delete or rename" action
+  on the Known items list. Neither exists: the context menu and renaming were removed
+  in 0.2.x, `DB:DeleteEntry` has no caller and `customName` is written but never read.
+  Both claims are gone from the README.
+- README still called the project a `0.1.0-alpha` scaffold and told you to optionally
+  add `Media/Satchel.blp`; the icon has shipped as `Media/Satchel.tga` since 0.2.20.
+
 ## [0.3.0-alpha] - 2026-08-23
 
 ### Changed

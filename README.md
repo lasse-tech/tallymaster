@@ -15,9 +15,7 @@ Folder name and in-game title are both **Tallymaster**.
   currencies, mounts, battle pets, transmog (knowledge is stubbed).
 - **Persistent storage** — shift-click a tracked row to hide it (kept in storage).
   A searchable/filterable **Known items** window lists everything stored:
-  shift-click to paste into the add box, right-click to delete or rename.
-- **Rename** — custom display names; the immutable ID is never changed. Tracker
-  shows the custom name; the Known items list shows `Custom (Original)`.
+  shift-click a row to paste it into the add box.
 - **Scope toggle** — counts per character (default) or summed account-wide.
 - **ElvUI-skinnable** — registers an ElvUI plugin skin, gated behind a toggle.
 - **No Ace3** — addon lifecycle, events, slash commands, saved variables,
@@ -33,11 +31,11 @@ Folder name and in-game title are both **Tallymaster**.
 - Keybinds for all three under Key Bindings → Tallymaster.
 
 ## Status
-`0.1.0-alpha` scaffold. See [design/DESIGN.md](design/DESIGN.md) for the full spec.
+`1.0.0`. See [design/DESIGN.md](design/DESIGN.md) for the full spec.
 
 ### Before first run
 1. Populate `Libs/` (see [Libs/README.md](Libs/README.md)).
-2. Optionally add `Media/Satchel.blp` (see [Media/README.md](Media/README.md)).
+2. The addon icon ships as `Media/Satchel.tga` (see [Media/README.md](Media/README.md)).
 3. Confirm the `## Interface:` number in the `.toc` matches the live Midnight build.
 
 ## Source layout

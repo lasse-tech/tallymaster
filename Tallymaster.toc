@@ -2,7 +2,7 @@
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
-## Version: 0.3.0-alpha
+## Version: 1.0.0
 ## X-Email: lars@lasse-tech.de
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
