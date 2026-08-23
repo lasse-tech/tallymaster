@@ -18,6 +18,16 @@ is unchanged from it.
   lists; `purge` refuses to touch SavedVariables without `CONFIRM=yes`.
 
 ### Fixed
+- Items in the **Warband bank were not counted**. `C_Item.GetItemCount` was called
+  without the `includeAccountBank` parameter that WoW 11.0 added, and the container
+  scan used `Enum.BagIndex.Bank` / `.Reagentbank`, which Midnight replaced with
+  per-tab indices - so `AccountBankTab_1..5` were never looked at. Both are fixed, and
+  `BANK_TABS_CHANGED` now also triggers a refresh.
+- The minimap button showed Blizzard's generic bag icon instead of the addon's own
+  `Media/Satchel.tga`, which has shipped since 0.2.20 and is already referenced by the
+  TOC's `IconTexture`.
+- The Known items window never refreshed on bag events, so an open window kept showing
+  stale counts.
 - README documented a **Rename** feature and a right-click "delete or rename" action
   on the Known items list. Neither exists: the context menu and renaming were removed
   in 0.2.x, `DB:DeleteEntry` has no caller and `customName` is written but never read.
@@ -55,6 +65,19 @@ is unchanged from it.
 ## [0.2.25-alpha] - 2026-08-23
 
 ### Changed
+- Counts are computed once per refresh instead of inside the sort comparators.
+  `Counting:DisplayCount` both counted and wrote to the DB and sat inside three
+  `table.sort` comparators, so every refresh ran `n + O(n log n) + n` live counts - and
+  a single live count for a crafting-quality item scans every container slot by slot.
+  `Counting:Snapshot` now builds one key-to-count table per refresh and both windows
+  share it; `Counting:Comparator` replaces the three near-identical comparators.
+- Removed dead code left over from the rename/delete feature dropped in 0.2.x:
+  `DB:Get`, `DB:DeleteEntry`, `DB:IsVisible`, `DB:DisplayName` (it only returned
+  `originalName`), `entry.customName`, `global.customCategories` and
+  `Addon:UnregisterEvent`. No behaviour change; stored data is untouched.
+- `Addon:RegisterEvent` ignores events the client does not know instead of letting one
+  removed event abort the whole startup.
+
 - Updated TOC Interface to 120100 for WoW 12.1.0 (Curse of Ula'tek). No API changes
   in 12.1.0 affect this addon.
 

@@ -11,8 +11,7 @@ _G.BINDING_NAME_TALLYMASTER_TOGGLE_KNOWN   = L["Toggle known items"]
 
 local Tallymaster = T.Addon
 
-local PLACEHOLDER_ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
-local FALLBACK_ICON = "Interface\\Icons\\INV_Misc_Bag_10"
+local ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
 
 function Tallymaster:OnInitialize()
     T.DB:Initialize()
@@ -25,7 +24,7 @@ function Tallymaster:OnInitialize()
         self.launcher = LDB:NewDataObject(ADDON, {
             type = "launcher",
             text = L["Tallymaster"],
-            icon = FALLBACK_ICON,
+            icon = ICON,
             OnClick = function(_, button)
                 if button == "RightButton" then
                     T.Addon:OpenOptions()

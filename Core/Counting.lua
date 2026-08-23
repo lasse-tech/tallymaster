@@ -31,9 +31,17 @@ local function rebuildMailCache()
 end
 
 local function itemTotal(id)
-    local n = C_Item.GetItemCount(id, true, false, true) or 0
+    local n = C_Item.GetItemCount(id, true, false, true, true) or 0
     return n + equippedCount(id) + (mailCache[id] or 0)
 end
+
+local BAG_FIELDS = {
+    "ReagentBag",
+    "CharacterBankTab_1", "CharacterBankTab_2", "CharacterBankTab_3",
+    "CharacterBankTab_4", "CharacterBankTab_5", "CharacterBankTab_6",
+    "AccountBankTab_1", "AccountBankTab_2", "AccountBankTab_3",
+    "AccountBankTab_4", "AccountBankTab_5",
+}
 
 local SCAN_BAGS
 local function scanBags()
@@ -41,10 +49,7 @@ local function scanBags()
     SCAN_BAGS = { 0, 1, 2, 3, 4 }
     local bi = Enum and Enum.BagIndex
     if bi then
-        if bi.ReagentBag then SCAN_BAGS[#SCAN_BAGS + 1] = bi.ReagentBag end
-        for _, k in ipairs({ "Bank", "Reagentbank",
-            "CharacterBankTab_1", "CharacterBankTab_2", "CharacterBankTab_3",
-            "CharacterBankTab_4", "CharacterBankTab_5", "CharacterBankTab_6" }) do
+        for _, k in ipairs(BAG_FIELDS) do
             if bi[k] then SCAN_BAGS[#SCAN_BAGS + 1] = bi[k] end
         end
     else
@@ -145,6 +150,7 @@ function Counting:Enable()
 
     addon:RegisterEvent("BAG_UPDATE_DELAYED", refresh)
     addon:RegisterEvent("PLAYERBANKSLOTS_CHANGED", refresh)
+    addon:RegisterEvent("BANK_TABS_CHANGED", refresh)
     addon:RegisterEvent("PLAYER_EQUIPMENT_CHANGED", refresh)
     addon:RegisterEvent("CURRENCY_DISPLAY_UPDATE", refresh)
     addon:RegisterEvent("NEW_MOUNT_ADDED", refresh)

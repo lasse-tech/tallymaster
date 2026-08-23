@@ -19,9 +19,9 @@ end)
 function Addon:RegisterEvent(event, handler)
     local list = handlers[event]
     if not list then
+        if not pcall(eventFrame.RegisterEvent, eventFrame, event) then return end
         list = {}
         handlers[event] = list
-        eventFrame:RegisterEvent(event)
     end
     list[#list + 1] = handler
 end
