@@ -56,6 +56,10 @@ L["Show minimap button"] = "Minimap-Knopf anzeigen"
 L["Allow ElvUI to skin this addon"] = "ElvUI erlauben, dieses Addon zu gestalten"
 L["Requires a /reload to take effect."] = "Erfordert ein /reload, um wirksam zu werden."
 
+L["Author: %s"] = "Autor: %s"
+L["More: %s"] = "Mehr: %s"
+L["Version: %s"] = "Version: %s"
+
 L["Currencies"] = "Währungen"
 L["Mounts"] = "Reittiere"
 L["Transmog"] = "Transmogrifikation"

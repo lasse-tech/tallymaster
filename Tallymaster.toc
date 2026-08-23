@@ -27,5 +27,6 @@ UI\Tracker.lua
 UI\AddInput.lua
 UI\KnownList.lua
 UI\Options.lua
+UI\Options.xml
 
 Skin\ElvUI.lua

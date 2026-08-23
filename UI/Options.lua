@@ -4,7 +4,64 @@ local DB = T.DB
 
 local category, layout
 
-local CREDITS = "|cff8080802026 www.incudex.de|r"
+-- Blizzard's SettingsListMixin lays the list out with a ScrollBox: an element's
+-- height is initializer:GetExtent(), or the template's own height when that is
+-- nil. We measure the text and report its exact height.
+local ABOUT_TEMPLATE = "TallymasterAboutTemplate"
+local ABOUT_FONT = "GameFontHighlight"
+local ABOUT_BOTTOM_PAD = 8
+
+TallymasterAboutMixin = {}
+
+function TallymasterAboutMixin:Init(initializer)
+    self.Text:SetText(initializer:GetData().text)
+end
+
+local function metadata(field)
+    local get = C_AddOns and C_AddOns.GetAddOnMetadata or GetAddOnMetadata
+    local value = get and get(ADDON, field)
+    if value == "" then return nil end
+    return value
+end
+
+local function aboutText()
+    local lines = {}
+
+    local author = metadata("Author")
+    if author then lines[#lines + 1] = L["Author: %s"]:format(author) end
+
+    local website = metadata("X-Website")
+    if website then lines[#lines + 1] = L["More: %s"]:format((website:gsub("^%a+://", ""))) end
+
+    local version = metadata("Version")
+    if version then lines[#lines + 1] = L["Version: %s"]:format(version) end
+
+    return table.concat(lines, "\n")
+end
+
+local measure
+
+local function textHeight(text)
+    if not measure then
+        measure = UIParent:CreateFontString(nil, "ARTWORK", ABOUT_FONT)
+        measure:SetJustifyH("LEFT")
+        measure:Hide()
+    end
+    measure:SetText(text)
+    return measure:GetStringHeight()
+end
+
+local function addAbout()
+    if not Settings.CreateElementInitializer then return end
+
+    local text = aboutText()
+    if text == "" then return end
+
+    local initializer = Settings.CreateElementInitializer(ABOUT_TEMPLATE, { text = text })
+    local extent = math.ceil(textHeight(text)) + ABOUT_BOTTOM_PAD
+    initializer.GetExtent = function() return extent end
+    layout:AddInitializer(initializer)
+end
 
 local function refresh()
     T.Addon:RefreshTracker()
@@ -20,6 +77,8 @@ function T.SetupOptions()
     if category then return end
 
     category, layout = Settings.RegisterVerticalLayoutCategory(L["Tallymaster"])
+
+    addAbout()
 
     do
         local setting = profileSetting("scope", Settings.VarType.String, L["Count scope"], "char")
@@ -76,10 +135,6 @@ function T.SetupOptions()
         local setting = profileSetting("elvuiSkin", Settings.VarType.Boolean,
             L["Allow ElvUI to skin this addon"], true)
         Settings.CreateCheckbox(category, setting, L["Requires a /reload to take effect."])
-    end
-
-    if layout and layout.AddInitializer and CreateSettingsListSectionHeaderInitializer then
-        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(CREDITS))
     end
 
     Settings.RegisterAddOnCategory(category)
