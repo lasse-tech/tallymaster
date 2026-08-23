@@ -25,7 +25,7 @@ jobs:
         uses: BigWigsMods/packager@v2
         env:
           # Tokens live in the repository secrets, never in the repo.
-          # Missing ones just skip that upload target.
-          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          # No CF token on purpose: CurseForge builds the tag itself through
+          # Automatic Packaging, so uploading from here would duplicate it.
           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}

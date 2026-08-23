@@ -18,8 +18,12 @@ repeated in the workflow.
 | Secret            | Where it comes from                                | Needed for      |
 | ----------------- | -------------------------------------------------- | --------------- |
 | `WAGO_API_TOKEN`  | wago.io → account settings → API keys              | Wago upload     |
-| `CF_API_TOKEN`    | authors.curseforge.com → Settings → API Tokens      | CurseForge      |
 | `GITHUB_TOKEN`    | provided by Actions automatically                  | GitHub release  |
+
+CurseForge needs no token here. Its own packager is wired to the repository
+(project settings → Source → Automatic Packaging) and builds every new tag from
+`.pkgmeta` by itself. Uploading from the workflow as well would put two files
+on the same version, which is why the workflow carries no `CF_API_TOKEN`.
 
 Tokens belong in the repository secrets only - never in the TOC, the workflow
 or any tracked file. A missing token just skips that upload target, so Wago can
@@ -36,7 +40,8 @@ go live before the CurseForge token exists.
 
 3. `.github/workflows/release.yml` runs `BigWigsMods/packager`, which pulls the
    libraries listed in `.pkgmeta`, builds the zip, cuts the changelog and
-   uploads to every site it has a token for.
+   uploads to Wago plus a GitHub release. CurseForge picks the same tag up on
+   its own and packages it there.
 
 Only tags matching `v*` trigger it.
 
