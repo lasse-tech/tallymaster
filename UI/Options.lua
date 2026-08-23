@@ -6,6 +6,12 @@ local category, layout
 
 local COPYRIGHT = "2026 incūdex, Lars Gossard"
 local WEBSITE = "www.incudex.de"
+local GREY = "|cff808080"
+
+local function credits()
+    return GREY .. COPYRIGHT .. "|r\n"
+        .. GREY .. L["More tools & games"] .. ": " .. WEBSITE .. "|r"
+end
 
 local function refresh()
     T.Addon:RefreshTracker()
@@ -80,9 +86,7 @@ function T.SetupOptions()
     end
 
     if layout and layout.AddInitializer and CreateSettingsListSectionHeaderInitializer then
-        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(COPYRIGHT))
-        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(
-            L["More tools & games"] .. ": " .. WEBSITE))
+        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(credits()))
     end
 
     Settings.RegisterAddOnCategory(category)
