@@ -7,7 +7,7 @@
 ## X-Website: https://www.incudex.de
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
-## X-Curse-Project-ID:
+## X-Curse-Project-ID: 1574454
 ## X-Wago-ID:
 
 embeds.xml
