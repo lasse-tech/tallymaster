@@ -7,6 +7,9 @@
 # Local editor / tooling state
 /.claude/
 
+# Build output (make dist)
+/dist/
+
 # Intermediate screenshot-cropping scratch files
 /design/_crops/
 

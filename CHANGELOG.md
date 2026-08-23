@@ -10,6 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 First stable release. Everything below 0.3.0-alpha was pre-release; the feature set
 is unchanged from it.
 
+### Added
+- `Makefile` (GNU make) and `Makefile.bat` (plain Windows batch, needs neither make
+  nor zip) with `check`, `libs`, `install`, `uninstall`, `prune-libs`, `dist`,
+  `clean`, `distclean` and `purge`. `install` auto-detects the WoW folder, keeps the
+  libraries already present in the client and points out ones `embeds.xml` no longer
+  lists; `purge` refuses to touch SavedVariables without `CONFIRM=yes`.
+
 ### Fixed
 - README documented a **Rename** feature and a right-click "delete or rename" action
   on the Known items list. Neither exists: the context menu and renaming were removed

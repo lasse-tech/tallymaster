@@ -38,6 +38,28 @@ Folder name and in-game title are both **Tallymaster**.
 2. The addon icon ships as `Media/Satchel.tga` (see [Media/README.md](Media/README.md)).
 3. Confirm the `## Interface:` number in the `.toc` matches the live Midnight build.
 
+## Building and installing
+`Makefile` (GNU make) and `Makefile.bat` (plain Windows batch, no make/zip needed)
+expose the same targets. The WoW folder is auto-detected; override it with
+`WOW_DIR`, and pick another client with `FLAVOR=_classic_era_`.
+
+| target | what it does |
+|---|---|
+| `check` | syntax-check every Lua file (`luac`, `lua`, or Python + `lupa`) |
+| `libs` | report which libraries `embeds.xml` expects but `Libs/` lacks |
+| `install` | copy the addon into the live client; keeps the libraries already installed there and reports ones `embeds.xml` no longer lists |
+| `uninstall` | remove the addon; SavedVariables are kept |
+| `prune-libs` | delete those stale libraries from the installed copy |
+| `dist` | build `dist/Tallymaster-<version>.zip` |
+| `clean` / `distclean` | drop build output / also empty `Libs/` |
+| `purge` | uninstall **and** delete SavedVariables; needs `CONFIRM=yes` |
+
+```
+make install                 # or:  Makefile install
+make dist                    #      Makefile dist
+make purge CONFIRM=yes       #      set "CONFIRM=yes" && Makefile purge
+```
+
 ## Source layout
 ```
 Core/      Addon (lifecycle/events/slash), Database, Core (init/minimap),
