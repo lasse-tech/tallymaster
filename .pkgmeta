@@ -6,8 +6,10 @@ externals:
     tag: latest
   Libs/CallbackHandler-1.0:
     url: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
+  # CurseForge's SVN mirror for this one answers HTTP 500, so it comes from
+  # tekkub's repository, which is where the library is actually maintained.
   Libs/LibDataBroker-1.1:
-    url: https://repos.curseforge.com/wow/libdatabroker-1-1/trunk
+    url: https://github.com/tekkub/libdatabroker-1-1
   Libs/LibDBIcon-1.0:
     url: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
   # LibElvUIPlugin-1.0 is not embedded: it requires ElvUI to load, and ElvUI
@@ -19,3 +21,4 @@ move-folders:
 ignore:
   - design
   - README.md
+  - Libs/LibDataBroker-1.1/README.textile
