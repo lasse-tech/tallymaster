@@ -168,7 +168,12 @@ function Tracker:Toggle()
     frame:SetShown(not frame:IsShown())
 end
 
-local function buildGroups()
+local function trackerComparator(counts)
+    local byCount = DB:Profile().sortMode == "count"
+    return T.Counting:Comparator(counts, byCount, not byCount)
+end
+
+local function buildGroups(counts, sortGroups)
     local groups = {}
     for key in pairs(DB:Char().visible) do
         local entry = DB:GetEntry(key)
@@ -183,48 +188,34 @@ local function buildGroups()
     for cat in pairs(groups) do catNames[#catNames + 1] = cat end
     table.sort(catNames)
 
-    local byCount = DB:Profile().sortMode == "count"
-    for _, list in pairs(groups) do
-        table.sort(list, function(a, b)
-            if byCount then
-                local ca = T.Counting:DisplayCount(a)
-                local cb = T.Counting:DisplayCount(b)
-                if ca ~= cb then return ca > cb end
-            end
-            return a.originalName:lower() < b.originalName:lower()
-        end)
+    if sortGroups then
+        local compare = trackerComparator(counts)
+        for _, list in pairs(groups) do
+            table.sort(list, compare)
+        end
     end
     return groups, catNames
 end
 
-local function renderRow(entry, y)
+local function renderRow(entry, y, counts)
     local row = rowPool:Acquire()
     if not row.name then styleRow(row) end
     row.entryKey = entry.key
     row.icon:SetTexture(entry.icon or 134400)
     row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
-    row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
+    row.count:SetText(BreakUpLargeNumbers(counts[entry.key] or 0))
     row:SetPoint("TOPLEFT", 0, -y)
     row:Show()
 end
 
-local function sortFlat(list)
-    local byCount = DB:Profile().sortMode == "count"
-    table.sort(list, function(a, b)
-        if byCount then
-            local ca, cb = T.Counting:DisplayCount(a), T.Counting:DisplayCount(b)
-            if ca ~= cb then return ca > cb end
-        end
-        return a.originalName:lower() < b.originalName:lower()
-    end)
-end
-
-function Tracker:Refresh()
+function Tracker:Refresh(counts)
     if not frame then return end
+    counts = counts or T.Counting:Snapshot()
     rowPool:ReleaseAll()
     headerPool:ReleaseAll()
 
-    local groups, catNames = buildGroups()
+    local showCategories = DB:Profile().showCategories
+    local groups, catNames = buildGroups(counts, showCategories)
 
     if #catNames == 0 then
         frame.empty:Show()
@@ -238,7 +229,7 @@ function Tracker:Refresh()
 
     local y = 0
 
-    if DB:Profile().showCategories then
+    if showCategories then
         for _, cat in ipairs(catNames) do
             local folded = DB:IsFolded(cat)
             local h = headerPool:Acquire()
@@ -253,7 +244,7 @@ function Tracker:Refresh()
 
             if not folded then
                 for _, entry in ipairs(groups[cat]) do
-                    renderRow(entry, y)
+                    renderRow(entry, y, counts)
                     y = y + ROW_H
                 end
             end
@@ -263,9 +254,9 @@ function Tracker:Refresh()
         for _, list in pairs(groups) do
             for _, e in ipairs(list) do all[#all + 1] = e end
         end
-        sortFlat(all)
+        table.sort(all, trackerComparator(counts))
         for _, entry in ipairs(all) do
-            renderRow(entry, y)
+            renderRow(entry, y, counts)
             y = y + ROW_H
         end
     end

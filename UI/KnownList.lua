@@ -13,6 +13,7 @@ local COUNT_W = 80
 local CONTENT_W = FRAME_W - PAD * 2 - SCROLLBAR_W
 
 local frame, rowPool
+local counts = {}
 local searchText = ""
 local filterCategory = nil
 local sortKey, sortAsc = "name", true
@@ -29,25 +30,6 @@ local function matchesFilters(entry)
         if not hay:find(searchText, 1, true) then return false end
     end
     return true
-end
-
-local function sortEntries(list)
-    table.sort(list, function(a, b)
-        if sortKey == "count" then
-            local ca, cb = T.Counting:DisplayCount(a), T.Counting:DisplayCount(b)
-            if ca ~= cb then
-                if sortAsc then return ca < cb end
-                return ca > cb
-            end
-            return a.originalName:lower() < b.originalName:lower()
-        end
-        local na, nb = a.originalName:lower(), b.originalName:lower()
-        if na ~= nb then
-            if sortAsc then return na < nb end
-            return na > nb
-        end
-        return false
-    end)
 end
 
 local function headerText(base, key)
@@ -116,7 +98,8 @@ local function updateFilterText()
     frame.filter:SetDefaultText(filterCategory or L["All categories"])
 end
 
-function KnownList:Refresh()
+function KnownList:Refresh(newCounts)
+    if newCounts then counts = newCounts end
     if not frame or not frame:IsShown() then return end
 
     frame.hName.label:SetText(headerText(L["Name"], "name"))
@@ -129,7 +112,7 @@ function KnownList:Refresh()
     for _, entry in pairs(DB:Global().entries) do
         if matchesFilters(entry) then entries[#entries + 1] = entry end
     end
-    sortEntries(entries)
+    table.sort(entries, T.Counting:Comparator(counts, sortKey == "count", sortAsc))
 
     local y = 0
     for _, entry in ipairs(entries) do
@@ -138,7 +121,7 @@ function KnownList:Refresh()
         row.entryKey = entry.key
         row.icon:SetTexture(entry.icon or 134400)
         row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
-        row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
+        row.count:SetText(BreakUpLargeNumbers(counts[entry.key] or 0))
         row:SetPoint("TOPLEFT", 0, -y)
         row:Show()
         y = y + ROW_H
@@ -246,6 +229,6 @@ function KnownList:Toggle()
         frame:Hide()
     else
         frame:Show()
-        self:Refresh()
+        self:Refresh(T.Counting:Snapshot())
     end
 end

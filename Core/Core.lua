@@ -104,8 +104,9 @@ function Tallymaster:RefreshTracker()
     refreshPending = true
     C_Timer.After(0.1, function()
         refreshPending = false
-        if T.Counting and T.Counting.StashAll then T.Counting:StashAll() end
-        if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh() end
+        local counts = T.Counting:Snapshot()
+        if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh(counts) end
+        if T.KnownList and T.KnownList.Refresh then T.KnownList:Refresh(counts) end
     end)
 end
 

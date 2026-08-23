@@ -108,18 +108,34 @@ function Counting:LiveCount(entry)
     return handler(entry) or 0
 end
 
-function Counting:DisplayCount(entry)
-    local live = self:LiveCount(entry)
-    DB:StashCount(entry.key, live)
-    if DB:Profile().scope == "account" then
-        return DB:SumAccountCount(entry.key)
+function Counting:Snapshot()
+    local entries = DB:Global().entries
+    for key, entry in pairs(entries) do
+        DB:StashCount(key, self:LiveCount(entry))
     end
-    return live
+
+    local account = DB:Profile().scope == "account"
+    local counts = {}
+    for key in pairs(entries) do
+        counts[key] = account and DB:SumAccountCount(key) or DB:CharCount(key)
+    end
+    return counts
 end
 
-function Counting:StashAll()
-    for key, entry in pairs(DB:Global().entries) do
-        DB:StashCount(key, self:LiveCount(entry))
+function Counting:Comparator(counts, byCount, ascending)
+    return function(a, b)
+        if byCount then
+            local ca, cb = counts[a.key] or 0, counts[b.key] or 0
+            if ca ~= cb then
+                if ascending then return ca < cb end
+                return ca > cb
+            end
+            return a.originalName:lower() < b.originalName:lower()
+        end
+        local na, nb = a.originalName:lower(), b.originalName:lower()
+        if na == nb then return false end
+        if ascending then return na < nb end
+        return na > nb
     end
 end
 
