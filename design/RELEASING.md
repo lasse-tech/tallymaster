@@ -18,7 +18,7 @@ repeated in the workflow.
 | Secret            | Where it comes from                                | Needed for      |
 | ----------------- | -------------------------------------------------- | --------------- |
 | `WAGO_API_TOKEN`  | wago.io → account settings → API keys              | Wago upload     |
-| `CF_API_KEY`      | legacy.curseforge.com → My API Tokens              | CurseForge      |
+| `CF_API_TOKEN`    | authors.curseforge.com → Settings → API Tokens      | CurseForge      |
 | `GITHUB_TOKEN`    | provided by Actions automatically                  | GitHub release  |
 
 Tokens belong in the repository secrets only - never in the TOC, the workflow

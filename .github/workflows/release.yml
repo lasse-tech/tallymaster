@@ -26,6 +26,6 @@ jobs:
         env:
           # Tokens live in the repository secrets, never in the repo.
           # Missing ones just skip that upload target.
-          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
           WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
