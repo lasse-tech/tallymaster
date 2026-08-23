@@ -8,7 +8,7 @@
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
 ## X-Curse-Project-ID: 1574454
-## X-Wago-ID:
+## X-Wago-ID: bGoyWq60
 
 embeds.xml
 
