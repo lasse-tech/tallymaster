@@ -26,12 +26,6 @@ function Addon:RegisterEvent(event, handler)
     list[#list + 1] = handler
 end
 
-function Addon:UnregisterEvent(event)
-    if not handlers[event] then return end
-    handlers[event] = nil
-    eventFrame:UnregisterEvent(event)
-end
-
 function Addon:Print(...)
     print(PREFIX .. strjoin(" ", tostringall(...)))
 end

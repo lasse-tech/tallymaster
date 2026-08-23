@@ -12,27 +12,28 @@ function AddInput:Commit(entry)
     if existing then
         if entry.type == "item" then existing.respectQuality = entry.respectQuality end
         DB:SetVisible(existing.key, true)
-        T.Addon:Print(L["Already tracking %s."]:format(DB:DisplayName(existing)))
+        T.Addon:Print(L["Already tracking %s."]:format(existing.originalName))
     else
         DB:AddEntry(entry)
         DB:SetVisible(entry.key, true)
-        T.Addon:Print(L["Now tracking %s."]:format(DB:DisplayName(entry)))
+        T.Addon:Print(L["Now tracking %s."]:format(entry.originalName))
     end
     T.Addon:RefreshTracker()
     if T.KnownList and T.KnownList.Refresh then T.KnownList:Refresh() end
 end
 
+StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] = {
+    text = L["The ID %d matches both an item and a currency. Which do you mean?"],
+    button1 = L["Item"],
+    button2 = L["Currency"],
+    OnAccept = function(self) AddInput:Commit(self.data.candidates[1]) end,
+    OnCancel = function(self, data, reason)
+        if reason == "clicked" then AddInput:Commit(self.data.candidates[2]) end
+    end,
+    hideOnEscape = true, whileDead = true, timeout = 0,
+}
+
 local function askAmbiguous(result, id)
-    StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] = StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] or {
-        text = L["The ID %d matches both an item and a currency. Which do you mean?"],
-        button1 = L["Item"],
-        button2 = L["Currency"],
-        OnAccept = function(self) AddInput:Commit(self.data.candidates[1]) end,
-        OnCancel = function(self, data, reason)
-            if reason == "clicked" then AddInput:Commit(self.data.candidates[2]) end
-        end,
-        hideOnEscape = true, whileDead = true, timeout = 0,
-    }
     local dialog = StaticPopup_Show("TALLYMASTER_AMBIGUOUS", id)
     if dialog then dialog.data = result end
 end
@@ -269,7 +270,6 @@ function AddInput:Create()
         local text = frame.edit:GetText()
         if text and text ~= "" then AddInput:Submit(text) end
     end)
-    frame.addButton = addBtn
 
     if not AddInput._linkHooked then
         AddInput._linkHooked = true

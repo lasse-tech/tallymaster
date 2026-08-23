@@ -25,7 +25,7 @@ local function matchesFilters(entry)
         return false
     end
     if searchText ~= "" then
-        local hay = (DB:DisplayName(entry) .. " " .. entry.originalName):lower()
+        local hay = (entry.originalName .. " " .. entry.originalName):lower()
         if not hay:find(searchText, 1, true) then return false end
     end
     return true
@@ -39,9 +39,9 @@ local function sortEntries(list)
                 if sortAsc then return ca < cb end
                 return ca > cb
             end
-            return DB:DisplayName(a):lower() < DB:DisplayName(b):lower()
+            return a.originalName:lower() < b.originalName:lower()
         end
-        local na, nb = DB:DisplayName(a):lower(), DB:DisplayName(b):lower()
+        local na, nb = a.originalName:lower(), b.originalName:lower()
         if na ~= nb then
             if sortAsc then return na < nb end
             return na > nb
@@ -137,7 +137,7 @@ function KnownList:Refresh()
         if not row.name then styleRow(row) end
         row.entryKey = entry.key
         row.icon:SetTexture(entry.icon or 134400)
-        row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
+        row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
         row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
         row:SetPoint("TOPLEFT", 0, -y)
         row:Show()
@@ -190,7 +190,6 @@ function KnownList:Create()
         searchText = (self:GetText() or ""):lower()
         KnownList:Refresh()
     end)
-    frame.search = search
 
     local filter = CreateFrame("DropdownButton", nil, frame, "WowStyle1DropdownTemplate")
     filter:SetPoint("TOPRIGHT", -PAD, -58)

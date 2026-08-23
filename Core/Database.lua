@@ -15,7 +15,6 @@ T.dbDefaults = {
     global = {
         entries        = {},
         categoryFold   = {},
-        customCategories = {},
         charCounts     = {},
     },
     char = {
@@ -69,7 +68,6 @@ function DB:Initialize()
     return db
 end
 
-function DB:Get()        return T.Addon.db end
 function DB:Profile()    return T.Addon.db.profile end
 function DB:Global()     return T.Addon.db.global end
 function DB:Char()       return T.Addon.db.char end
@@ -93,21 +91,8 @@ function DB:AddEntry(entry)
     return entry
 end
 
-function DB:DeleteEntry(key)
-    self:Global().entries[key] = nil
-    self:Char().visible[key] = nil
-    for _, counts in pairs(self:Global().charCounts) do
-        counts[key] = nil
-    end
-end
-
-function DB:IsVisible(key) return self:Char().visible[key] == true end
 function DB:SetVisible(key, visible)
     self:Char().visible[key] = visible and true or nil
-end
-
-function DB:DisplayName(entry)
-    return entry.originalName
 end
 
 function DB:TrackerPos() return self:Profile().tracker end
@@ -220,9 +205,6 @@ function DB:AllCategories()
     for _, entry in pairs(self:Global().entries) do
         local c = self:EffectiveCategory(entry)
         if not seen[c] then seen[c] = true; list[#list+1] = c end
-    end
-    for name in pairs(self:Global().customCategories) do
-        if not seen[name] then seen[name] = true; list[#list+1] = name end
     end
     table.sort(list)
     return list

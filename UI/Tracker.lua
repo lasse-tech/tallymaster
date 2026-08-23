@@ -34,7 +34,7 @@ function T.ShowEntryTooltip(owner, entry)
     elseif entry.type == "currency" then
         GameTooltip:SetCurrencyByID(entry.id)
     else
-        GameTooltip:SetText(DB:DisplayName(entry))
+        GameTooltip:SetText(entry.originalName)
     end
     T._ownTooltip = false
     if DB:Profile().showTooltipCounts then
@@ -160,7 +160,6 @@ function Tracker:Initialize()
     rowPool    = CreateFramePool("Button", content, nil, function(_, r) r:Hide() end)
     headerPool = CreateFramePool("Button", content, nil, function(_, h) h:Hide() end)
 
-    self.frame = frame
     self:Refresh()
 end
 
@@ -192,7 +191,7 @@ local function buildGroups()
                 local cb = T.Counting:DisplayCount(b)
                 if ca ~= cb then return ca > cb end
             end
-            return DB:DisplayName(a):lower() < DB:DisplayName(b):lower()
+            return a.originalName:lower() < b.originalName:lower()
         end)
     end
     return groups, catNames
@@ -203,7 +202,7 @@ local function renderRow(entry, y)
     if not row.name then styleRow(row) end
     row.entryKey = entry.key
     row.icon:SetTexture(entry.icon or 134400)
-    row.name:SetText(DB:DisplayName(entry) .. DB:TierMarkup(entry))
+    row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
     row.count:SetText(BreakUpLargeNumbers(T.Counting:DisplayCount(entry)))
     row:SetPoint("TOPLEFT", 0, -y)
     row:Show()
@@ -216,7 +215,7 @@ local function sortFlat(list)
             local ca, cb = T.Counting:DisplayCount(a), T.Counting:DisplayCount(b)
             if ca ~= cb then return ca > cb end
         end
-        return DB:DisplayName(a):lower() < DB:DisplayName(b):lower()
+        return a.originalName:lower() < b.originalName:lower()
     end)
 end
 

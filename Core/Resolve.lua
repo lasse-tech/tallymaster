@@ -11,7 +11,6 @@ local function buildEntry(entryType, id, name, icon)
         type         = entryType,
         id           = id,
         originalName = name,
-        customName   = nil,
         category     = T.Categories:Auto(entryType, id),
         icon         = icon,
     }
@@ -39,7 +38,6 @@ local function itemEntry(id, link)
         type            = "item",
         id              = id,
         originalName    = name,
-        customName      = nil,
         category        = T.Categories:Auto("item", id),
         icon            = icon,
         itemQuality     = quality,
@@ -73,15 +71,15 @@ local function tryCurrency(id)
 end
 
 function Resolve:ByID(id)
-    local itemEntry, itemLoading = tryItem(id)
-    local currencyEntry = tryCurrency(id)
+    local itemResult, itemLoading = tryItem(id)
+    local currencyResult = tryCurrency(id)
 
-    if itemEntry and currencyEntry then
-        return { status = "ambiguous", candidates = { itemEntry, currencyEntry } }
-    elseif itemEntry then
-        return { status = "ok", entry = itemEntry }
-    elseif currencyEntry then
-        return { status = "ok", entry = currencyEntry }
+    if itemResult and currencyResult then
+        return { status = "ambiguous", candidates = { itemResult, currencyResult } }
+    elseif itemResult then
+        return { status = "ok", entry = itemResult }
+    elseif currencyResult then
+        return { status = "ok", entry = currencyResult }
     elseif itemLoading then
         return { status = "loading" }
     end
