@@ -4,6 +4,7 @@
 ## Author: Lars Gossard
 ## Version: 1.0.0
 ## X-Email: lars@lasse-tech.de
+## X-Website: https://www.incudex.de
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
 ## X-Curse-Project-ID:
