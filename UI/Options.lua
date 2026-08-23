@@ -2,7 +2,10 @@ local ADDON, T = ...
 local L = T.L
 local DB = T.DB
 
-local category
+local category, layout
+
+local COPYRIGHT = "2026 incūdex, Lars Gossard"
+local WEBSITE = "www.incudex.de"
 
 local function refresh()
     T.Addon:RefreshTracker()
@@ -17,7 +20,7 @@ function T.SetupOptions()
     if not Settings or not Settings.RegisterVerticalLayoutCategory then return end
     if category then return end
 
-    category = Settings.RegisterVerticalLayoutCategory(L["Tallymaster"])
+    category, layout = Settings.RegisterVerticalLayoutCategory(L["Tallymaster"])
 
     do
         local setting = profileSetting("scope", Settings.VarType.String, L["Count scope"], "char")
@@ -74,6 +77,12 @@ function T.SetupOptions()
         local setting = profileSetting("elvuiSkin", Settings.VarType.Boolean,
             L["Allow ElvUI to skin this addon"], true)
         Settings.CreateCheckbox(category, setting, L["Requires a /reload to take effect."])
+    end
+
+    if layout and layout.AddInitializer and CreateSettingsListSectionHeaderInitializer then
+        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(COPYRIGHT))
+        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(
+            L["More tools & games"] .. ": " .. WEBSITE))
     end
 
     Settings.RegisterAddOnCategory(category)

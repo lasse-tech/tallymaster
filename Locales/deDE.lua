@@ -55,6 +55,7 @@ L["Add the per-character count breakdown to the standard game item tooltip (for 
 L["Show minimap button"] = "Minimap-Knopf anzeigen"
 L["Allow ElvUI to skin this addon"] = "ElvUI erlauben, dieses Addon zu gestalten"
 L["Requires a /reload to take effect."] = "Erfordert ein /reload, um wirksam zu werden."
+L["More tools & games"] = "Mehr Tools & Games"
 
 L["Currencies"] = "Währungen"
 L["Mounts"] = "Reittiere"
