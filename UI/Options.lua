@@ -4,14 +4,7 @@ local DB = T.DB
 
 local category, layout
 
-local COPYRIGHT = "2026 incūdex, Lars Gossard"
-local WEBSITE = "www.incudex.de"
-local GREY = "|cff808080"
-
-local function credits()
-    return GREY .. COPYRIGHT .. "|r\n"
-        .. GREY .. L["More tools & games"] .. ": " .. WEBSITE .. "|r"
-end
+local CREDITS = "|cff8080802026 www.incudex.de|r"
 
 local function refresh()
     T.Addon:RefreshTracker()
@@ -86,7 +79,7 @@ function T.SetupOptions()
     end
 
     if layout and layout.AddInitializer and CreateSettingsListSectionHeaderInitializer then
-        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(credits()))
+        layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(CREDITS))
     end
 
     Settings.RegisterAddOnCategory(category)

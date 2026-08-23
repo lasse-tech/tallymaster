@@ -16,9 +16,8 @@ is unchanged from it.
   `clean`, `distclean` and `purge`. `install` auto-detects the WoW folder, keeps the
   libraries already present in the client and points out ones `embeds.xml` no longer
   lists; `purge` refuses to touch SavedVariables without `CONFIRM=yes`.
-- Copyright notice at the bottom of the options panel: "2026 incūdex, Lars Gossard"
-  and a localised link line ("More tools & games" / "Mehr Tools & Games":
-  www.incudex.de). The TOC gained a matching `## X-Website` field.
+- Credit line at the bottom of the options panel: "2026 www.incudex.de". The TOC
+  gained a matching `## X-Website` field.
 
 ### Fixed
 - Items in the **Warband bank were not counted**. `C_Item.GetItemCount` was called
