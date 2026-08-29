@@ -50,6 +50,8 @@ echo   Makefile distclean    clean + empty Libs\
 echo   Makefile purge        uninstall + delete SavedVariables ^(needs CONFIRM=yes^)
 echo.
 echo   set FLAVOR=_classic_era_   to target another client
+echo   set WOW_RETAIL_ADDON_FOLDER=D:\World of Warcraft\_retail_\Interface\AddOns
+echo                              to install straight into that folder ^(retail only^)
 echo   set WOW_DIR=D:\World of Warcraft   to override auto-detection
 goto :eof
 
@@ -60,6 +62,14 @@ goto :eof
 rem ---------------------------------------------------------------- locate WoW
 
 :findwow
+rem WOW_RETAIL_ADDON_FOLDER points straight at Interface\AddOns and skips the search.
+rem It only applies to the flavor it names, so a FLAVOR override falls back to
+rem WOW_DIR and auto-detection.
+if /i "%FLAVOR%"=="_retail_" if defined WOW_RETAIL_ADDON_FOLDER (
+    set "ADDONS=%WOW_RETAIL_ADDON_FOLDER%"
+    for %%i in ("%WOW_RETAIL_ADDON_FOLDER%\..\..") do set "FLAVOR_DIR=%%~fi"
+    goto :findaddons_done
+)
 set "WOW="
 if defined WOW_DIR (
     if exist "%WOW_DIR%\%FLAVOR%" set "WOW=%WOW_DIR%"
@@ -81,11 +91,14 @@ for %%d in (
 )
 :findwow_done
 if not defined WOW (
-    echo WoW not found. Set WOW_DIR, e.g.:
+    echo AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER or WOW_DIR, e.g.:
+    echo    set "WOW_RETAIL_ADDON_FOLDER=D:\World of Warcraft\_retail_\Interface\AddOns"
     echo    set "WOW_DIR=D:\World of Warcraft"
     exit /b 1
 )
 set "ADDONS=%WOW%\%FLAVOR%\Interface\AddOns"
+set "FLAVOR_DIR=%WOW%\%FLAVOR%"
+:findaddons_done
 set "TARGET=%ADDONS%\%ADDON%"
 exit /b 0
 
@@ -276,7 +289,7 @@ if /i not "%CONFIRM%"=="yes" (
 call :uninstall || exit /b 1
 call :findwow || exit /b 1
 set "FOUND=0"
-for /d %%a in ("%WOW%\%FLAVOR%\WTF\Account\*") do (
+for /d %%a in ("%FLAVOR_DIR%\WTF\Account\*") do (
     for %%e in (lua lua.bak) do (
         if exist "%%a\SavedVariables\%ADDON%.%%e" (
             echo   deleting %%a\SavedVariables\%ADDON%.%%e

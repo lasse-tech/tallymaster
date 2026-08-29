@@ -2,7 +2,7 @@
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
-## Version: 1.0.0
+## Version: 1.0.1
 ## X-Email: lars@lasse-tech.de
 ## X-Website: https://www.incudex.de
 ## SavedVariables: TallymasterDB

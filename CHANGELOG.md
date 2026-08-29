@@ -5,7 +5,14 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.1] - 2026-08-30
+
+### Added
+- `make install` (and `Makefile install` on Windows) reads
+  **`WOW_RETAIL_ADDON_FOLDER`** and installs into that AddOns folder directly,
+  skipping the WoW-folder search. `uninstall`, `prune-libs` and `purge` follow the
+  same path; `purge` derives the `WTF` folder two levels above it. The variable is
+  retail-only - a `FLAVOR` override falls back to `WOW_DIR` and auto-detection.
 
 ### Fixed
 - The tracker window **came back on every login even after being hidden**. Its

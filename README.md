@@ -31,7 +31,19 @@ Folder name and in-game title are both **Tallymaster**.
 - Keybinds for all three under Key Bindings → Tallymaster.
 
 ## Status
-`1.0.0`. See [design/DESIGN.md](design/DESIGN.md) for the full spec.
+`1.0.1`. See [design/DESIGN.md](design/DESIGN.md) for the full spec.
+
+### Installing
+`make install` (or `Makefile install` on Windows) copies the addon into the live
+client. Point it at the AddOns folder with `WOW_RETAIL_ADDON_FOLDER`:
+
+```
+export WOW_RETAIL_ADDON_FOLDER="/path/to/World of Warcraft/_retail_/Interface/AddOns"
+make install
+```
+
+Without it, the Makefile falls back to `WOW_DIR` and then to auto-detection.
+`WOW_RETAIL_ADDON_FOLDER` only applies to retail — a `FLAVOR` override ignores it.
 
 ### Before first run
 1. Populate `Libs/` (see [Libs/README.md](Libs/README.md)).

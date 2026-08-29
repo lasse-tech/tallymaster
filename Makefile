@@ -16,7 +16,18 @@ WOW_CANDIDATES := \
 	"D:/World of Warcraft" \
 	"C:/Games/World of Warcraft"
 
+# WOW_RETAIL_ADDON_FOLDER points straight at Interface/AddOns and skips the search.
+# It only applies to the flavor it names, so a FLAVOR override falls back to WOW_DIR
+# and auto-detection.
+ifeq ($(FLAVOR),_retail_)
+ADDONS_DIR ?= $(WOW_RETAIL_ADDON_FOLDER)
+endif
+
 FIND_WOW = if [ -n "$(WOW_DIR)" ]; then echo "$(WOW_DIR)"; else for d in $(WOW_CANDIDATES); do if [ -d "$$d/$(FLAVOR)" ]; then echo "$$d"; break; fi; done; fi
+
+FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$($(FIND_WOW)); if [ -n "$$wow" ]; then echo "$$wow/$(FLAVOR)/Interface/AddOns"; fi; fi
+
+NO_ADDONS_MSG = echo "AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER=/path/to/Interface/AddOns, or pass WOW_DIR=/path/to/World of Warcraft"
 
 .DEFAULT_GOAL := help
 .PHONY: help version check libs install uninstall prune-libs dist clean distclean purge
@@ -35,6 +46,7 @@ help:
 	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
 	@echo ""
 	@echo "  FLAVOR=$(FLAVOR)   override with FLAVOR=_classic_era_ etc."
+	@echo "  WOW_RETAIL_ADDON_FOLDER  Interface/AddOns to install into (retail only)"
 	@echo "  WOW_DIR           override the auto-detected WoW folder"
 
 version:
@@ -67,10 +79,9 @@ libs:
 	fi
 
 install:
-	@wow=$$($(FIND_WOW)); \
-	if [ -z "$$wow" ]; then \
-		echo "WoW not found. Pass WOW_DIR=/path/to/World\ of\ Warcraft"; exit 1; fi; \
-	target="$$wow/$(FLAVOR)/Interface/AddOns/$(ADDON)"; \
+	@addons=$$($(FIND_ADDONS)); \
+	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
+	target="$$addons/$(ADDON)"; \
 	echo "installing $(ADDON) $(VERSION) -> $$target"; \
 	mkdir -p "$$target"; \
 	for d in $(INSTALL_DIRS); do rm -rf "$$target/$$d"; cp -r "$$d" "$$target/"; done; \
@@ -101,18 +112,18 @@ install:
 	echo "done - /reload in game"
 
 uninstall:
-	@wow=$$($(FIND_WOW)); \
-	if [ -z "$$wow" ]; then echo "WoW not found. Pass WOW_DIR=..."; exit 1; fi; \
-	target="$$wow/$(FLAVOR)/Interface/AddOns/$(ADDON)"; \
+	@addons=$$($(FIND_ADDONS)); \
+	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
+	target="$$addons/$(ADDON)"; \
 	if [ ! -d "$$target" ]; then echo "not installed: $$target"; exit 0; fi; \
 	rm -rf "$$target"; \
 	echo "removed $$target"; \
 	echo "SavedVariables kept - use 'make purge CONFIRM=yes' to delete those too"
 
 prune-libs:
-	@wow=$$($(FIND_WOW)); \
-	if [ -z "$$wow" ]; then echo "WoW not found. Pass WOW_DIR=..."; exit 1; fi; \
-	target="$$wow/$(FLAVOR)/Interface/AddOns/$(ADDON)"; \
+	@addons=$$($(FIND_ADDONS)); \
+	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
+	target="$$addons/$(ADDON)"; \
 	[ -d "$$target/Libs" ] || { echo "nothing installed"; exit 0; }; \
 	for d in "$$target"/Libs/*/; do \
 		[ -d "$$d" ] || continue; \
@@ -158,9 +169,11 @@ purge:
 		echo "refusing to delete SavedVariables without CONFIRM=yes"; \
 		echo "   make purge CONFIRM=yes"; exit 1; fi
 	@$(MAKE) --no-print-directory uninstall
-	@wow=$$($(FIND_WOW)); \
+	@addons=$$($(FIND_ADDONS)); \
+	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
+	flavor_dir=$$(dirname "$$(dirname "$$addons")"); \
 	found=0; \
-	for f in "$$wow/$(FLAVOR)"/WTF/Account/*/SavedVariables/$(ADDON).lua*; do \
+	for f in "$$flavor_dir"/WTF/Account/*/SavedVariables/$(ADDON).lua*; do \
 		[ -e "$$f" ] || continue; \
 		echo "  deleting $$f"; rm -f "$$f"; found=1; \
 	done; \
