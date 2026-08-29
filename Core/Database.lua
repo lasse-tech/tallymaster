@@ -10,7 +10,7 @@ T.dbDefaults = {
         gameTooltipCounts = true,
         elvuiSkin = true,
         minimap  = { hide = false },
-        tracker  = { point = "TOPLEFT", relPoint = "TOPLEFT", x = 16, y = -220 },
+        tracker  = { point = "TOPLEFT", relPoint = "TOPLEFT", x = 16, y = -220, shown = true },
     },
     global = {
         entries        = {},
@@ -96,6 +96,10 @@ function DB:SetVisible(key, visible)
 end
 
 function DB:TrackerPos() return self:Profile().tracker end
+function DB:TrackerShown() return self:Profile().tracker.shown ~= false end
+function DB:SetTrackerShown(shown)
+    self:Profile().tracker.shown = shown and true or false
+end
 function DB:SaveTrackerPos(point, relPoint, x, y)
     local t = self:Profile().tracker
     t.point, t.relPoint, t.x, t.y = point, relPoint, x, y

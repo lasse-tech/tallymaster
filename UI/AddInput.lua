@@ -18,6 +18,8 @@ function AddInput:Commit(entry)
         DB:SetVisible(entry.key, true)
         T.Addon:Print(L["Now tracking %s."]:format(entry.originalName))
     end
+    -- Adding something implies wanting to see it, so bring a hidden tracker back.
+    if T.Tracker and T.Tracker.SetShown then T.Tracker:SetShown(true) end
     T.Addon:RefreshTracker()
     if T.KnownList and T.KnownList.Refresh then T.KnownList:Refresh() end
 end

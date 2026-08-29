@@ -7,9 +7,9 @@ much like Blizzard's *Track Recipe* feature.
 Folder name and in-game title are both **Tallymaster**.
 
 ## Features
-- **Live tracker** — always-on list, counts update in real time from bags, bank,
+- **Live tracker** — on-screen list, counts update in real time from bags, bank,
   equipped slots and mail. Grouped by category; groups fold. Sort alphabetically
-  or by count.
+  or by count. Position and shown/hidden state survive a reload or relog.
 - **Add by name or ID** — slash command, minimap button, or keybind opens an input
   box. Ambiguous IDs (item vs currency) prompt you to choose. Tracks items,
   currencies, mounts, battle pets, transmog (knowledge is stubbed).

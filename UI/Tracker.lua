@@ -126,7 +126,7 @@ function Tracker:Initialize()
         if button ~= "LeftButton" then return end
         if self.didDrag then self.didDrag = false; return end
         if IsShiftKeyDown() then
-            self:Hide()
+            Tracker:SetShown(false)
         else
             T.AddInput:Toggle()
         end
@@ -161,11 +161,21 @@ function Tracker:Initialize()
     headerPool = CreateFramePool("Button", content, nil, function(_, h) h:Hide() end)
 
     self:Refresh()
+    frame:SetShown(DB:TrackerShown())
+end
+
+-- Show or hide the tracker and remember the state across sessions. Only explicit
+-- user actions go through here; UIParent hiding the frame must not be persisted.
+function Tracker:SetShown(shown)
+    if not frame then self:Initialize() end
+    DB:SetTrackerShown(shown)
+    frame:SetShown(shown)
+    if shown then self:Refresh() end
 end
 
 function Tracker:Toggle()
     if not frame then self:Initialize() end
-    frame:SetShown(not frame:IsShown())
+    self:SetShown(not frame:IsShown())
 end
 
 local function trackerComparator(counts)

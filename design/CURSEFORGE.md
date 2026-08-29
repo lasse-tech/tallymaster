@@ -8,7 +8,7 @@ Crafting reagents, weekly currencies, that one rare drop you're farming, mounts 
 
 ## Features
 
-- **Always-on tracker** — a compact, movable on-screen list of everything you're tracking. It remembers where you put it and only grows downward as you expand groups.
+- **Always-on tracker** — a compact, movable on-screen list of everything you're tracking. It remembers where you put it and whether you hid it, and only grows downward as you expand groups.
 - **Track almost anything** — items, currencies, mounts, battle pets, and transmog appearances, each counted with the right source (bags, bank, equipped, mail, collection state, and more).
 - **Account-wide counts** — see the combined total across all your characters, or switch to per-character. Hover any entry for a per-character breakdown grouped by realm.
 - **Add it in seconds** — type a name or ID, or just **Shift-click an item or currency** straight into the add box. A live details panel shows the icon, quality, crafting tier, item level, type, stack size, sell price, expansion, and bind type before you commit.

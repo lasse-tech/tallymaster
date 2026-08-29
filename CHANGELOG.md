@@ -5,6 +5,16 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- The tracker window **came back on every login even after being hidden**. Its
+  shown/hidden state is now stored alongside its position in the profile
+  (`tracker.shown`), and hiding it - shift-click on the frame, `/tally show`, the
+  keybinding or a shift-click on the minimap button - persists across sessions.
+  Adding an entry re-shows a hidden tracker, so the new row is never added into
+  nowhere.
+
 ## [1.0.0] - 2026-08-23
 
 First stable release. Everything below 0.3.0-alpha was pre-release; the feature set
