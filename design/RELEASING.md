@@ -45,6 +45,11 @@ go live before the CurseForge token exists.
 
 Only tags matching `v*` trigger it.
 
+## What is not in the package
+
+`.pkgmeta` ignores `design`, both makefiles and the READMEs that only document
+the repository, so the zip carries the addon and its libraries and nothing else.
+
 ## Manual release
 
     Makefile.bat dist          # or: make dist

@@ -63,7 +63,11 @@ Within each category group, toggle between **alphabetical** and **by count**. No
 - Render each row icon as a bare texture + separate border frame so HandleIcon can reskin it.
 - Embed LibStub + LibElvUIPlugin-1.0; no hard dependency on ElvUI.
 
-## Open implementation choices (decide at scaffold time)
-- Ace3 (AceDB/AceConfig/AceGUI) vs. hand-rolled SavedVariables + Blizzard widgets.
-- Minimap button: LibDBIcon-1.0 (+ LibDataBroker) vs. custom.
-- Final addon name + chosen icon (see name-candidates.txt, design/icons/).
+## Implementation choices (settled)
+- **No Ace3.** Lifecycle, events, slash commands, saved variables, localization, the
+  options panel and the Known items window all run directly on the Blizzard API.
+- **Minimap button via LibDBIcon-1.0**, fed by LibDataBroker-1.1. Those two, plus
+  LibStub and CallbackHandler-1.0, are the only embedded libraries (`embeds.xml`);
+  LibElvUIPlugin-1.0 is resolved at runtime instead, since it needs ElvUI to load.
+- **Name and icon:** Tallymaster, with `Media/Satchel.tga` (icon-07 of
+  design/icons/). The other candidates are kept in name-candidates.txt.

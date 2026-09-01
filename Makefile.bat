@@ -22,6 +22,7 @@ if "%TARGET_NAME%"=="" set "TARGET_NAME=help"
 if /i "%TARGET_NAME%"=="help"       goto :help
 if /i "%TARGET_NAME%"=="version"    goto :version
 if /i "%TARGET_NAME%"=="check"      goto :check
+if /i "%TARGET_NAME%"=="lint"       goto :check
 if /i "%TARGET_NAME%"=="libs"       goto :libs
 if /i "%TARGET_NAME%"=="install"    goto :install
 if /i "%TARGET_NAME%"=="uninstall"  goto :uninstall
@@ -48,6 +49,7 @@ echo   Makefile dist         build dist\%ADDON%-%VERSION%.zip
 echo   Makefile clean        remove build output
 echo   Makefile distclean    clean + empty Libs\
 echo   Makefile purge        uninstall + delete SavedVariables ^(needs CONFIRM=yes^)
+echo   Makefile lint         alias for check
 echo.
 echo   set FLAVOR=_classic_era_   to target another client
 echo   set WOW_RETAIL_ADDON_FOLDER=D:\World of Warcraft\_retail_\Interface\AddOns

@@ -30,7 +30,7 @@ FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$(
 NO_ADDONS_MSG = echo "AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER=/path/to/Interface/AddOns, or pass WOW_DIR=/path/to/World of Warcraft"
 
 .DEFAULT_GOAL := help
-.PHONY: help version check libs install uninstall prune-libs dist clean distclean purge
+.PHONY: help version check lint libs install uninstall prune-libs dist clean distclean purge
 
 help:
 	@echo "$(ADDON) $(VERSION)"
@@ -44,6 +44,7 @@ help:
 	@echo "  make clean        remove build output"
 	@echo "  make distclean    clean + empty Libs/"
 	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
+	@echo "  make lint         alias for check"
 	@echo ""
 	@echo "  FLAVOR=$(FLAVOR)   override with FLAVOR=_classic_era_ etc."
 	@echo "  WOW_RETAIL_ADDON_FOLDER  Interface/AddOns to install into (retail only)"
@@ -64,6 +65,8 @@ check:
 	else \
 		echo "no Lua available (install lua/luac, or 'pip install lupa') - skipped"; \
 	fi
+
+lint: check
 
 libs:
 	@missing=0; \
