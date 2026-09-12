@@ -117,3 +117,14 @@ Skin/      ElvUI integration
 Locales/   Locale (runtime), enUS, deDE
 design/    spec, name candidates, icon SVGs (not shipped)
 ```
+
+## Licence and credits
+
+© 2026 incudex, Lars Gossard — <tallymaster@incudex.de>
+
+Embedded libraries, each under its own licence: [LibStub](https://www.wowace.com/projects/libstub),
+[CallbackHandler-1.0](https://www.wowace.com/projects/callbackhandler),
+[LibDataBroker-1.1](https://github.com/tekkub/libdatabroker-1-1) and
+[LibDBIcon-1.0](https://www.wowace.com/projects/libdbicon-1-0). They are not vendored here;
+`make fetch-libs` and the CI packager both pull them from the same source, [.pkgmeta](.pkgmeta).
+See also [Libs/README.md](Libs/README.md).

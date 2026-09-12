@@ -14,5 +14,25 @@
                 </FontString>
             </Layer>
         </Layers>
+        <Frames>
+            <!-- "Made with <3 in Europe" chip below the text. Size and anchor are
+                 set in Init, next to the extent they have to agree with. -->
+            <Frame parentKey="Chip">
+                <Layers>
+                    <Layer level="BACKGROUND">
+                        <Texture parentKey="Bg" setAllPoints="true">
+                            <Color r="1" g="0.82" b="0" a="0.15"/>
+                        </Texture>
+                    </Layer>
+                    <Layer level="OVERLAY">
+                        <FontString parentKey="Label" inherits="GameFontNormalSmall" justifyH="CENTER">
+                            <Anchors>
+                                <Anchor point="CENTER"/>
+                            </Anchors>
+                        </FontString>
+                    </Layer>
+                </Layers>
+            </Frame>
+        </Frames>
     </Frame>
 </Ui>

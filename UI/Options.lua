@@ -11,10 +11,23 @@ local ABOUT_TEMPLATE = "TallymasterAboutTemplate"
 local ABOUT_FONT = "GameFontHighlight"
 local ABOUT_BOTTOM_PAD = 8
 
+-- Not localized: the chip reads the same in every locale. Plain ASCII, since the
+-- game font has no heart glyph.
+local CHIP_TEXT = "Made with <3 in Europe"
+local CHIP_GAP = 6
+local CHIP_HEIGHT = 18
+local CHIP_PAD_X = 8
+
 TallymasterAboutMixin = {}
 
 function TallymasterAboutMixin:Init(initializer)
     self.Text:SetText(initializer:GetData().text)
+
+    local chip = self.Chip
+    chip.Label:SetText(CHIP_TEXT)
+    chip:ClearAllPoints()
+    chip:SetPoint("TOPLEFT", self.Text, "BOTTOMLEFT", 0, -CHIP_GAP)
+    chip:SetSize(math.ceil(chip.Label:GetStringWidth()) + 2 * CHIP_PAD_X, CHIP_HEIGHT)
 end
 
 local function metadata(field)
@@ -35,6 +48,11 @@ local function aboutText()
 
     local version = metadata("Version")
     if version then lines[#lines + 1] = L["Version: %s"]:format(version) end
+
+    -- Kept in the TOC rather than here so the three flavor TOCs stay the single
+    -- source and check-tocs catches any drift between them.
+    local copyright = metadata("X-Copyright")
+    if copyright then lines[#lines + 1] = "\194\169 " .. copyright end
 
     return table.concat(lines, "\n")
 end
@@ -58,7 +76,7 @@ local function addAbout()
     if text == "" then return end
 
     local initializer = Settings.CreateElementInitializer(ABOUT_TEMPLATE, { text = text })
-    local extent = math.ceil(textHeight(text)) + ABOUT_BOTTOM_PAD
+    local extent = math.ceil(textHeight(text)) + CHIP_GAP + CHIP_HEIGHT + ABOUT_BOTTOM_PAD
     initializer.GetExtent = function() return extent end
     layout:AddInitializer(initializer)
 end
