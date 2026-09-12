@@ -64,7 +64,10 @@ make install
 ```
 
 Without it, the Makefile falls back to `WOW_DIR` and then to auto-detection.
-`WOW_RETAIL_ADDON_FOLDER` only applies to retail — a `FLAVOR` override ignores it.
+`WOW_RETAIL_ADDON_FOLDER` names the retail folder only. With a `FLAVOR` override the
+Makefile tries `WOW_DIR` and auto-detection first, then looks for the other client
+next to `_retail_` in the same WoW folder — so one variable also covers
+`make install FLAVOR=_classic_` under Wine, where auto-detection finds nothing.
 
 ### Before first run
 1. `make fetch-libs` to populate `Libs/` (see [Libs/README.md](Libs/README.md)).

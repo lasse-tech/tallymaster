@@ -35,6 +35,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   remove their own output, so building one no longer discards the other.
 - Copyright in the About block, read from a new `## X-Copyright` TOC field, and a
   "Made with <3 in Europe" chip below it.
+- `make install` / `uninstall` / `purge` with a `FLAVOR` override also look for that
+  client next to `_retail_` in the folder `WOW_RETAIL_ADDON_FOLDER` points into, so
+  the Classic clients are found under Wine without setting `WOW_DIR`.
 - `make fetch-libs` (`Makefile fetch-libs` on Windows) downloads the embedded libraries
   into `Libs/`, reading the URLs and the ignore list out of `.pkgmeta` rather than
   repeating them, so it stays in step with what the CI packager pulls. Needs `svn` for

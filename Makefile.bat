@@ -74,8 +74,9 @@ rem ---------------------------------------------------------------- locate WoW
 
 :findwow
 rem WOW_RETAIL_ADDON_FOLDER points straight at Interface\AddOns and skips the search.
-rem It only applies to the flavor it names, so a FLAVOR override falls back to
-rem WOW_DIR and auto-detection.
+rem It only names the retail folder, so a FLAVOR override falls back to WOW_DIR and
+rem auto-detection, and last to the WoW folder three levels above it, where every
+rem other client sits next to _retail_.
 if /i "%FLAVOR%"=="_retail_" if defined WOW_RETAIL_ADDON_FOLDER (
     set "ADDONS=%WOW_RETAIL_ADDON_FOLDER%"
     for %%i in ("%WOW_RETAIL_ADDON_FOLDER%\..\..") do set "FLAVOR_DIR=%%~fi"
@@ -99,6 +100,9 @@ for %%d in (
     "C:\Games\World of Warcraft"
 ) do (
     if not defined WOW if exist "%%~d\%FLAVOR%" set "WOW=%%~d"
+)
+if not defined WOW if defined WOW_RETAIL_ADDON_FOLDER (
+    for %%i in ("!WOW_RETAIL_ADDON_FOLDER!\..\..\..") do if exist "%%~fi\%FLAVOR%" set "WOW=%%~fi"
 )
 :findwow_done
 if not defined WOW (

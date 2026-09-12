@@ -21,13 +21,18 @@ WOW_CANDIDATES := \
 	"C:/Games/World of Warcraft"
 
 # WOW_RETAIL_ADDON_FOLDER points straight at Interface/AddOns and skips the search.
-# It only applies to the flavor it names, so a FLAVOR override falls back to WOW_DIR
-# and auto-detection.
+# It only names the retail folder, so a FLAVOR override falls back to WOW_DIR and
+# auto-detection. Every client sits next to _retail_ in one WoW folder, though, so
+# the last candidate is the folder three levels above it - which is what finds the
+# Classic clients under a Wine prefix, where none of the Windows paths exist.
 ifeq ($(FLAVOR),_retail_)
 ADDONS_DIR ?= $(WOW_RETAIL_ADDON_FOLDER)
 endif
 
-FIND_WOW = if [ -n "$(WOW_DIR)" ]; then echo "$(WOW_DIR)"; else for d in $(WOW_CANDIDATES); do if [ -d "$$d/$(FLAVOR)" ]; then echo "$$d"; break; fi; done; fi
+FIND_WOW = if [ -n "$(WOW_DIR)" ]; then echo "$(WOW_DIR)"; else \
+	retail_root=""; \
+	if [ -n "$(WOW_RETAIL_ADDON_FOLDER)" ]; then retail_root=$$(dirname "$$(dirname "$$(dirname "$(WOW_RETAIL_ADDON_FOLDER)")")"); fi; \
+	for d in $(WOW_CANDIDATES) "$$retail_root"; do if [ -n "$$d" ] && [ -d "$$d/$(FLAVOR)" ]; then echo "$$d"; break; fi; done; fi
 
 FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$($(FIND_WOW)); if [ -n "$$wow" ]; then echo "$$wow/$(FLAVOR)/Interface/AddOns"; fi; fi
 
