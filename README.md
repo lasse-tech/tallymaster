@@ -67,7 +67,7 @@ Without it, the Makefile falls back to `WOW_DIR` and then to auto-detection.
 `WOW_RETAIL_ADDON_FOLDER` only applies to retail — a `FLAVOR` override ignores it.
 
 ### Before first run
-1. Populate `Libs/` (see [Libs/README.md](Libs/README.md)).
+1. `make fetch-libs` to populate `Libs/` (see [Libs/README.md](Libs/README.md)).
 2. The addon icon ships as `Media/Satchel.tga` (see [Media/README.md](Media/README.md)).
 3. Confirm the `## Interface:` number in each `.toc` matches the live build of that
    flavor. `make check-tocs` only guards the TOCs against drifting apart from each
@@ -84,17 +84,28 @@ expose the same targets. The WoW folder is auto-detected; override it with
 | `check-tocs` | verify the three flavor TOCs differ only in `## Interface:`, and that every file they list exists |
 | `lint` | `check` + `check-tocs` |
 | `libs` | report which libraries `embeds.xml` expects but `Libs/` lacks |
+| `fetch-libs` | download them into `Libs/` straight from `.pkgmeta` (needs `svn`, and `git` for LibDataBroker-1.1) |
 | `install` | copy the addon into the live client; keeps the libraries already installed there and reports ones `embeds.xml` no longer lists |
 | `uninstall` | remove the addon; SavedVariables are kept |
 | `prune-libs` | delete those stale libraries from the installed copy |
-| `dist` | build `dist/Tallymaster-<version>.zip` |
+| `stage` | build `dist/<expansion>/Tallymaster` for Midnight, Mists and Vanilla - each with only its own TOC, ready to copy into that client's `Interface/AddOns` |
+| `dist` | build `dist/Tallymaster-<version>.zip` (all three TOCs in one folder) |
 | `clean` / `distclean` | drop build output / also empty `Libs/` |
 | `purge` | uninstall **and** delete SavedVariables; needs `CONFIRM=yes` |
 
 ```
 make install                 # or:  Makefile install
+make stage                   #      Makefile stage
 make dist                    #      Makefile dist
 make purge CONFIRM=yes       #      set "CONFIRM=yes" && Makefile purge
+```
+
+`stage` lays the builds out by expansion so they only have to be copied over:
+
+```
+dist/Midnight/Tallymaster  ->  _retail_/Interface/AddOns/
+dist/Mists/Tallymaster     ->  _classic_/Interface/AddOns/
+dist/Vanilla/Tallymaster   ->  _classic_era_/Interface/AddOns/
 ```
 
 ## Source layout

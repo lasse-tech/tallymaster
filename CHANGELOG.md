@@ -29,6 +29,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   `check`.
 - `FLAVOR=_classic_` selects the Mists Classic client for `install`, `uninstall`,
   `prune-libs` and `purge`, next to the existing `_classic_era_`.
+- `make stage` (`Makefile stage` on Windows) builds `dist/<expansion>/Tallymaster` for
+  Midnight, Mists and Vanilla, each carrying only the TOC that expansion loads, ready to
+  copy into that client's `Interface/AddOns`. `stage` and `dist` share `dist/` but only
+  remove their own output, so building one no longer discards the other.
+- `make fetch-libs` (`Makefile fetch-libs` on Windows) downloads the embedded libraries
+  into `Libs/`, reading the URLs and the ignore list out of `.pkgmeta` rather than
+  repeating them, so it stays in step with what the CI packager pulls. Needs `svn` for
+  the three CurseForge externals and `git` for LibDataBroker-1.1.
 
 ### Changed
 - Contact address is now `tallymaster@incudex.de` (was `lars@lasse-tech.de`).

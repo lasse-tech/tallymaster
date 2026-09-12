@@ -28,9 +28,11 @@ if /i "%TARGET_NAME%"=="check"      goto :check
 if /i "%TARGET_NAME%"=="check-tocs" goto :checktocs
 if /i "%TARGET_NAME%"=="lint"       goto :lint
 if /i "%TARGET_NAME%"=="libs"       goto :libs
+if /i "%TARGET_NAME%"=="fetch-libs" goto :fetchlibs
 if /i "%TARGET_NAME%"=="install"    goto :install
 if /i "%TARGET_NAME%"=="uninstall"  goto :uninstall
 if /i "%TARGET_NAME%"=="prune-libs" goto :prunelibs
+if /i "%TARGET_NAME%"=="stage"      goto :stage
 if /i "%TARGET_NAME%"=="dist"       goto :dist
 if /i "%TARGET_NAME%"=="clean"      goto :clean
 if /i "%TARGET_NAME%"=="distclean"  goto :distclean
@@ -46,9 +48,11 @@ echo %ADDON% %VERSION%
 echo.
 echo   Makefile check        syntax-check every Lua file
 echo   Makefile libs         report which embedded libraries are missing
+echo   Makefile fetch-libs   download them into Libs\ ^(needs svn, and git for one^)
 echo   Makefile install      copy the addon into the live WoW client
 echo   Makefile uninstall    remove it again ^(SavedVariables are kept^)
 echo   Makefile prune-libs   drop installed libraries embeds.xml no longer lists
+echo   Makefile stage        build dist\^<expansion^>\%ADDON%, ready to copy over
 echo   Makefile dist         build dist\%ADDON%-%VERSION%.zip
 echo   Makefile clean        remove build output
 echo   Makefile distclean    clean + empty Libs\
@@ -131,6 +135,65 @@ if not errorlevel 1 (
 echo no Lua available ^(install lua/luac, or "pip install lupa"^) - skipped
 goto :eof
 
+rem ----------------------------------------------------------------- fetch-libs
+
+rem .pkgmeta stays the single source for what to fetch and from where - the CI
+rem packager reads the same file, so hardcoding the URLs here would only invite
+rem drift. Batch has no awk, so PowerShell parses the externals block into
+rem "<path> <url>" lines and the fetching stays here. CurseForge serves SVN;
+rem LibDataBroker-1.1 lives in tekkub's git repo.
+:fetchlibs
+where svn >nul 2>&1
+if errorlevel 1 (
+    echo svn not found - needed for the CurseForge externals
+    exit /b 1
+)
+where git >nul 2>&1
+if errorlevel 1 (
+    echo git not found - needed for LibDataBroker-1.1
+    exit /b 1
+)
+set "EXT=%TEMP%\tm_externals.txt"
+powershell -NoProfile -Command "$e=$false;$p=$null;Get-Content '%ROOT%\.pkgmeta' | ForEach-Object { if ($_ -match '^externals:') { $e=$true; return }; if ($_ -match '^[a-zA-Z]') { $e=$false }; if ($e -and $_ -match '^  ([^ \#][^:]*):\s*$') { $p=$matches[1]; return }; if ($e -and $p -and $_ -match '^\s+url:\s*(\S+)') { \"$p $($matches[1])\"; $p=$null } }" > "%EXT%"
+if not exist "%EXT%" (
+    echo could not read .pkgmeta
+    exit /b 1
+)
+for /f "usebackq tokens=1,2" %%a in ("%EXT%") do (
+    if exist "%ROOT%\%%a" rmdir /s /q "%ROOT%\%%a"
+    echo %%b | findstr /c:"github.com" >nul
+    if errorlevel 1 (
+        svn export -q --force --non-interactive --trust-server-cert "%%b" "%ROOT%\%%a"
+        if errorlevel 1 exit /b 1
+    ) else (
+        git clone -q --depth 1 "%%b" "%ROOT%\%%a.tmp"
+        if errorlevel 1 exit /b 1
+        rmdir /s /q "%ROOT%\%%a.tmp\.git"
+        move "%ROOT%\%%a.tmp" "%ROOT%\%%a" >nul
+    )
+    echo   fetched %%a
+)
+del "%EXT%" >nul 2>&1
+
+rem Only ignore entries *inside* a fetched external are ours to delete. Top-level
+rem Libs\ entries like Libs\README.md are repo files the packager excludes from
+rem the zip - deleting those here would remove a tracked file.
+set "IGN=%TEMP%\tm_ignores.txt"
+powershell -NoProfile -Command "$i=$false;Get-Content '%ROOT%\.pkgmeta' | ForEach-Object { if ($_ -match '^ignore:') { $i=$true; return }; if ($i -and $_ -match '^  - (Libs/[^/]+/.+)$') { $matches[1].Replace('/','\') } }" > "%IGN%"
+for /f "usebackq delims=" %%p in ("%IGN%") do (
+    if exist "%ROOT%\%%p\" (
+        echo   dropping %%p ^(.pkgmeta ignores it^)
+        rmdir /s /q "%ROOT%\%%p"
+    ) else if exist "%ROOT%\%%p" (
+        echo   dropping %%p ^(.pkgmeta ignores it^)
+        del /q "%ROOT%\%%p"
+    )
+)
+del "%IGN%" >nul 2>&1
+for /r "%ROOT%\Libs" %%f in (.pkgmeta) do if exist "%%f" del /q "%%f"
+call :libs
+goto :eof
+
 rem ----------------------------------------------------------------- check-tocs
 
 rem The flavor TOCs carry the same file list three times over, so drift is the one
@@ -193,9 +256,9 @@ for /f "tokens=2 delims=\" %%l in ('findstr /c:"Libs" "%ROOT%\embeds.xml"') do (
 )
 if "!MISSING!"=="1" (
     echo.
-    echo Libraries are not vendored - see Libs\README.md. "Makefile install" keeps
-    echo whatever is already installed in the client, so this is only fatal on
-    echo a first install or for "Makefile dist".
+    echo Run "Makefile fetch-libs" to download them, or see Libs\README.md.
+    echo "Makefile install" keeps whatever is already installed in the client, so
+    echo this is only fatal on a first install or for "Makefile stage" / "dist".
 )
 goto :eof
 
@@ -283,6 +346,37 @@ for /d %%d in ("%TARGET%\Libs\*") do (
 echo done
 goto :eof
 
+rem ---------------------------------------------------------------------- stage
+
+:stage
+set "HAVELIBS=0"
+for /d %%d in ("%ROOT%\Libs\*") do set "HAVELIBS=1"
+if "!HAVELIBS!"=="0" (
+    echo Libs\ is empty - the staged folders would not load. Populate it first ^("Makefile libs"^).
+    exit /b 1
+)
+rem Expansion, its TOC suffix, and the client folder it belongs in.
+for %%p in ("Midnight:Mainline:_retail_" "Mists:Mists:_classic_" "Vanilla:Vanilla:_classic_era_") do (
+    for /f "tokens=1,2,3 delims=:" %%a in (%%p) do (
+        set "OUT=%DIST%\%%a\%ADDON%"
+        if exist "%DIST%\%%a" rmdir /s /q "%DIST%\%%a"
+        mkdir "!OUT!"
+        for %%d in (%INSTALL_DIRS% Libs) do (
+            robocopy "%ROOT%\%%d" "!OUT!\%%d" /e /njh /njs /ndl /nc /ns /np >nul
+            if errorlevel 8 echo   ERROR copying %%d& exit /b 1
+        )
+        for %%f in (embeds.xml Bindings.xml CHANGELOG.md) do copy /y "%ROOT%\%%f" "!OUT!\%%f" >nul
+        copy /y "%ROOT%\%ADDON%_%%b.toc" "!OUT!\%ADDON%_%%b.toc" >nul
+        if exist "!OUT!\Libs\README.md" del /q "!OUT!\Libs\README.md"
+        if exist "!OUT!\Media\README.md" del /q "!OUT!\Media\README.md"
+        echo   %%a  dist\%%a\%ADDON%  -^> %%c\Interface\AddOns\
+    )
+)
+echo.
+echo Copy each %ADDON% folder into that client's Interface\AddOns.
+echo Each folder carries only its own TOC, so it loads on that expansion alone.
+goto :eof
+
 rem ----------------------------------------------------------------------- dist
 
 :dist
@@ -292,7 +386,8 @@ if "!HAVELIBS!"=="0" (
     echo Libs\ is empty - the zip would not load. Populate it first ^("Makefile libs"^).
     exit /b 1
 )
-if exist "%DIST%" rmdir /s /q "%DIST%"
+if exist "%DIST%\%ADDON%" rmdir /s /q "%DIST%\%ADDON%"
+if exist "%DIST%\%ADDON%-%VERSION%.zip" del /q "%DIST%\%ADDON%-%VERSION%.zip"
 mkdir "%DIST%\%ADDON%"
 for %%d in (%INSTALL_DIRS% Libs) do (
     robocopy "%ROOT%\%%d" "%DIST%\%ADDON%\%%d" /e /njh /njs /ndl /nc /ns /np >nul

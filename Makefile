@@ -34,7 +34,17 @@ FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$(
 NO_ADDONS_MSG = echo "AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER=/path/to/Interface/AddOns, or pass WOW_DIR=/path/to/World of Warcraft"
 
 .DEFAULT_GOAL := help
-.PHONY: help version check check-tocs lint libs install uninstall prune-libs dist clean distclean purge
+# Expansion -> (TOC suffix, client folder). "stage" builds one ready-to-copy folder
+# per expansion under dist/, each carrying only the TOC that expansion loads.
+FLAVOR_NAMES := Midnight Mists Vanilla
+FLAVOR_TOC_Midnight := Mainline
+FLAVOR_TOC_Mists    := Mists
+FLAVOR_TOC_Vanilla  := Vanilla
+FLAVOR_DIR_Midnight := _retail_
+FLAVOR_DIR_Mists    := _classic_
+FLAVOR_DIR_Vanilla  := _classic_era_
+
+.PHONY: help version check check-tocs lint libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
 
 help:
 	@echo "$(ADDON) $(VERSION)"
@@ -42,9 +52,11 @@ help:
 	@echo "  make check        syntax-check every Lua file"
 	@echo "  make check-tocs   verify the flavor TOCs only differ in ## Interface:"
 	@echo "  make libs         report which embedded libraries are missing"
+	@echo "  make fetch-libs   download them into Libs/ (needs svn, and git for one)"
 	@echo "  make install      copy the addon into the live WoW client"
 	@echo "  make uninstall    remove it again (SavedVariables are kept)"
 	@echo "  make prune-libs   drop installed libraries embeds.xml no longer lists"
+	@echo "  make stage        build dist/<expansion>/$(ADDON), ready to copy over"
 	@echo "  make dist         build $(ZIP)"
 	@echo "  make clean        remove build output"
 	@echo "  make distclean    clean + empty Libs/"
@@ -104,10 +116,39 @@ libs:
 	done; \
 	if [ $$missing -eq 1 ]; then \
 		echo ""; \
-		echo "Libraries are not vendored - see Libs/README.md. 'make install' keeps"; \
-		echo "whatever is already installed in the client, so this is only fatal on"; \
-		echo "a first install or for 'make dist'."; \
+		echo "Run 'make fetch-libs' to download them, or see Libs/README.md."; \
+		echo "'make install' keeps whatever is already installed in the client, so this"; \
+		echo "is only fatal on a first install or for 'make stage' / 'make dist'."; \
 	fi
+
+# .pkgmeta stays the single source for what to fetch and from where - the CI
+# packager reads the same file, so hardcoding the URLs here would only invite
+# drift. CurseForge serves SVN; LibDataBroker-1.1 lives in tekkub's git repo.
+# awk walks the externals block and prints "<path> <url>" per external; the
+# ignore block is filtered down to the entries that land inside Libs/.
+AWK_EXTERNALS := /^externals:/{e=1;next} /^[a-zA-Z]/{e=0} e&&/^  [^ \#]/{sub(/:$$/,"",$$1);p=$$1;next} e&&p&&$$1=="url:"{print p, $$2; p=""}
+
+fetch-libs:
+	@command -v svn >/dev/null 2>&1 || { echo "svn not found - needed for the CurseForge externals"; exit 1; }
+	@command -v git >/dev/null 2>&1 || { echo "git not found - needed for LibDataBroker-1.1"; exit 1; }
+	@awk '$(AWK_EXTERNALS)' .pkgmeta | while read -r path url; do \
+		[ -n "$$path" ] && [ -n "$$url" ] || continue; \
+		rm -rf "$$path"; \
+		case "$$url" in \
+			*github.com*) \
+				git clone -q --depth 1 "$$url" "$$path.tmp" || exit 1; \
+				rm -rf "$$path.tmp/.git"; \
+				mv "$$path.tmp" "$$path";; \
+			*) \
+				svn export -q --force --non-interactive --trust-server-cert "$$url" "$$path" || exit 1;; \
+		esac; \
+		echo "  fetched $$path"; \
+	done
+	@sed -n '/^ignore:/,$$p' .pkgmeta | sed -n 's|^  - \(Libs/[^/]*/.*\)$$|\1|p' | while read -r p; do \
+		if [ -e "$$p" ]; then echo "  dropping $$p (.pkgmeta ignores it)"; rm -rf "$$p"; fi; \
+	done
+	@find Libs -name .pkgmeta -delete 2>/dev/null; true
+	@$(MAKE) --no-print-directory libs
 
 # The stray list includes $(ADDON).toc: that is the pre-1.1.0 single TOC, and an
 # install from before the flavor split still carries it, listing a file set that
@@ -169,7 +210,28 @@ prune-libs:
 	done; \
 	echo "done"
 
-dist: clean
+stage:
+	@for name in $(FLAVOR_NAMES); do rm -rf "$(DIST_DIR)/$$name"; done
+	@if [ -z "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ]; then \
+		echo "Libs/ is empty - the staged folders would not load. Populate it first (make libs)."; \
+		exit 1; fi
+	@$(foreach name,$(FLAVOR_NAMES), \
+		name="$(name)"; toc="$(FLAVOR_TOC_$(name))"; clientdir="$(FLAVOR_DIR_$(name))"; \
+		out="$(DIST_DIR)/$(name)/$(ADDON)"; \
+		mkdir -p "$$out"; \
+		for d in $(INSTALL_DIRS) Libs; do cp -r "$$d" "$$out/"; done; \
+		cp embeds.xml Bindings.xml CHANGELOG.md "$$out/"; \
+		cp "$(ADDON)_$$toc.toc" "$$out/"; \
+		rm -f "$$out/Libs/README.md" "$$out/Media/README.md"; \
+		printf "  %-10s %-32s -> %s\n" "$$name" "$(DIST_DIR)/$(name)/$(ADDON)" \
+			"$$clientdir/Interface/AddOns/"; \
+	)
+	@echo ""
+	@echo "Copy each $(ADDON) folder into that client's Interface/AddOns."
+	@echo "Each folder carries only its own TOC, so it loads on that expansion alone."
+
+dist:
+	@rm -rf $(DIST_DIR)/$(ADDON); rm -f $(ZIP)
 	@if [ -z "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ]; then \
 		echo "Libs/ is empty - the zip would not load. Populate it first (make libs)."; \
 		exit 1; fi
