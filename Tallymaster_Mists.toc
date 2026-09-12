@@ -1,0 +1,34 @@
+## Interface: 50504
+## Title: Tallymaster
+## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
+## Author: Lars Gossard
+## Version: 1.1.0
+## X-Email: tallymaster@incudex.de
+## X-Website: https://www.incudex.de
+## X-Copyright: 2026 incudex, Lars Gossard
+## SavedVariables: TallymasterDB
+## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
+## X-Curse-Project-ID: 1574454
+## X-Wago-ID: bGoyWq60
+
+embeds.xml
+
+Locales\Locale.lua
+Locales\enUS.lua
+Locales\deDE.lua
+
+Core\Addon.lua
+Core\Compat.lua
+Core\Database.lua
+Core\Core.lua
+Core\Categories.lua
+Core\Resolve.lua
+Core\Counting.lua
+
+UI\Tracker.lua
+UI\AddInput.lua
+UI\KnownList.lua
+UI\Options.lua
+UI\Options.xml
+
+Skin\ElvUI.lua

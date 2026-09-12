@@ -1,7 +1,8 @@
 # Tallymaster — Design spec
 
-Target: World of Warcraft **Midnight** (retail). Status: design locked, pre-implementation.
-Last updated: 2026-06-13.
+Targets: World of Warcraft **Midnight** (retail), **Mists Classic** and **Classic Era**.
+Status: design locked and implemented; released versions are listed in CHANGELOG.md.
+Last updated: 2026-09-12.
 
 ## Core feature
 A live, on-screen list (like Blizzard's *Track Recipe*) showing tracked entries with icon,
@@ -10,6 +11,35 @@ name, and a live count. Counts update in real time from the player's holdings.
 ## Trackable types
 Items, currencies, mounts, transmog, battle pets, profession knowledge — "all of them".
 Each type resolves via its own API but is normalized into a common `TrackedEntry`.
+
+Only items and currencies are reachable through the add box today; the other types are
+carried by the data model, the category labels and the counting handlers, but nothing
+constructs them yet.
+
+## Flavor support
+One folder, three TOCs (`_Mainline`, `_Mists`, `_Vanilla`); the client loads the one
+whose suffix matches. Every retail/Classic divergence lives in `Core/Compat.lua`, under
+two rules that come out of comparing the per-client API dumps:
+
+- **Probe the function, never the namespace.** `C_MountJournal`, `C_PetJournal` and
+  `C_TransmogCollection` are present in *every* flavor, Classic Era included, where none
+  of those systems exist in the game at all.
+- **Classic keeps the pre-10.0 currency globals**, and `GetCurrencyListInfo` returns a
+  tuple where retail returns a table.
+
+What each flavor actually gives us:
+
+| | Midnight | Mists Classic | Classic Era |
+|---|---|---|---|
+| Items — bags, bank, mail, equipped | yes | yes | yes |
+| Currencies by ID | yes | yes | no such system |
+| Currencies by name, currency headers | yes | yes | no currency list |
+| Mounts, battle pets | yes | yes | no such system |
+| Transmog | yes | API present, no wardrobe | no such system |
+| Crafting quality tiers | yes | no | no |
+
+Where a system exists but holds nothing, the count is simply zero — which is the honest
+answer, so those paths need no special-casing beyond the function guards.
 
 ## Count scope (live count source)
 Counts aggregate from: **bags + bank + equipped + mail**.
@@ -71,3 +101,6 @@ Within each category group, toggle between **alphabetical** and **by count**. No
   LibElvUIPlugin-1.0 is resolved at runtime instead, since it needs ElvUI to load.
 - **Name and icon:** Tallymaster, with `Media/Satchel.tga` (icon-07 of
   design/icons/). The other candidates are kept in name-candidates.txt.
+- **Flavor differences are centralized**, not sprinkled: `Core/Compat.lua` is the only
+  file allowed to name a flavor-specific API, so adding a flavor touches one file plus
+  a TOC. `make check-tocs` guards the TOCs against drifting apart.

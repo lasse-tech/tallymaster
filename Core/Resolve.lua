@@ -1,6 +1,7 @@
 local ADDON, T = ...
 local L = T.L
 local DB = T.DB
+local Compat = T.Compat
 
 local Resolve = {}
 T.Resolve = Resolve
@@ -16,18 +17,6 @@ local function buildEntry(entryType, id, name, icon)
     }
 end
 
-local function craftingQuality(itemInfo)
-    if not C_TradeSkillUI then return nil end
-    local q
-    if C_TradeSkillUI.GetItemReagentQualityByItemInfo then
-        q = C_TradeSkillUI.GetItemReagentQualityByItemInfo(itemInfo)
-    end
-    if not q and C_TradeSkillUI.GetItemCraftedQualityByItemInfo then
-        q = C_TradeSkillUI.GetItemCraftedQualityByItemInfo(itemInfo)
-    end
-    return q
-end
-
 local function itemEntry(id, link)
     local info = link or id
     local name, _, quality, itemLevel, _, itemType, itemSubType, stackCount,
@@ -41,7 +30,7 @@ local function itemEntry(id, link)
         category        = T.Categories:Auto("item", id),
         icon            = icon,
         itemQuality     = quality,
-        craftingQuality = craftingQuality(info),
+        craftingQuality = Compat:CraftingQuality(info),
         respectQuality  = false,
         itemLevel       = itemLevel,
         itemType        = itemType,
@@ -64,8 +53,7 @@ local function tryItem(id, link)
 end
 
 local function tryCurrency(id)
-    if not C_CurrencyInfo or not C_CurrencyInfo.GetCurrencyInfo then return nil end
-    local info = C_CurrencyInfo.GetCurrencyInfo(id)
+    local info = Compat:GetCurrencyInfo(id)
     if not info or not info.name or info.name == "" then return nil end
     return buildEntry("currency", id, info.name, info.iconFileID)
 end
@@ -96,12 +84,13 @@ function Resolve:ByName(name)
         end
     end
 
-    if C_CurrencyInfo and C_CurrencyInfo.GetCurrencyListSize then
-        local size = C_CurrencyInfo.GetCurrencyListSize()
-        for i = 1, size do
-            local info = C_CurrencyInfo.GetCurrencyListInfo(i)
+    -- Classic Era has no currency list to walk, so a currency can only be added
+    -- by ID there. Every other flavour resolves the name through the list.
+    if Compat.hasCurrencyList then
+        for i = 1, Compat:GetCurrencyListSize() do
+            local info = Compat:GetCurrencyListInfo(i)
             if info and not info.isHeader and info.name and info.name:lower() == name:lower() then
-                local clink = C_CurrencyInfo.GetCurrencyListLink(i)
+                local clink = Compat:GetCurrencyListLink(i)
                 local id = clink and tonumber(clink:match("currency:(%d+)"))
                 if id then
                     local entry = tryCurrency(id)

@@ -1,5 +1,6 @@
 local ADDON, T = ...
 local DB = T.DB
+local Compat = T.Compat
 
 local Counting = {}
 T.Counting = Counting
@@ -35,32 +36,9 @@ local function itemTotal(id)
     return n + equippedCount(id) + (mailCache[id] or 0)
 end
 
-local BAG_FIELDS = {
-    "ReagentBag",
-    "CharacterBankTab_1", "CharacterBankTab_2", "CharacterBankTab_3",
-    "CharacterBankTab_4", "CharacterBankTab_5", "CharacterBankTab_6",
-    "AccountBankTab_1", "AccountBankTab_2", "AccountBankTab_3",
-    "AccountBankTab_4", "AccountBankTab_5",
-}
-
-local SCAN_BAGS
-local function scanBags()
-    if SCAN_BAGS then return SCAN_BAGS end
-    SCAN_BAGS = { 0, 1, 2, 3, 4 }
-    local bi = Enum and Enum.BagIndex
-    if bi then
-        for _, k in ipairs(BAG_FIELDS) do
-            if bi[k] then SCAN_BAGS[#SCAN_BAGS + 1] = bi[k] end
-        end
-    else
-        SCAN_BAGS[#SCAN_BAGS + 1] = 5
-    end
-    return SCAN_BAGS
-end
-
 local function nameCount(entry)
     local seen = { [entry.id] = true }
-    for _, bag in ipairs(scanBags()) do
+    for _, bag in ipairs(Compat:ScanBags()) do
         local slots = C_Container.GetContainerNumSlots(bag) or 0
         for slot = 1, slots do
             local sid = C_Container.GetContainerItemID(bag, slot)
@@ -83,25 +61,20 @@ local typeHandlers = {
     end,
 
     currency = function(entry)
-        local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo(entry.id)
+        local info = Compat:GetCurrencyInfo(entry.id)
         return (info and info.quantity) or 0
     end,
 
     mount = function(entry)
-        if not C_MountJournal then return 0 end
-        local _, _, _, _, _, _, _, _, _, _, isCollected = C_MountJournal.GetMountInfoByID(entry.id)
-        return isCollected and 1 or 0
+        return Compat:MountCollected(entry.id) and 1 or 0
     end,
 
     pet = function(entry)
-        if not C_PetJournal then return 0 end
-        local numCollected = C_PetJournal.GetNumCollectedInfo(entry.id)
-        return numCollected or 0
+        return Compat:PetsCollected(entry.id)
     end,
 
     transmog = function(entry)
-        if not C_TransmogCollection then return 0 end
-        return C_TransmogCollection.PlayerHasTransmog(entry.id) and 1 or 0
+        return Compat:HasTransmog(entry.id) and 1 or 0
     end,
 
     knowledge = function() return 0 end,

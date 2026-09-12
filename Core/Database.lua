@@ -105,6 +105,8 @@ function DB:SaveTrackerPos(point, relPoint, x, y)
     t.point, t.relPoint, t.x, t.y = point, relPoint, x, y
 end
 
+-- Classic has no crafting quality tiers, so entries there never carry a
+-- craftingQuality and this always returns the empty string.
 function DB:TierMarkup(entry)
     if entry.respectQuality and entry.craftingQuality and CreateAtlasMarkup then
         return " " .. CreateAtlasMarkup("Professions-ChatIcon-Quality-Tier" .. entry.craftingQuality, 14, 14)
@@ -172,14 +174,12 @@ function DB:CurrentName(entry)
     if entry.type == "item" then
         return (C_Item.GetItemInfo(id))
     elseif entry.type == "currency" then
-        local info = C_CurrencyInfo and C_CurrencyInfo.GetCurrencyInfo(id)
+        local info = T.Compat:GetCurrencyInfo(id)
         if info and info.name and info.name ~= "" then return info.name end
     elseif entry.type == "mount" then
-        if C_MountJournal then return (C_MountJournal.GetMountInfoByID(id)) end
+        return T.Compat:MountName(id)
     elseif entry.type == "pet" then
-        if C_PetJournal and C_PetJournal.GetPetInfoBySpeciesID then
-            return (C_PetJournal.GetPetInfoBySpeciesID(id))
-        end
+        return T.Compat:PetName(id)
     end
     return nil
 end

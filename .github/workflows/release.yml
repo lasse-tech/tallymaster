@@ -1,7 +1,7 @@
 name: Release
 
 # Packaging and upload run on tags only. The BigWigs packager reads the project
-# ids from Tallymaster.toc (X-Curse-Project-ID, X-Wago-ID), pulls the libraries
+# ids from the flavor TOCs (X-Curse-Project-ID, X-Wago-ID), pulls the libraries
 # listed in .pkgmeta and builds the changelog from CHANGELOG.md.
 on:
   push:

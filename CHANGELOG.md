@@ -5,6 +5,49 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- **Runs on Mists Classic and Classic Era** alongside retail. One folder carries three
+  TOCs - `Tallymaster_Mainline.toc` (Interface 120100), `Tallymaster_Mists.toc` (50504)
+  and `Tallymaster_Vanilla.toc` (11509) - and the client loads the one whose suffix
+  matches. The single `Tallymaster.toc` is gone.
+- `Core/Compat.lua` holds every retail/Classic API difference, so no other file names a
+  flavor-specific API:
+  - Classic has no `C_CurrencyInfo.GetCurrencyListSize` / `GetCurrencyListInfo`. It keeps
+    the pre-10.0 globals instead, and `GetCurrencyListInfo` returns
+    `name, isHeader, isExpanded, isUnused, isWatched, count, icon` where retail returns a
+    table. Compat normalizes the tuple, so adding a currency by name and reading currency
+    headers work on Mists Classic. Classic Era has no currency list at all - there a
+    currency can only be added by ID.
+  - `Enum.BagIndex` is renumbered between the flavors (Classic: `Bank=-1`, `Keyring=-2`,
+    `Reagentbank=-3`, `BankBag_1..7=6..12`; retail: `Keyring=-1`,
+    `CharacterBankTab_1..6=6..11`). Containers are now resolved by name, so the Classic
+    bank, reagent bank and keyring are scanned instead of silently skipped.
+- `make check-tocs` (`Makefile check-tocs` on Windows) verifies the three TOCs differ only
+  in `## Interface:` and that every file they list exists. `make lint` runs it after
+  `check`.
+- `FLAVOR=_classic_` selects the Mists Classic client for `install`, `uninstall`,
+  `prune-libs` and `purge`, next to the existing `_classic_era_`.
+
+### Changed
+- Contact address is now `tallymaster@incudex.de` (was `lars@lasse-tech.de`).
+
+### Fixed
+- **Counting a battle pet could throw** instead of returning a count.
+  `C_PetJournal.GetNumCollectedInfo` was called behind a `if not C_PetJournal` guard, but
+  the namespace exists in every flavor - Classic Era included, where the pet journal does
+  not - so the guard never caught a missing function. All collection lookups now probe the
+  function itself. The same held for `C_MountJournal` and `C_TransmogCollection`.
+
+### Notes
+- Crafting quality tiers are retail-only: `C_TradeSkillUI.GetItemReagentQualityByItemInfo`
+  and `GetItemCraftedQualityByItemInfo` do not exist in either Classic flavor, so entries
+  there never carry a quality and the tier markup, the "respect quality" checkbox and the
+  name-based count stay dormant on their own.
+- Mounts, battle pets and transmog have no content in Classic Era, and the Legion wardrobe
+  behind `PlayerHasTransmog` has none in Mists Classic. Those count zero rather than error.
+
 ## [1.0.1] - 2026-08-30
 
 ### Added

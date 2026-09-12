@@ -10,10 +10,13 @@ if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 if not defined FLAVOR set "FLAVOR=_retail_"
 
 set "INSTALL_DIRS=Core UI Locales Skin Media"
-set "INSTALL_FILES=%ADDON%.toc embeds.xml Bindings.xml CHANGELOG.md"
+rem One folder serves every flavor: the client picks the TOC whose suffix matches,
+rem so all three ship together and the version comes from the canonical one.
+set "TOCS=%ADDON%_Mainline.toc %ADDON%_Mists.toc %ADDON%_Vanilla.toc"
+set "INSTALL_FILES=%TOCS% embeds.xml Bindings.xml CHANGELOG.md"
 set "KEEP_LIBS= LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0 "
 
-for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%ROOT%\%ADDON%.toc"') do set "VERSION=%%v"
+for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%ROOT%\%ADDON%_Mainline.toc"') do set "VERSION=%%v"
 set "DIST=%ROOT%\dist"
 
 set "TARGET_NAME=%~1"
@@ -22,7 +25,8 @@ if "%TARGET_NAME%"=="" set "TARGET_NAME=help"
 if /i "%TARGET_NAME%"=="help"       goto :help
 if /i "%TARGET_NAME%"=="version"    goto :version
 if /i "%TARGET_NAME%"=="check"      goto :check
-if /i "%TARGET_NAME%"=="lint"       goto :check
+if /i "%TARGET_NAME%"=="check-tocs" goto :checktocs
+if /i "%TARGET_NAME%"=="lint"       goto :lint
 if /i "%TARGET_NAME%"=="libs"       goto :libs
 if /i "%TARGET_NAME%"=="install"    goto :install
 if /i "%TARGET_NAME%"=="uninstall"  goto :uninstall
@@ -49,9 +53,10 @@ echo   Makefile dist         build dist\%ADDON%-%VERSION%.zip
 echo   Makefile clean        remove build output
 echo   Makefile distclean    clean + empty Libs\
 echo   Makefile purge        uninstall + delete SavedVariables ^(needs CONFIRM=yes^)
-echo   Makefile lint         alias for check
+echo   Makefile check-tocs   verify the flavor TOCs only differ in ## Interface:
+echo   Makefile lint         check + check-tocs
 echo.
-echo   set FLAVOR=_classic_era_   to target another client
+echo   set FLAVOR=_classic_    for Mists Classic, _classic_era_ for Vanilla
 echo   set WOW_RETAIL_ADDON_FOLDER=D:\World of Warcraft\_retail_\Interface\AddOns
 echo                              to install straight into that folder ^(retail only^)
 echo   set WOW_DIR=D:\World of Warcraft   to override auto-detection
@@ -126,6 +131,50 @@ if not errorlevel 1 (
 echo no Lua available ^(install lua/luac, or "pip install lupa"^) - skipped
 goto :eof
 
+rem ----------------------------------------------------------------- check-tocs
+
+rem The flavor TOCs carry the same file list three times over, so drift is the one
+rem way this layout can rot. Compare everything but the Interface line.
+:checktocs
+set "REF="
+set "FAIL=0"
+for %%t in (%TOCS%) do (
+    findstr /v /b /c:"## Interface:" "%ROOT%\%%t" > "%TEMP%\tm_%%t.txt"
+    if not defined REF (
+        set "REF=%%t"
+    ) else (
+        fc /w "%TEMP%\tm_!REF!.txt" "%TEMP%\tm_%%t.txt" >nul
+        if errorlevel 1 (
+            echo   DRIFT   %%t differs from !REF! beyond ## Interface:
+            fc /w "%TEMP%\tm_!REF!.txt" "%TEMP%\tm_%%t.txt"
+            set "FAIL=1"
+        )
+    )
+)
+for %%t in (%TOCS%) do del "%TEMP%\tm_%%t.txt" >nul 2>&1
+if "!FAIL!"=="1" exit /b 1
+echo tocs: 3 flavors agree
+
+set "MISSINGFILE=0"
+for /f "usebackq delims=" %%f in ("%ROOT%\%ADDON%_Mainline.toc") do (
+    echo %%f | findstr /r /c:"^[A-Za-z].*\.lua$" /c:"^[A-Za-z].*\.xml$" >nul && (
+        if not exist "%ROOT%\%%f" (
+            echo   MISSING %%f ^(listed in the TOC^)
+            set "MISSINGFILE=1"
+        )
+    )
+)
+if "!MISSINGFILE!"=="1" exit /b 1
+echo tocs: every listed file exists
+goto :eof
+
+:lint
+call "%~f0" check
+if errorlevel 1 exit /b 1
+call "%~f0" check-tocs
+if errorlevel 1 exit /b 1
+goto :eof
+
 rem ----------------------------------------------------------------------- libs
 
 :libs
@@ -182,7 +231,9 @@ for %%x in (design .claude .git dist) do (
         rmdir /s /q "%TARGET%\%%x"
     )
 )
-for %%x in (README.md .gitignore .pkgmeta Makefile Makefile.bat) do (
+rem %ADDON%.toc is the pre-1.1.0 single TOC: an install from before the flavor split
+rem still has it, and it lists a file set that predates Core\Compat.lua.
+for %%x in (README.md .gitignore .pkgmeta Makefile Makefile.bat %ADDON%.toc) do (
     if exist "%TARGET%\%%x" (
         echo   removing stray %%x ^(not part of the addon^)
         del /q "%TARGET%\%%x"

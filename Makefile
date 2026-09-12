@@ -1,8 +1,12 @@
 ADDON       := Tallymaster
-VERSION     := $(shell sed -n 's/^## Version: //p' $(ADDON).toc)
 FLAVOR      ?= _retail_
 
-INSTALL_FILES := $(ADDON).toc embeds.xml Bindings.xml CHANGELOG.md
+# One folder serves every flavor: the client picks the TOC whose suffix matches,
+# so all three ship together and the version is read from whichever is canonical.
+TOCS        := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
+VERSION     := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
+
+INSTALL_FILES := $(TOCS) embeds.xml Bindings.xml CHANGELOG.md
 INSTALL_DIRS  := Core UI Locales Skin Media
 KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0
 
@@ -30,12 +34,13 @@ FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$(
 NO_ADDONS_MSG = echo "AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER=/path/to/Interface/AddOns, or pass WOW_DIR=/path/to/World of Warcraft"
 
 .DEFAULT_GOAL := help
-.PHONY: help version check lint libs install uninstall prune-libs dist clean distclean purge
+.PHONY: help version check check-tocs lint libs install uninstall prune-libs dist clean distclean purge
 
 help:
 	@echo "$(ADDON) $(VERSION)"
 	@echo ""
 	@echo "  make check        syntax-check every Lua file"
+	@echo "  make check-tocs   verify the flavor TOCs only differ in ## Interface:"
 	@echo "  make libs         report which embedded libraries are missing"
 	@echo "  make install      copy the addon into the live WoW client"
 	@echo "  make uninstall    remove it again (SavedVariables are kept)"
@@ -44,9 +49,9 @@ help:
 	@echo "  make clean        remove build output"
 	@echo "  make distclean    clean + empty Libs/"
 	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
-	@echo "  make lint         alias for check"
+	@echo "  make lint         check + check-tocs"
 	@echo ""
-	@echo "  FLAVOR=$(FLAVOR)   override with FLAVOR=_classic_era_ etc."
+	@echo "  FLAVOR=$(FLAVOR)   _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)"
 	@echo "  WOW_RETAIL_ADDON_FOLDER  Interface/AddOns to install into (retail only)"
 	@echo "  WOW_DIR           override the auto-detected WoW folder"
 
@@ -66,7 +71,30 @@ check:
 		echo "no Lua available (install lua/luac, or 'pip install lupa') - skipped"; \
 	fi
 
-lint: check
+# The flavor TOCs carry the same file list three times over, so drift is the one
+# way this layout can rot. Compare everything but the Interface line.
+check-tocs:
+	@tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; \
+	ref=""; fail=0; \
+	for toc in $(TOCS); do \
+		grep -v '^## Interface:' "$$toc" > "$$tmp/$$toc"; \
+		if [ -z "$$ref" ]; then ref="$$toc"; \
+		elif ! diff -u "$$tmp/$$ref" "$$tmp/$$toc" > "$$tmp/d" 2>&1; then \
+			echo "  DRIFT   $$toc differs from $$ref beyond ## Interface:"; \
+			sed '1,2d; s/^/          /' "$$tmp/d"; \
+			fail=1; \
+		fi; \
+	done; \
+	if [ $$fail -eq 1 ]; then exit 1; fi; \
+	echo "tocs: $(words $(TOCS)) flavors agree"
+	@missing=0; \
+	for f in $$(sed -n 's/\r$$//; s|\\|/|g; /^[A-Za-z].*\.\(lua\|xml\)$$/p' $(ADDON)_Mainline.toc); do \
+		[ -f "$$f" ] || { echo "  MISSING $$f (listed in the TOC)"; missing=1; }; \
+	done; \
+	if [ $$missing -eq 1 ]; then exit 1; fi; \
+	echo "tocs: every listed file exists"
+
+lint: check check-tocs
 
 libs:
 	@missing=0; \
@@ -81,6 +109,9 @@ libs:
 		echo "a first install or for 'make dist'."; \
 	fi
 
+# The stray list includes $(ADDON).toc: that is the pre-1.1.0 single TOC, and an
+# install from before the flavor split still carries it, listing a file set that
+# predates Core/Compat.lua.
 install:
 	@addons=$$($(FIND_ADDONS)); \
 	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
@@ -96,7 +127,7 @@ install:
 	else \
 		echo "  keeping the libraries already installed in the client"; \
 	fi; \
-	for x in design .claude .git dist README.md .gitignore .pkgmeta Makefile Makefile.bat; do \
+	for x in design .claude .git dist README.md .gitignore .pkgmeta Makefile Makefile.bat $(ADDON).toc; do \
 		if [ -e "$$target/$$x" ]; then \
 			echo "  removing stray $$x (not part of the addon)"; \
 			rm -rf "$$target/$$x"; \
