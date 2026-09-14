@@ -1,5 +1,10 @@
 package-as: Tallymaster
 
+# Release notes come from CHANGELOG.md instead of a generated git log.
+manual-changelog:
+  filename: CHANGELOG.md
+  markup-type: markdown
+
 externals:
   Libs/LibStub:
     url: https://repos.curseforge.com/wow/libstub/trunk

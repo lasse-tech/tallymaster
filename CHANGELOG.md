@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-14
+
 ### Added
 - **Runs on Mists Classic and Classic Era** alongside retail. One folder carries three
   TOCs - `Tallymaster_Mainline.toc` (Interface 120100), `Tallymaster_Mists.toc` (50504)
@@ -62,6 +64,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   behind `PlayerHasTransmog` has none in Mists Classic. Those count zero rather than error.
 
 ## [1.0.1] - 2026-08-30
+
+Never tagged or published on its own; these changes first shipped with 1.1.0.
 
 ### Added
 - `make install` (and `Makefile install` on Windows) reads
