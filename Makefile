@@ -49,7 +49,7 @@ FLAVOR_DIR_Midnight := _retail_
 FLAVOR_DIR_Mists    := _classic_
 FLAVOR_DIR_Vanilla  := _classic_era_
 
-.PHONY: help version check check-tocs lint libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
+.PHONY: help version check check-tocs lint test libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
 
 help:
 	@echo "$(ADDON) $(VERSION)"
@@ -67,6 +67,7 @@ help:
 	@echo "  make distclean    clean + empty Libs/"
 	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
 	@echo "  make lint         check + check-tocs"
+	@echo "  make test         run tests/ in wow-ui-sim (WOW_UI_SIM=$(WOW_UI_SIM))"
 	@echo ""
 	@echo "  FLAVOR=$(FLAVOR)   _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)"
 	@echo "  WOW_RETAIL_ADDON_FOLDER  Interface/AddOns to install into (retail only)"
@@ -256,6 +257,28 @@ dist:
 	fi
 	@rm -rf $(DIST_DIR)/$(ADDON)
 	@echo "built $(ZIP)"
+
+# Runs tests/*.lua inside wow-ui-sim (https://github.com/Osso/wow-ui-sim), a
+# headless WoW client that loads the real Blizzard UI. The simulator resolves
+# test addons next to its own binary, so the addon, TestFramework and a hardlink
+# of the binary are staged together under dist/sim. No WoW install is scanned:
+# WOW_SIM_WOW_PATH stays unset, so neither live addons nor SavedVariables leak in.
+WOW_UI_SIM ?= $(HOME)/git/wow-ui-sim
+SIM_BIN    ?= $(WOW_UI_SIM)/target/release/wow-sim
+SIM_DIR    := $(DIST_DIR)/sim
+
+test:
+	@[ -x "$(SIM_BIN)" ] || { echo "wow-sim not found at $(SIM_BIN)"; \
+		echo "build it: cd $(WOW_UI_SIM) && cargo build --release --no-default-features --features casc,client-retail --bin wow-sim --bin wow-cli"; \
+		exit 1; }
+	@[ -n "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ] || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }
+	@rm -rf "$(SIM_DIR)"
+	@out="$(SIM_DIR)/Interface/AddOns/$(ADDON)"; mkdir -p "$$out"; \
+	for d in $(INSTALL_DIRS) Libs tests; do cp -r "$$d" "$$out/"; done; \
+	cp embeds.xml Bindings.xml $(ADDON)_Mainline.toc "$$out/"; \
+	cp -r "$(WOW_UI_SIM)/Interface/AddOns/TestFramework" "$(SIM_DIR)/Interface/AddOns/"; \
+	ln -f "$(SIM_BIN)" "$(SIM_DIR)/wow-sim" 2>/dev/null || cp "$(SIM_BIN)" "$(SIM_DIR)/wow-sim"
+	@cd "$(SIM_DIR)" && env -u WOW_SIM_WOW_PATH ./wow-sim --no-saved-vars run-tests $(ADDON)
 
 clean:
 	@rm -rf $(DIST_DIR)

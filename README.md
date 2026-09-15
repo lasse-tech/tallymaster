@@ -86,6 +86,7 @@ expose the same targets. The WoW folder is auto-detected; override it with
 | `check` | syntax-check every Lua file (`luac`, `lua`, or Python + `lupa`) |
 | `check-tocs` | verify the three flavor TOCs differ only in `## Interface:`, and that every file they list exists |
 | `lint` | `check` + `check-tocs` |
+| `test` | run `tests/*.lua` headless in [wow-ui-sim](https://github.com/Osso/wow-ui-sim) against the real retail Blizzard UI (`Makefile` only; expects a release build at `WOW_UI_SIM`, default `~/git/wow-ui-sim`) |
 | `libs` | report which libraries `embeds.xml` expects but `Libs/` lacks |
 | `fetch-libs` | download them into `Libs/` straight from `.pkgmeta` (needs `svn`, and `git` for LibDataBroker-1.1) |
 | `install` | copy the addon into the live client; keeps the libraries already installed there and reports ones `embeds.xml` no longer lists |

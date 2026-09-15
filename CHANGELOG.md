@@ -12,6 +12,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Tallymaster added every equipped copy on top, so a single equipped weapon or trinket
   showed as 2.
 
+### Added
+- `make test` runs `tests/*.lua` headless in [wow-ui-sim](https://github.com/Osso/wow-ui-sim)
+  against the real retail Blizzard UI. It covers slash commands, SavedVariables defaults,
+  the LibDataBroker launcher, adding an item and counting it in bags and when equipped.
+
 ## [1.1.0] - 2026-09-14
 
 ### Added
