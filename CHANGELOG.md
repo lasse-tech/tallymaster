@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+- Equipped items were counted twice: `C_Item.GetItemCount` already includes them, and
+  Tallymaster added every equipped copy on top, so a single equipped weapon or trinket
+  showed as 2.
+
 ## [1.1.0] - 2026-09-14
 
 ### Added

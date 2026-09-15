@@ -7,16 +7,6 @@ T.Counting = Counting
 
 local mailCache = {}
 
-local function equippedCount(itemID)
-    local n = 0
-    for slot = INVSLOT_FIRST_EQUIPPED, INVSLOT_LAST_EQUIPPED do
-        if GetInventoryItemID("player", slot) == itemID then
-            n = n + 1
-        end
-    end
-    return n
-end
-
 local function rebuildMailCache()
     wipe(mailCache)
     local num = GetInboxNumItems and GetInboxNumItems() or 0
@@ -31,9 +21,10 @@ local function rebuildMailCache()
     end
 end
 
+-- GetItemCount already includes equipped items, so only mail is added on top.
 local function itemTotal(id)
     local n = C_Item.GetItemCount(id, true, false, true, true) or 0
-    return n + equippedCount(id) + (mailCache[id] or 0)
+    return n + (mailCache[id] or 0)
 end
 
 local function nameCount(entry)
