@@ -1,5 +1,4 @@
-local ADDON, T = ...
-local L = T.L
+local _, T = ...
 local DB = T.DB
 local Compat = T.Compat
 

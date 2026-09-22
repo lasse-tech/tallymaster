@@ -1,4 +1,4 @@
-local ADDON, T = ...
+local _, T = ...
 local L = T.L
 local DB = T.DB
 
@@ -77,7 +77,7 @@ local function styleRow(row)
     row.name:SetPoint("RIGHT", row.count, "LEFT", -4, 0)
 
     row:RegisterForClicks("AnyUp")
-    row:SetScript("OnClick", function(self, button)
+    row:SetScript("OnClick", function(self)
         if T.Addon:ShiftDown() then
             DB:SetVisible(self.entryKey, false)
             T.Addon:RefreshTracker()
@@ -110,21 +110,21 @@ function Tracker:Initialize()
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:RegisterForDrag("LeftButton")
-    frame:SetScript("OnDragStart", function(self) self.didDrag = true; self:StartMoving() end)
-    frame:SetScript("OnDragStop", function(self)
-        self:StopMovingOrSizing()
-        local left, top = self:GetLeft(), self:GetTop()
+    frame:SetScript("OnDragStart", function(window) window.didDrag = true; window:StartMoving() end)
+    frame:SetScript("OnDragStop", function(window)
+        window:StopMovingOrSizing()
+        local left, top = window:GetLeft(), window:GetTop()
         if left and top then
-            self:ClearAllPoints()
-            self:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
+            window:ClearAllPoints()
+            window:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
             DB:SaveTrackerPos("TOPLEFT", "BOTTOMLEFT", left, top)
         end
     end)
     frame:SetClampedToScreen(true)
 
-    frame:SetScript("OnMouseUp", function(self, button)
+    frame:SetScript("OnMouseUp", function(window, button)
         if button ~= "LeftButton" then return end
-        if self.didDrag then self.didDrag = false; return end
+        if window.didDrag then window.didDrag = false; return end
         if T.Addon:ShiftDown() then
             Tracker:SetShown(false)
         else
@@ -153,7 +153,8 @@ function Tracker:Initialize()
     frame.empty:SetJustifyH("LEFT")
     frame.empty:SetSpacing(3)
     frame.empty:SetText(L["No items tracked yet."] .. "\n\n"
-        .. L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] .. "\n\n"
+        .. L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's "
+            .. "name or ID."] .. "\n\n"
         .. L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."])
     frame.empty:Hide()
 

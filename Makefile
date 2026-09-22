@@ -49,7 +49,7 @@ FLAVOR_DIR_Midnight := _retail_
 FLAVOR_DIR_Mists    := _classic_
 FLAVOR_DIR_Vanilla  := _classic_era_
 
-.PHONY: help version check check-tocs lint test libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
+.PHONY: help version check check-tocs luacheck lint test libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
 
 help:
 	@echo "$(ADDON) $(VERSION)"
@@ -66,7 +66,7 @@ help:
 	@echo "  make clean        remove build output"
 	@echo "  make distclean    clean + empty Libs/"
 	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
-	@echo "  make lint         check + check-tocs"
+	@echo "  make lint         check + check-tocs + luacheck (any warning fails)"
 	@echo "  make test         run tests/ in wow-ui-sim (WOW_UI_SIM=$(WOW_UI_SIM))"
 	@echo ""
 	@echo "  FLAVOR=$(FLAVOR)   _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)"
@@ -112,7 +112,12 @@ check-tocs:
 	if [ $$missing -eq 1 ]; then exit 1; fi; \
 	echo "tocs: every listed file exists"
 
-lint: check check-tocs
+# Warnings are errors: luacheck exits non-zero on any warning, and so does lint.
+luacheck:
+	@command -v luacheck >/dev/null 2>&1 || { echo "luacheck not found - install it (luarocks install luacheck)"; exit 1; }
+	@luacheck --no-color -q . && echo "luacheck: no warnings"
+
+lint: check check-tocs luacheck
 
 libs:
 	@missing=0; \

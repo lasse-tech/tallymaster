@@ -1,4 +1,4 @@
-local ADDON, T = ...
+local _, T = ...
 local L = T.L
 local DB = T.DB
 
@@ -168,9 +168,9 @@ function KnownList:Create()
     search:SetWidth(178)
     search:SetFontObject("GameFontHighlightSmall")
     search:SetAutoFocus(false)
-    search:SetScript("OnEscapePressed", function(self) self:ClearFocus() end)
-    search:SetScript("OnTextChanged", function(self)
-        searchText = (self:GetText() or ""):lower()
+    search:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
+    search:SetScript("OnTextChanged", function(box)
+        searchText = (box:GetText() or ""):lower()
         KnownList:Refresh()
     end)
 

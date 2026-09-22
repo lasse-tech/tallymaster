@@ -61,7 +61,7 @@ function Tallymaster:OnEnable()
             for _, id in ipairs(pending) do want[id] = true end
             local waiter = CreateFrame("Frame")
             waiter:RegisterEvent("GET_ITEM_INFO_RECEIVED")
-            waiter:SetScript("OnEvent", function(self, _, itemID, success)
+            waiter:SetScript("OnEvent", function(_, _, itemID, success)
                 if not want[itemID] then return end
                 want[itemID] = nil
                 if success then

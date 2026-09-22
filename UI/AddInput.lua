@@ -1,4 +1,4 @@
-local ADDON, T = ...
+local _, T = ...
 local L = T.L
 local DB = T.DB
 
@@ -29,7 +29,7 @@ StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] = {
     button1 = L["Item"],
     button2 = L["Currency"],
     OnAccept = function(self) AddInput:Commit(self.data.candidates[1]) end,
-    OnCancel = function(self, data, reason)
+    OnCancel = function(self, _, reason)
         if reason == "clicked" then AddInput:Commit(self.data.candidates[2]) end
     end,
     hideOnEscape = true, whileDead = true, timeout = 0,
@@ -203,9 +203,9 @@ function AddInput:Create()
     tinsert(UISpecialFrames, "TallymasterAddFrame")
 
     frame:RegisterEvent("GLOBAL_MOUSE_DOWN")
-    frame:SetScript("OnEvent", function(self, event)
-        if event == "GLOBAL_MOUSE_DOWN" and self:IsShown()
-           and self.edit and self.edit:HasFocus() and not self:IsMouseOver() then
+    frame:SetScript("OnEvent", function(window, event)
+        if event == "GLOBAL_MOUSE_DOWN" and window:IsShown()
+           and window.edit and window.edit:HasFocus() and not window:IsMouseOver() then
             self.edit:ClearFocus()
         end
     end)
@@ -216,8 +216,8 @@ function AddInput:Create()
     edit:SetPoint("TOPRIGHT", -24, -54)
     edit:SetFontObject("GameFontHighlight")
     edit:SetAutoFocus(false)
-    edit:SetScript("OnEnterPressed", function(self)
-        local text = self:GetText()
+    edit:SetScript("OnEnterPressed", function(box)
+        local text = box:GetText()
         if text and text ~= "" then AddInput:Submit(text) end
     end)
     edit:SetScript("OnEscapePressed", function() frame:Hide() end)
@@ -228,8 +228,8 @@ function AddInput:Create()
     frame.editInstructions:SetPoint("RIGHT", edit, "RIGHT", -6, 0)
     frame.editInstructions:SetJustifyH("LEFT")
     frame.editInstructions:SetText(L["Type a name or ID, then press Enter"])
-    edit:SetScript("OnTextChanged", function(self, userInput)
-        frame.editInstructions:SetShown(self:GetText() == "")
+    edit:SetScript("OnTextChanged", function(box, userInput)
+        frame.editInstructions:SetShown(box:GetText() == "")
         if userInput then
             frame.pending = nil
             AddInput:SchedulePreview()
@@ -255,9 +255,10 @@ function AddInput:Create()
     respect.text = respect:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
     respect.text:SetPoint("LEFT", respect, "RIGHT", 2, 1)
     respect.text:SetText(L["Respect quality (count only this tier)"])
-    respect:SetScript("OnEnter", function(self)
-        GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
-        GameTooltip:AddLine(L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."], 1, 1, 1, true)
+    respect:SetScript("OnEnter", function(button)
+        GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
+        GameTooltip:AddLine(L["When on, this entry counts only the exact crafting quality you added. "
+            .. "When off, it counts every quality of the item."], 1, 1, 1, true)
         GameTooltip:Show()
     end)
     respect:SetScript("OnLeave", function() GameTooltip:Hide() end)
@@ -289,8 +290,8 @@ function AddInput:Create()
 
     if StackSplitFrame and not AddInput._splitHooked then
         AddInput._splitHooked = true
-        StackSplitFrame:HookScript("OnShow", function(self)
-            if frame and frame:IsShown() then self:Hide() end
+        StackSplitFrame:HookScript("OnShow", function(split)
+            if frame and frame:IsShown() then split:Hide() end
         end)
     end
 

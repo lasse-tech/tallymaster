@@ -1,4 +1,4 @@
-local ADDON, T = ...
+local _, T = ...
 local L = T.L
 
 L["Tallymaster"] = "Tallymaster"
@@ -28,11 +28,15 @@ L["Sell"] = "Sell"
 L["Expansion"] = "Expansion"
 L["Bind"] = "Bind"
 L["Respect quality (count only this tier)"] = "Respect quality (count only this tier)"
-L["When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."] = "When on, this entry counts only the exact crafting quality you added. When off, it counts every quality of the item."
+L["When on, this entry counts only the exact crafting quality you added. When off, it counts every " ..
+    "quality of the item."]
+    = "When on, this entry counts only the exact crafting quality you added. When off, it counts every " ..
+    "quality of the item."
 L["All categories"] = "All categories"
 L["Uncategorized"] = "Uncategorized"
 
-L["The ID %d matches both an item and a currency. Which do you mean?"] = "The ID %d matches both an item and a currency. Which do you mean?"
+L["The ID %d matches both an item and a currency. Which do you mean?"]
+    = "The ID %d matches both an item and a currency. Which do you mean?"
 L["Item"] = "Item"
 L["Currency"] = "Currency"
 
@@ -44,13 +48,19 @@ L["Sort order"] = "Sort order"
 L["Alphabetical"] = "Alphabetical"
 L["By count"] = "By count"
 L["Group by category"] = "Group by category"
-L["When off, the tracker shows a single flat list instead of category groups."] = "When off, the tracker shows a single flat list instead of category groups."
+L["When off, the tracker shows a single flat list instead of category groups."]
+    = "When off, the tracker shows a single flat list instead of category groups."
 L["Show item tooltip"] = "Show item tooltip"
-L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."] = "Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."
+L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's " ..
+    "count."]
+    = "Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's " ..
+    "count."
 L["Show counts in tooltip"] = "Show counts in tooltip"
-L["Include each character's count (grouped by realm) in the tracker tooltip."] = "Include each character's count (grouped by realm) in the tracker tooltip."
+L["Include each character's count (grouped by realm) in the tracker tooltip."]
+    = "Include each character's count (grouped by realm) in the tracker tooltip."
 L["Show counts on item tooltips"] = "Show counts on item tooltips"
-L["Add the per-character count breakdown to the standard game item tooltip (for tracked items)."] = "Add the per-character count breakdown to the standard game item tooltip (for tracked items)."
+L["Add the per-character count breakdown to the standard game item tooltip (for tracked items)."]
+    = "Add the per-character count breakdown to the standard game item tooltip (for tracked items)."
 L["Show minimap button"] = "Show minimap button"
 L["Allow ElvUI to skin this addon"] = "Allow ElvUI to skin this addon"
 L["Requires a /reload to take effect."] = "Requires a /reload to take effect."
@@ -66,8 +76,10 @@ L["Battle Pets"] = "Battle Pets"
 L["Knowledge"] = "Knowledge"
 
 L["No items tracked yet."] = "No items tracked yet."
-L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."] = "Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."
-L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."] = "Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."
+L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."]
+    = "Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."
+L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."]
+    = "Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."
 
 L["Could not find anything matching '%s'."] = "Could not find anything matching '%s'."
 L["Already tracking %s."] = "Already tracking %s."

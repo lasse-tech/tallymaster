@@ -27,6 +27,7 @@ if /i "%TARGET_NAME%"=="version"    goto :version
 if /i "%TARGET_NAME%"=="check"      goto :check
 if /i "%TARGET_NAME%"=="check-tocs" goto :checktocs
 if /i "%TARGET_NAME%"=="lint"       goto :lint
+if /i "%TARGET_NAME%"=="luacheck"   goto :luacheck
 if /i "%TARGET_NAME%"=="libs"       goto :libs
 if /i "%TARGET_NAME%"=="fetch-libs" goto :fetchlibs
 if /i "%TARGET_NAME%"=="install"    goto :install
@@ -58,7 +59,7 @@ echo   Makefile clean        remove build output
 echo   Makefile distclean    clean + empty Libs\
 echo   Makefile purge        uninstall + delete SavedVariables ^(needs CONFIRM=yes^)
 echo   Makefile check-tocs   verify the flavor TOCs only differ in ## Interface:
-echo   Makefile lint         check + check-tocs
+echo   Makefile lint         check + check-tocs + luacheck ^(any warning fails^)
 echo.
 echo   set FLAVOR=_classic_    for Mists Classic, _classic_era_ for Vanilla
 echo   set WOW_RETAIL_ADDON_FOLDER=D:\World of Warcraft\_retail_\Interface\AddOns
@@ -235,10 +236,27 @@ if "!MISSINGFILE!"=="1" exit /b 1
 echo tocs: every listed file exists
 goto :eof
 
+:luacheck
+rem Warnings are errors: luacheck exits non-zero on any warning, and so does lint.
+where luacheck >nul 2>&1
+if errorlevel 1 (
+    echo luacheck not found - install it ^(luarocks install luacheck^)
+    exit /b 1
+)
+pushd "%ROOT%"
+luacheck --no-color -q .
+set "RC=!errorlevel!"
+popd
+if not "!RC!"=="0" exit /b 1
+echo luacheck: no warnings
+goto :eof
+
 :lint
 call "%~f0" check
 if errorlevel 1 exit /b 1
 call "%~f0" check-tocs
+if errorlevel 1 exit /b 1
+call "%~f0" luacheck
 if errorlevel 1 exit /b 1
 goto :eof
 

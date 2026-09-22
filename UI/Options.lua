@@ -124,7 +124,8 @@ function T.SetupOptions()
         { "showCategories", L["Group by category"],
           L["When off, the tracker shows a single flat list instead of category groups."] },
         { "showTooltip", L["Show item tooltip"],
-          L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's count."] },
+          L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each "
+            .. "character's count."] },
         { "showTooltipCounts", L["Show counts in tooltip"],
           L["Include each character's count (grouped by realm) in the tracker tooltip."] },
         { "gameTooltipCounts", L["Show counts on item tooltips"],
