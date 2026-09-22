@@ -72,7 +72,7 @@ local function styleRow(row)
 
     row:RegisterForClicks("AnyUp")
     row:SetScript("OnClick", function(self)
-        if not IsShiftKeyDown() then return end
+        if not T.Addon:ShiftDown() then return end
         local entry = DB:GetEntry(self.entryKey)
         if entry then T.AddInput:Paste(entry) end
     end)

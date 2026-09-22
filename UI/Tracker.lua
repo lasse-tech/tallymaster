@@ -78,7 +78,7 @@ local function styleRow(row)
 
     row:RegisterForClicks("AnyUp")
     row:SetScript("OnClick", function(self, button)
-        if IsShiftKeyDown() then
+        if T.Addon:ShiftDown() then
             DB:SetVisible(self.entryKey, false)
             T.Addon:RefreshTracker()
         end
@@ -125,7 +125,7 @@ function Tracker:Initialize()
     frame:SetScript("OnMouseUp", function(self, button)
         if button ~= "LeftButton" then return end
         if self.didDrag then self.didDrag = false; return end
-        if IsShiftKeyDown() then
+        if T.Addon:ShiftDown() then
             Tracker:SetShown(false)
         else
             T.AddInput:Toggle()

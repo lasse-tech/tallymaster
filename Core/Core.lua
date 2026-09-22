@@ -28,9 +28,9 @@ function Tallymaster:OnInitialize()
             OnClick = function(_, button)
                 if button == "RightButton" then
                     T.Addon:OpenOptions()
-                elseif IsShiftKeyDown() then
+                elseif T.Addon:ShiftDown() then
                     T.Tracker:Toggle()
-                elseif IsControlKeyDown() then
+                elseif T.Addon:ControlDown() then
                     T.KnownList:Toggle()
                 else
                     T.AddInput:Toggle()

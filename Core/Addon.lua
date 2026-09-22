@@ -26,6 +26,39 @@ function Addon:RegisterEvent(event, handler)
     list[#list + 1] = handler
 end
 
+--------------------------------------------------------------------------------
+-- Modifier keys
+--------------------------------------------------------------------------------
+
+-- The client does not hand the keyboard state back to a freshly loaded UI, so
+-- right after /reload IsShiftKeyDown() and friends answer "not held" even while
+-- the key is down. The first Shift- or Ctrl-click then falls through every
+-- branch and looks dead; the second works, because by then the key has been
+-- pressed again with the new UI listening. MODIFIER_STATE_CHANGED does arrive,
+-- so the state is tracked here.
+local held = {}
+
+Addon:RegisterEvent("MODIFIER_STATE_CHANGED", function(_, key, down)
+    if type(key) ~= "string" then return end
+    held[key] = down == 1
+end)
+
+-- The API answers first: when it says the key is down, it is. Only its "no" is
+-- worth doubting, and then the tracked state fills in. That way a release the
+-- client swallowed cannot leave a key stuck as pressed.
+local function anyHeld(left, right, api)
+    if api and api() then return true end
+    return held[left] == true or held[right] == true
+end
+
+function Addon:ShiftDown()
+    return anyHeld("LSHIFT", "RSHIFT", IsShiftKeyDown)
+end
+
+function Addon:ControlDown()
+    return anyHeld("LCTRL", "RCTRL", IsControlKeyDown)
+end
+
 function Addon:Print(...)
     print(PREFIX .. strjoin(" ", tostringall(...)))
 end

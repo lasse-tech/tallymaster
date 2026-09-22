@@ -104,3 +104,33 @@ test("/tally known opens the known list", function()
     assertNotNil(TallymasterKnownListFrame)
     assertTrue(TallymasterKnownListFrame:IsShown())
 end)
+
+-- Right after /reload the client answers "not held" while the key is down, so
+-- the first Shift-click used to fall through and do nothing.
+test("a tracked modifier key stands in for a stale IsShiftKeyDown", function()
+    local key = "item:" .. HEARTHSTONE
+    SlashCmdList.TALLYMASTERTALLY("")
+    addViaWindow(tostring(HEARTHSTONE))
+    SlashCmdList.TALLYMASTERTALLY("show")
+    if not TallymasterTrackerFrame:IsShown() then
+        SlashCmdList.TALLYMASTERTALLY("show")
+    end
+
+    local row
+    local content = select(1, TallymasterTrackerFrame:GetChildren())
+    for _, child in ipairs({ content:GetChildren() }) do
+        if child:IsShown() and child.entryKey == key then row = child end
+    end
+    assertNotNil(row)
+    local _, char = next(TallymasterDB.char)
+    assertTrue(char.visible[key])
+
+    local realShift = IsShiftKeyDown
+    IsShiftKeyDown = function() return false end
+    FireEvent("MODIFIER_STATE_CHANGED", "LSHIFT", 1)
+    row:GetScript("OnClick")(row, "LeftButton")
+    FireEvent("MODIFIER_STATE_CHANGED", "LSHIFT", 0)
+    IsShiftKeyDown = realShift
+
+    assertNil(char.visible[key])
+end)
