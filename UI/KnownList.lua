@@ -26,8 +26,7 @@ local function matchesFilters(entry)
         return false
     end
     if searchText ~= "" then
-        local hay = (entry.originalName .. " " .. entry.originalName):lower()
-        if not hay:find(searchText, 1, true) then return false end
+        if not entry.originalName:lower():find(searchText, 1, true) then return false end
     end
     return true
 end

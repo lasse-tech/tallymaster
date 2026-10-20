@@ -206,7 +206,7 @@ function AddInput:Create()
     frame:SetScript("OnEvent", function(window, event)
         if event == "GLOBAL_MOUSE_DOWN" and window:IsShown()
            and window.edit and window.edit:HasFocus() and not window:IsMouseOver() then
-            self.edit:ClearFocus()
+            window.edit:ClearFocus()
         end
     end)
 

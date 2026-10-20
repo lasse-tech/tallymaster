@@ -134,6 +134,12 @@ function DB:StashCount(key, count)
     g.charCounts[ck][key] = count
 end
 
+function DB:ForgetCounts(key)
+    for _, counts in pairs(self:Global().charCounts) do
+        counts[key] = nil
+    end
+end
+
 function DB:CharCount(key)
     local counts = self:Global().charCounts[self:CharKey()]
     return (counts and counts[key]) or 0

@@ -16,6 +16,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and Classic Era (11509) already match their live clients.
 
 ### Fixed
+- Clicking outside the Add window while its input box had focus raised a Lua error,
+  and the box kept the focus.
+- After switching the game language, the item names Tallymaster re-fetched ended in a
+  Lua error once the last one arrived, and the tracker did not refresh.
+- Account-wide currencies were counted once per character in the account-wide scope,
+  and the tooltip listed a copy for every character.
 - The first Shift- or Ctrl-click after a `/reload` did nothing. The client does
   not hand the keyboard state to a freshly loaded UI, so `IsShiftKeyDown()` and
   `IsControlKeyDown()` answered "not held" while the key was down, and the click

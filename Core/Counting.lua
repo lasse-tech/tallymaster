@@ -77,16 +77,34 @@ function Counting:LiveCount(entry)
     return handler(entry) or 0
 end
 
+-- Shared by the whole account: counted once, not per character.
+local ACCOUNT_WIDE = { mount = true, pet = true, transmog = true }
+
+local function isAccountWide(entry)
+    if entry.type == "currency" then
+        local info = Compat:GetCurrencyInfo(entry.id)
+        return info and info.isAccountWide or false
+    end
+    return ACCOUNT_WIDE[entry.type] or false
+end
+
 function Counting:Snapshot()
     local entries = DB:Global().entries
+    local shared = {}
     for key, entry in pairs(entries) do
-        DB:StashCount(key, self:LiveCount(entry))
+        local n = self:LiveCount(entry)
+        if isAccountWide(entry) then
+            shared[key] = n
+            DB:ForgetCounts(key)
+        else
+            DB:StashCount(key, n)
+        end
     end
 
     local account = DB:Profile().scope == "account"
     local counts = {}
     for key in pairs(entries) do
-        counts[key] = account and DB:SumAccountCount(key) or DB:CharCount(key)
+        counts[key] = shared[key] or (account and DB:SumAccountCount(key) or DB:CharCount(key))
     end
     return counts
 end
