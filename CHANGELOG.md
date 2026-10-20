@@ -10,8 +10,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 - Tallymaster is a lasse tech addon under the MIT licence now. The TOCs, the About
   block in the options and the README carry the new copyright line and contact, the
-  About block ends with `github.com/lasse-tech · MIT License`, and `LICENSE` ships
-  with the addon.
+  About block shows the author and `github.com/lasse-tech · MIT License` (no version
+  or copyright line any more), and `LICENSE` ships with the addon.
 - `make help` and `Makefile help` list the targets from their comments; `make lint`
   also checks those comments in both files. New `debug` and `deploy` targets;
   `purge` no longer needs `CONFIRM=yes`.

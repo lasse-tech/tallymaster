@@ -40,12 +40,6 @@ local function aboutText()
     local author = metadata("Author")
     if author then lines[#lines + 1] = L["Author: %s"]:format(author) end
 
-    local version = metadata("Version")
-    if version then lines[#lines + 1] = L["Version: %s"]:format(version) end
-
-    local copyright = metadata("X-Copyright")
-    if copyright then lines[#lines + 1] = "\194\169 " .. copyright end
-
     local footer = {}
     local website = metadata("X-Website")
     if website then footer[#footer + 1] = (website:gsub("^%a+://", "")) end

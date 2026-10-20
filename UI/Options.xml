@@ -1,7 +1,5 @@
 <Ui xmlns="http://www.blizzard.com/wow/ui/">
-    <!-- Author/website/version block shown at the top of the options panel.
-         Its own template so it gets its own frame pool and cannot inherit
-         leftovers from a recycled Blizzard section header. -->
+    <!-- About block; own template, own frame pool -->
     <Frame name="TallymasterAboutTemplate" mixin="TallymasterAboutMixin" virtual="true">
         <Size y="45"/>
         <Layers>
