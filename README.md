@@ -32,20 +32,6 @@ Runs on **Midnight** (retail), **Mists Classic** and **Classic Era** from one fo
 | Currencies by name, currency headers | yes | yes | — |
 | Crafting quality tiers | yes | — | — |
 
-## Building
-
-`make help` (or `Makefile help` on Windows) lists every target and variable.
-
-```
-make fetch-libs              # download the embedded libraries into Libs/
-make install                 # copy the addon into the live client
-make stage                   # dist/<expansion>/Tallymaster, one folder per client
-make lint                    # Lua syntax, TOCs, luacheck, Makefile comments
-```
-
-`make install` finds the WoW folder by itself; `WOW_RETAIL_ADDON_FOLDER` or `WOW_DIR`
-override it, `FLAVOR=_classic_` or `FLAVOR=_classic_era_` pick another client.
-
 ## Licence and credits
 
 MIT — see [LICENSE](LICENSE). © 2026 lasse tech, Lars Gossard — <lars@lasse-tech.de>

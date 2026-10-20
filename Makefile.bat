@@ -440,7 +440,7 @@ for /d %%a in ("%FLAVOR_DIR%\WTF\Account\*") do (
 if "!FOUND!"=="0" echo   no SavedVariables found
 goto :eof
 
-rem deploy: none - releases are published by pushing a v* tag to GitHub
+rem deploy: none - "make release" on Linux publishes the addon
 :deploy
-echo No deploy: a v* tag pushed to github.com/lasse-tech/tallymaster publishes the release.
+echo No deploy: "make release" publishes the addon.
 goto :eof

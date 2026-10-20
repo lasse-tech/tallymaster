@@ -1,7 +1,7 @@
 ADDON := Tallymaster
 
 REQUIRED  := clean distclean debug install uninstall deploy lint
-HELP_VARS := FLAVOR WOW_RETAIL_ADDON_FOLDER WOW_DIR ADDONS_DIR WOW_UI_SIM SIM_BIN
+HELP_VARS := FLAVOR WOW_RETAIL_ADDON_FOLDER WOW_DIR ADDONS_DIR WOW_UI_SIM SIM_BIN GITHUB_REPO
 
 ## FLAVOR: client folder: _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)
 FLAVOR ?= _retail_
@@ -21,6 +21,9 @@ WOW_UI_SIM ?= $(HOME)/git/wow-ui-sim
 ## SIM_BIN: wow-sim binary for make test
 SIM_BIN ?= $(WOW_UI_SIM)/target/release/wow-sim
 
+## GITHUB_REPO: public repository; gets only what the addon needs to run
+GITHUB_REPO ?= git@github.com:lasse-tech/tallymaster.git
+
 TOCS    := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
 VERSION := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
 
@@ -31,6 +34,9 @@ KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 Lib
 DIST_DIR := dist
 ZIP      := $(DIST_DIR)/$(ADDON)-$(VERSION).zip
 SIM_DIR  := $(DIST_DIR)/sim
+PUB_DIR  := $(DIST_DIR)/public
+
+PUBLIC_PATHS := $(INSTALL_FILES) $(INSTALL_DIRS) README.md .pkgmeta .github
 
 # expansion -> TOC suffix, client folder
 FLAVOR_NAMES        := Midnight Mists Vanilla
@@ -66,7 +72,7 @@ AWK_EXTERNALS := /^externals:/{e=1;next} /^[a-zA-Z]/{e=0} e&&/^  [^ \#]/{sub(/:$
 .DEFAULT_GOAL := help
 
 .PHONY: help version check check-tocs luacheck lint test libs fetch-libs debug install uninstall \
-	prune-libs stage dist deploy clean distclean purge
+	prune-libs stage dist publish release deploy clean distclean purge
 
 ##@ General
 
@@ -279,9 +285,31 @@ dist:
 	@rm -rf $(DIST_DIR)/$(ADDON)
 	@echo "built $(ZIP)"
 
-## deploy: none - releases are published by pushing a v* tag to GitHub
+##@ GitHub
+
+## publish: write the addon files of HEAD to GitHub main as one commit
+publish: lint
+	@git diff --quiet HEAD || echo "note: uncommitted changes are not published"
+	@rm -rf "$(PUB_DIR)"
+	@git clone -q --depth 1 "$(GITHUB_REPO)" "$(PUB_DIR)"
+	@find "$(PUB_DIR)" -mindepth 1 -maxdepth 1 ! -name .git -exec rm -rf {} +
+	@git archive HEAD $(PUBLIC_PATHS) | tar -x -C "$(PUB_DIR)"
+	@cd "$(PUB_DIR)" && git add -A && \
+	if git diff --cached --quiet; then echo "GitHub is up to date"; else \
+		git commit -qm "Tallymaster $(VERSION) ($$(git -C "$(CURDIR)" rev-parse --short HEAD))" && \
+		git push -q origin HEAD:main && echo "published $(VERSION) to $(GITHUB_REPO)"; fi
+
+## release: publish, then tag v<version> on GitHub (starts the packager) and on origin
+release: publish
+	@if git rev-parse -q --verify "refs/tags/v$(VERSION)" >/dev/null; then \
+		echo "v$(VERSION) already exists - raise ## Version: in the TOCs first"; exit 1; fi
+	@cd "$(PUB_DIR)" && git tag "v$(VERSION)" && git push -q origin "v$(VERSION)"
+	@git tag "v$(VERSION)" && git push -q origin "v$(VERSION)"
+	@echo "released v$(VERSION)"
+
+## deploy: none - make release publishes on GitHub, CurseForge and Wago
 deploy:
-	@echo "No deploy: a v* tag pushed to github.com/lasse-tech/tallymaster publishes the release."
+	@echo "No deploy: make release publishes the addon."
 
 ## clean: remove dist/
 clean:
