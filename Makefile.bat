@@ -284,7 +284,8 @@ if "!HAVELIBS!"=="1" (
     if exist "%TARGET%\Libs\" (
         echo   keeping the libraries already installed in the client
     ) else (
-        echo   warning: no Libs\ here and none installed - the addon will not load
+        echo Libs\ is empty and none installed - run "Makefile fetch-libs" first
+        exit /b 1
     )
 )
 

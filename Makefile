@@ -192,7 +192,7 @@ install:
 	if $(HAVE_LIBS); then \
 		cp -r Libs/. "$$target/Libs/"; \
 	elif [ ! -d "$$target/Libs" ]; then \
-		echo "  warning: no Libs/ here and none installed - the addon will not load"; \
+		echo "Libs/ is empty and none installed - run 'make fetch-libs' first"; exit 1; \
 	else \
 		echo "  keeping the libraries already installed in the client"; \
 	fi; \
