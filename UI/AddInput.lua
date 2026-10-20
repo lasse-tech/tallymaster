@@ -7,30 +7,30 @@ T.AddInput = AddInput
 
 local frame
 
-function AddInput:Commit(entry)
-    local existing = DB:GetEntry(entry.key)
+function AddInput.Commit(entry)
+    local existing = DB.GetEntry(entry.key)
     if existing then
         if entry.type == "item" then existing.respectQuality = entry.respectQuality end
-        DB:SetVisible(existing.key, true)
-        T.Addon:Print(L["Already tracking %s."]:format(existing.originalName))
+        DB.SetVisible(existing.key, true)
+        T.Addon.Print(L["Already tracking %s."]:format(existing.originalName))
     else
-        DB:AddEntry(entry)
-        DB:SetVisible(entry.key, true)
-        T.Addon:Print(L["Now tracking %s."]:format(entry.originalName))
+        DB.AddEntry(entry)
+        DB.SetVisible(entry.key, true)
+        T.Addon.Print(L["Now tracking %s."]:format(entry.originalName))
     end
     -- Adding something implies wanting to see it, so bring a hidden tracker back.
-    if T.Tracker and T.Tracker.SetShown then T.Tracker:SetShown(true) end
-    T.Addon:RefreshTracker()
-    if T.KnownList and T.KnownList.Refresh then T.KnownList:Refresh() end
+    if T.Tracker and T.Tracker.SetShown then T.Tracker.SetShown(true) end
+    T.Addon.RefreshTracker()
+    if T.KnownList and T.KnownList.Refresh then T.KnownList.Refresh() end
 end
 
 StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] = {
     text = L["The ID %d matches both an item and a currency. Which do you mean?"],
     button1 = L["Item"],
     button2 = L["Currency"],
-    OnAccept = function(self) AddInput:Commit(self.data.candidates[1]) end,
-    OnCancel = function(self, _, reason)
-        if reason == "clicked" then AddInput:Commit(self.data.candidates[2]) end
+    OnAccept = function(dialog) AddInput.Commit(dialog.data.candidates[1]) end,
+    OnCancel = function(dialog, _, reason)
+        if reason == "clicked" then AddInput.Commit(dialog.data.candidates[2]) end
     end,
     hideOnEscape = true, whileDead = true, timeout = 0,
 }
@@ -40,12 +40,12 @@ local function askAmbiguous(result, id)
     if dialog then dialog.data = result end
 end
 
-function AddInput:Submit(text)
+function AddInput.Submit(text)
     local result
     if frame and frame.pending and frame.pendingText == text then
         result = { status = "ok", entry = frame.pending }
     else
-        result = T.Resolve:Query(text)
+        result = T.Resolve.Query(text)
     end
 
     if result.status == "ok" then
@@ -53,14 +53,14 @@ function AddInput:Submit(text)
         if entry.type == "item" and entry.craftingQuality and frame and frame.respect then
             entry.respectQuality = frame.respect:GetChecked() and true or false
         end
-        self:Commit(entry)
-        if frame then frame.edit:SetText(""); self:Preview(nil); frame:Hide() end
+        AddInput.Commit(entry)
+        if frame then frame.edit:SetText(""); AddInput.Preview(nil); frame:Hide() end
     elseif result.status == "ambiguous" then
         askAmbiguous(result, tonumber(text))
     elseif result.status == "loading" then
-        T.Addon:Print(L["Still loading data for that ID — try again in a moment."])
+        T.Addon.Print(L["Still loading data for that ID — try again in a moment."])
     else
-        T.Addon:Print(L["Could not find anything matching '%s'."]:format(text))
+        T.Addon.Print(L["Could not find anything matching '%s'."]:format(text))
     end
 end
 
@@ -140,7 +140,7 @@ local function formatDetails(e)
     return table.concat(out, "\n")
 end
 
-function AddInput:Preview(result)
+function AddInput.Preview(result)
     if not frame then return end
     if result and result.status == "ok" and result.entry.type == "item" then
         local e = result.entry
@@ -164,19 +164,19 @@ function AddInput:Preview(result)
     end
 end
 
-function AddInput:SchedulePreview()
-    self._previewToken = (self._previewToken or 0) + 1
-    local token = self._previewToken
+function AddInput.SchedulePreview()
+    AddInput._previewToken = (AddInput._previewToken or 0) + 1
+    local token = AddInput._previewToken
     C_Timer.After(0.3, function()
-        if token ~= self._previewToken then return end
+        if token ~= AddInput._previewToken then return end
         if not frame or not frame:IsShown() then return end
         local text = frame.edit:GetText()
-        if not text or text == "" then self:Preview(nil); return end
-        self:Preview(T.Resolve:Query(text))
+        if not text or text == "" then AddInput.Preview(nil); return end
+        AddInput.Preview(T.Resolve.Query(text))
     end)
 end
 
-function AddInput:Create()
+function AddInput.Create()
     if frame then return end
     frame = CreateFrame("Frame", "TallymasterAddFrame", UIParent, "BackdropTemplate")
     frame:SetSize(440, 224)
@@ -218,7 +218,7 @@ function AddInput:Create()
     edit:SetAutoFocus(false)
     edit:SetScript("OnEnterPressed", function(box)
         local text = box:GetText()
-        if text and text ~= "" then AddInput:Submit(text) end
+        if text and text ~= "" then AddInput.Submit(text) end
     end)
     edit:SetScript("OnEscapePressed", function() frame:Hide() end)
     frame.edit = edit
@@ -232,7 +232,7 @@ function AddInput:Create()
         frame.editInstructions:SetShown(box:GetText() == "")
         if userInput then
             frame.pending = nil
-            AddInput:SchedulePreview()
+            AddInput.SchedulePreview()
         end
     end)
 
@@ -271,7 +271,7 @@ function AddInput:Create()
     addBtn:SetText(L["Add"])
     addBtn:SetScript("OnClick", function()
         local text = frame.edit:GetText()
-        if text and text ~= "" then AddInput:Submit(text) end
+        if text and text ~= "" then AddInput.Submit(text) end
     end)
 
     if not AddInput._linkHooked then
@@ -284,7 +284,7 @@ function AddInput:Create()
             frame.edit:SetText(name)
             frame.edit:SetFocus()
             frame.edit:SetCursorPosition(#name)
-            AddInput:Preview(T.Resolve:ByLink(link))
+            AddInput.Preview(T.Resolve.ByLink(link))
         end)
     end
 
@@ -300,8 +300,8 @@ function AddInput:Create()
     if T.SkinElvUI then T.SkinElvUI() end
 end
 
-function AddInput:Paste(entryOrName)
-    self:Create()
+function AddInput.Paste(entryOrName)
+    AddInput.Create()
     frame:Show()
     frame:Raise()
     local isEntry = type(entryOrName) == "table"
@@ -310,19 +310,19 @@ function AddInput:Paste(entryOrName)
     frame.edit:SetFocus()
     frame.edit:HighlightText()
     if isEntry then
-        self:Preview({ status = "ok", entry = entryOrName })
+        AddInput.Preview({ status = "ok", entry = entryOrName })
         frame.pending = entryOrName
         frame.pendingText = name
         if entryOrName.craftingQuality and frame.respect then
             frame.respect:SetChecked(entryOrName.respectQuality and true or false)
         end
     else
-        self:Preview(T.Resolve:Query(name))
+        AddInput.Preview(T.Resolve.Query(name))
     end
 end
 
-function AddInput:Toggle()
-    self:Create()
+function AddInput.Toggle()
+    AddInput.Create()
     if frame:IsShown() then
         frame:Hide()
     else
@@ -330,6 +330,6 @@ function AddInput:Toggle()
         frame:Raise()
         frame.edit:SetText("")
         frame.edit:SetFocus()
-        self:Preview(nil)
+        AddInput.Preview(nil)
     end
 end

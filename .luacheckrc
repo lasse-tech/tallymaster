@@ -5,13 +5,6 @@ std = "lua51"
 max_line_length = 120
 exclude_files = { "Libs/", "dist/", "tests/" }
 
--- 212/self: the implicit `self` of a method, unused. The singletons here are
--- written as methods (`Addon:Print()`), so every one of them carries a `self`
--- whether it reads it or not - that is the signature, not a defect. Unused
--- arguments are still reported; only this one name is exempt. Favorkeeper
--- avoids the question by giving its singletons dot functions instead.
-ignore = { "212/self" }
-
 -- Written by the addon.
 globals = {
     "TallymasterDB",

@@ -81,12 +81,12 @@ local function addAbout()
 end
 
 local function refresh()
-    T.Addon:RefreshTracker()
+    T.Addon.RefreshTracker()
 end
 
 local function profileSetting(variableKey, variableType, name, default)
     return Settings.RegisterAddOnSetting(category, ADDON .. "_" .. variableKey, variableKey,
-        DB:Profile(), variableType, name, default)
+        DB.Profile(), variableType, name, default)
 end
 
 function T.SetupOptions()
@@ -137,11 +137,11 @@ function T.SetupOptions()
     end
 
     do
-        local proxy = { showMinimap = not DB:Profile().minimap.hide }
+        local proxy = { showMinimap = not DB.Profile().minimap.hide }
         local setting = Settings.RegisterAddOnSetting(category, ADDON .. "_showMinimap", "showMinimap",
             proxy, Settings.VarType.Boolean, L["Show minimap button"], true)
         setting:SetValueChangedCallback(function(_, value)
-            DB:Profile().minimap.hide = not value
+            DB.Profile().minimap.hide = not value
             local LDBIcon = LibStub("LibDBIcon-1.0", true)
             if not LDBIcon then return end
             if value then LDBIcon:Show(ADDON) else LDBIcon:Hide(ADDON) end

@@ -16,7 +16,7 @@ eventFrame:SetScript("OnEvent", function(_, event, ...)
     end
 end)
 
-function Addon:RegisterEvent(event, handler)
+function Addon.RegisterEvent(event, handler)
     local list = handlers[event]
     if not list then
         if not pcall(eventFrame.RegisterEvent, eventFrame, event) then return end
@@ -38,7 +38,7 @@ end
 -- so the state is tracked here.
 local held = {}
 
-Addon:RegisterEvent("MODIFIER_STATE_CHANGED", function(_, key, down)
+Addon.RegisterEvent("MODIFIER_STATE_CHANGED", function(_, key, down)
     if type(key) ~= "string" then return end
     held[key] = down == 1
 end)
@@ -51,25 +51,25 @@ local function anyHeld(left, right, api)
     return held[left] == true or held[right] == true
 end
 
-function Addon:ShiftDown()
+function Addon.ShiftDown()
     return anyHeld("LSHIFT", "RSHIFT", IsShiftKeyDown)
 end
 
-function Addon:ControlDown()
+function Addon.ControlDown()
     return anyHeld("LCTRL", "RCTRL", IsControlKeyDown)
 end
 
-function Addon:Print(...)
+function Addon.Print(...)
     print(PREFIX .. strjoin(" ", tostringall(...)))
 end
 
 local SLASH_PREFIX = ADDON:upper()
 
-function Addon:RegisterChatCommand(command, method)
+function Addon.RegisterChatCommand(command, method)
     local id = SLASH_PREFIX .. command:upper()
     _G["SLASH_" .. id .. "1"] = "/" .. command
     SlashCmdList[id] = function(input)
-        self[method](self, input)
+        Addon[method](input)
     end
 end
 
@@ -79,28 +79,28 @@ local initialized, enabled = false, false
 local function initialize()
     if initialized then return end
     initialized = true
-    if Addon.OnInitialize then Addon:OnInitialize() end
+    if Addon.OnInitialize then Addon.OnInitialize() end
 end
 
 local function enable()
     if enabled then return end
     enabled = true
-    if Addon.OnEnable then Addon:OnEnable() end
+    if Addon.OnEnable then Addon.OnEnable() end
 end
 
 loader:RegisterEvent("ADDON_LOADED")
 loader:RegisterEvent("PLAYER_LOGIN")
-loader:SetScript("OnEvent", function(self, event, arg1)
+loader:SetScript("OnEvent", function(frame, event, arg1)
     if event == "ADDON_LOADED" then
         if arg1 ~= ADDON then return end
-        self:UnregisterEvent("ADDON_LOADED")
+        frame:UnregisterEvent("ADDON_LOADED")
         initialize()
         if IsLoggedIn() then
-            self:UnregisterEvent("PLAYER_LOGIN")
+            frame:UnregisterEvent("PLAYER_LOGIN")
             enable()
         end
     elseif event == "PLAYER_LOGIN" then
-        self:UnregisterEvent("PLAYER_LOGIN")
+        frame:UnregisterEvent("PLAYER_LOGIN")
         initialize()
         enable()
     end

@@ -13,27 +13,27 @@ local Tallymaster = T.Addon
 
 local ICON = "Interface\\AddOns\\Tallymaster\\Media\\Satchel"
 
-function Tallymaster:OnInitialize()
-    T.DB:Initialize()
+function Tallymaster.OnInitialize()
+    T.DB.Initialize()
 
     if T.SetupOptions then T.SetupOptions() end
 
     local LDB = LibStub("LibDataBroker-1.1", true)
     local LDBIcon = LibStub("LibDBIcon-1.0", true)
     if LDB then
-        self.launcher = LDB:NewDataObject(ADDON, {
+        Tallymaster.launcher = LDB:NewDataObject(ADDON, {
             type = "launcher",
             text = L["Tallymaster"],
             icon = ICON,
             OnClick = function(_, button)
                 if button == "RightButton" then
-                    T.Addon:OpenOptions()
-                elseif T.Addon:ShiftDown() then
-                    T.Tracker:Toggle()
-                elseif T.Addon:ControlDown() then
-                    T.KnownList:Toggle()
+                    T.Addon.OpenOptions()
+                elseif T.Addon.ShiftDown() then
+                    T.Tracker.Toggle()
+                elseif T.Addon.ControlDown() then
+                    T.KnownList.Toggle()
                 else
-                    T.AddInput:Toggle()
+                    T.AddInput.Toggle()
                 end
             end,
             OnTooltipShow = function(tt)
@@ -45,17 +45,17 @@ function Tallymaster:OnInitialize()
             end,
         })
         if LDBIcon then
-            LDBIcon:Register(ADDON, self.launcher, self.db.profile.minimap)
+            LDBIcon:Register(ADDON, Tallymaster.launcher, Tallymaster.db.profile.minimap)
         end
     end
 
-    self:RegisterChatCommand("tally", "HandleSlash")
-    self:RegisterChatCommand("tallymaster", "HandleSlash")
+    Tallymaster.RegisterChatCommand("tally", "HandleSlash")
+    Tallymaster.RegisterChatCommand("tallymaster", "HandleSlash")
 end
 
-function Tallymaster:OnEnable()
+function Tallymaster.OnEnable()
     if T.DB and T.DB.Relocalize then
-        local pending = T.DB:Relocalize()
+        local pending = T.DB.Relocalize()
         if pending and #pending > 0 then
             local want = {}
             for _, id in ipairs(pending) do want[id] = true end
@@ -66,55 +66,55 @@ function Tallymaster:OnEnable()
                 want[itemID] = nil
                 if success then
                     local name = C_Item.GetItemInfo(itemID)
-                    local e = name and T.DB:GetEntry("item:" .. itemID)
+                    local e = name and T.DB.GetEntry("item:" .. itemID)
                     if e then e.originalName = name end
                 end
                 if not next(want) then frame:UnregisterEvent("GET_ITEM_INFO_RECEIVED") end
-                T.Addon:RefreshTracker()
+                T.Addon.RefreshTracker()
             end)
         end
     end
-    if T.Counting and T.Counting.Enable then T.Counting:Enable() end
-    if T.Tracker and T.Tracker.Initialize then T.Tracker:Initialize() end
+    if T.Counting and T.Counting.Enable then T.Counting.Enable() end
+    if T.Tracker and T.Tracker.Initialize then T.Tracker.Initialize() end
     if T.SkinElvUI then T.SkinElvUI() end
-    self:RefreshTracker()
+    Tallymaster.RefreshTracker()
 end
 
-function Tallymaster:HandleSlash(input)
+function Tallymaster.HandleSlash(input)
     input = (input or ""):lower():gsub("^%s+", ""):gsub("%s+$", "")
     if input == "known" or input == "list" then
-        T.KnownList:Toggle()
+        T.KnownList.Toggle()
     elseif input == "config" or input == "options" then
-        self:OpenOptions()
+        Tallymaster.OpenOptions()
     elseif input == "show" or input == "tracker" then
-        T.Tracker:Toggle()
+        T.Tracker.Toggle()
     else
-        T.AddInput:Toggle()
+        T.AddInput.Toggle()
     end
 end
 
-function Tallymaster:OpenOptions()
+function Tallymaster.OpenOptions()
     if T.OpenOptions then T.OpenOptions() end
 end
 
 local refreshPending = false
-function Tallymaster:RefreshTracker()
+function Tallymaster.RefreshTracker()
     if refreshPending then return end
     refreshPending = true
     C_Timer.After(0.1, function()
         refreshPending = false
-        local counts = T.Counting:Snapshot()
-        if T.Tracker and T.Tracker.Refresh then T.Tracker:Refresh(counts) end
-        if T.KnownList and T.KnownList.Refresh then T.KnownList:Refresh(counts) end
+        local counts = T.Counting.Snapshot()
+        if T.Tracker and T.Tracker.Refresh then T.Tracker.Refresh(counts) end
+        if T.KnownList and T.KnownList.Refresh then T.KnownList.Refresh(counts) end
     end)
 end
 
 function Tallymaster_Binding(which)
     if which == "add" then
-        T.AddInput:Toggle()
+        T.AddInput.Toggle()
     elseif which == "tracker" then
-        T.Tracker:Toggle()
+        T.Tracker.Toggle()
     elseif which == "known" then
-        T.KnownList:Toggle()
+        T.KnownList.Toggle()
     end
 end

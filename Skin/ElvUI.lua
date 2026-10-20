@@ -43,7 +43,7 @@ end
 function T.SkinElvUI()
     if T.ApplyElvUISkin then return T.ApplyElvUISkin() end
     if not _G.ElvUI then return end
-    if not T.DB:Profile().elvuiSkin then return end
+    if not T.DB.Profile().elvuiSkin then return end
 
     local ok, E = pcall(function() return unpack(_G.ElvUI) end)
     if not ok or not E then return end

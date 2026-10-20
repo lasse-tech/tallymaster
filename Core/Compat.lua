@@ -44,17 +44,17 @@ getListLink = getListLink or _G.GetCurrencyListLink
 -- adding one by ID still resolves, adding one by name cannot.
 Compat.hasCurrencyList = getListSize ~= nil and getListInfo ~= nil
 
-function Compat:GetCurrencyInfo(currencyID)
+function Compat.GetCurrencyInfo(currencyID)
     if not getCurrencyInfo then return nil end
     return getCurrencyInfo(currencyID)
 end
 
-function Compat:GetCurrencyListSize()
+function Compat.GetCurrencyListSize()
     if not getListSize then return 0 end
     return getListSize() or 0
 end
 
-function Compat:GetCurrencyListInfo(index)
+function Compat.GetCurrencyListInfo(index)
     if not getListInfo then return nil end
     if listInfoReturnsTable then return getListInfo(index) end
 
@@ -68,7 +68,7 @@ function Compat:GetCurrencyListInfo(index)
     }
 end
 
-function Compat:GetCurrencyListLink(index)
+function Compat.GetCurrencyListLink(index)
     if not getListLink then return nil end
     return getListLink(index)
 end
@@ -105,7 +105,7 @@ local scanBags
 
 -- Every container worth walking slot by slot: the backpack, the four carried
 -- bags, and whatever else this client names.
-function Compat:ScanBags()
+function Compat.ScanBags()
     if scanBags then return scanBags end
     scanBags = { 0, 1, 2, 3, 4 }
     local bagIndex = Enum and Enum.BagIndex
@@ -129,7 +129,7 @@ local craftedQuality = apiFunction("C_TradeSkillUI", "GetItemCraftedQualityByIte
 -- stays dormant on its own.
 Compat.hasCraftingQuality = (reagentQuality or craftedQuality) ~= nil
 
-function Compat:CraftingQuality(itemInfo)
+function Compat.CraftingQuality(itemInfo)
     local quality
     if reagentQuality then quality = reagentQuality(itemInfo) end
     if not quality and craftedQuality then quality = craftedQuality(itemInfo) end
@@ -148,28 +148,28 @@ local playerHasTransmog   = apiFunction("C_TransmogCollection", "PlayerHasTransm
 -- Where the system exists but holds nothing — mounts and pets under Classic Era,
 -- appearances before the Legion wardrobe — these simply answer zero, which is
 -- the honest count.
-function Compat:MountCollected(mountID)
+function Compat.MountCollected(mountID)
     if not getMountInfoByID then return false end
     local _, _, _, _, _, _, _, _, _, _, isCollected = getMountInfoByID(mountID)
     return isCollected and true or false
 end
 
-function Compat:MountName(mountID)
+function Compat.MountName(mountID)
     if not getMountInfoByID then return nil end
     return (getMountInfoByID(mountID))
 end
 
-function Compat:PetsCollected(speciesID)
+function Compat.PetsCollected(speciesID)
     if not getNumCollectedInfo then return 0 end
     return getNumCollectedInfo(speciesID) or 0
 end
 
-function Compat:PetName(speciesID)
+function Compat.PetName(speciesID)
     if not getPetInfoBySpecies then return nil end
     return (getPetInfoBySpecies(speciesID))
 end
 
-function Compat:HasTransmog(itemID)
+function Compat.HasTransmog(itemID)
     if not playerHasTransmog then return false end
     return playerHasTransmog(itemID) and true or false
 end

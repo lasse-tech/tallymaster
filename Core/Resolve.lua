@@ -7,11 +7,11 @@ T.Resolve = Resolve
 
 local function buildEntry(entryType, id, name, icon)
     return {
-        key          = DB:MakeKey(entryType, id),
+        key          = DB.MakeKey(entryType, id),
         type         = entryType,
         id           = id,
         originalName = name,
-        category     = T.Categories:Auto(entryType, id),
+        category     = T.Categories.Auto(entryType, id),
         icon         = icon,
     }
 end
@@ -22,14 +22,14 @@ local function itemEntry(id, link)
           _, icon, sellPrice, _, _, bindType, expacID = C_Item.GetItemInfo(info)
     if not name then return nil end
     return {
-        key             = DB:MakeKey("item", id),
+        key             = DB.MakeKey("item", id),
         type            = "item",
         id              = id,
         originalName    = name,
-        category        = T.Categories:Auto("item", id),
+        category        = T.Categories.Auto("item", id),
         icon            = icon,
         itemQuality     = quality,
-        craftingQuality = Compat:CraftingQuality(info),
+        craftingQuality = Compat.CraftingQuality(info),
         respectQuality  = false,
         itemLevel       = itemLevel,
         itemType        = itemType,
@@ -52,12 +52,12 @@ local function tryItem(id, link)
 end
 
 local function tryCurrency(id)
-    local info = Compat:GetCurrencyInfo(id)
+    local info = Compat.GetCurrencyInfo(id)
     if not info or not info.name or info.name == "" then return nil end
     return buildEntry("currency", id, info.name, info.iconFileID)
 end
 
-function Resolve:ByID(id)
+function Resolve.ByID(id)
     local itemResult, itemLoading = tryItem(id)
     local currencyResult = tryCurrency(id)
 
@@ -73,7 +73,7 @@ function Resolve:ByID(id)
     return { status = "notfound" }
 end
 
-function Resolve:ByName(name)
+function Resolve.ByName(name)
     local _, link = C_Item.GetItemInfo(name)
     if link then
         local id = tonumber(link:match("item:(%d+)"))
@@ -86,10 +86,10 @@ function Resolve:ByName(name)
     -- Classic Era has no currency list to walk, so a currency can only be added
     -- by ID there. Every other flavour resolves the name through the list.
     if Compat.hasCurrencyList then
-        for i = 1, Compat:GetCurrencyListSize() do
-            local info = Compat:GetCurrencyListInfo(i)
+        for i = 1, Compat.GetCurrencyListSize() do
+            local info = Compat.GetCurrencyListInfo(i)
             if info and not info.isHeader and info.name and info.name:lower() == name:lower() then
-                local clink = Compat:GetCurrencyListLink(i)
+                local clink = Compat.GetCurrencyListLink(i)
                 local id = clink and tonumber(clink:match("currency:(%d+)"))
                 if id then
                     local entry = tryCurrency(id)
@@ -102,7 +102,7 @@ function Resolve:ByName(name)
     return { status = "notfound" }
 end
 
-function Resolve:ByLink(link)
+function Resolve.ByLink(link)
     if not link then return { status = "notfound" } end
     local id = tonumber(link:match("item:(%d+)"))
     if not id then return { status = "notfound" } end
@@ -112,12 +112,12 @@ function Resolve:ByLink(link)
     return { status = "notfound" }
 end
 
-function Resolve:Query(text)
+function Resolve.Query(text)
     text = (text or ""):gsub("^%s+", ""):gsub("%s+$", "")
     if text == "" then return { status = "notfound" } end
     local asNumber = tonumber(text)
     if asNumber then
-        return self:ByID(asNumber)
+        return Resolve.ByID(asNumber)
     end
-    return self:ByName(text)
+    return Resolve.ByName(text)
 end

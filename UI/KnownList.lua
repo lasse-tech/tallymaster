@@ -22,7 +22,7 @@ local ARROW_UP   = "|TInterface\\Buttons\\Arrow-Up-Up:14:14|t"
 local ARROW_DOWN = "|TInterface\\Buttons\\Arrow-Down-Up:14:14|t"
 
 local function matchesFilters(entry)
-    if filterCategory and DB:EffectiveCategory(entry) ~= filterCategory then
+    if filterCategory and DB.EffectiveCategory(entry) ~= filterCategory then
         return false
     end
     if searchText ~= "" then
@@ -43,7 +43,7 @@ local function setSort(key)
         sortKey = key
         sortAsc = (key == "name")
     end
-    KnownList:Refresh()
+    KnownList.Refresh()
 end
 
 local function styleRow(row)
@@ -70,13 +70,13 @@ local function styleRow(row)
     row.name:SetWordWrap(false)
 
     row:RegisterForClicks("AnyUp")
-    row:SetScript("OnClick", function(self)
-        if not T.Addon:ShiftDown() then return end
-        local entry = DB:GetEntry(self.entryKey)
-        if entry then T.AddInput:Paste(entry) end
+    row:SetScript("OnClick", function(button)
+        if not T.Addon.ShiftDown() then return end
+        local entry = DB.GetEntry(button.entryKey)
+        if entry then T.AddInput.Paste(entry) end
     end)
-    row:SetScript("OnEnter", function(self)
-        T.ShowEntryTooltip(self, DB:GetEntry(self.entryKey))
+    row:SetScript("OnEnter", function(button)
+        T.ShowEntryTooltip(button, DB.GetEntry(button.entryKey))
     end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
@@ -97,7 +97,7 @@ local function updateFilterText()
     frame.filter:SetDefaultText(filterCategory or L["All categories"])
 end
 
-function KnownList:Refresh(newCounts)
+function KnownList.Refresh(newCounts)
     if newCounts then counts = newCounts end
     if not frame or not frame:IsShown() then return end
 
@@ -108,10 +108,10 @@ function KnownList:Refresh(newCounts)
     rowPool:ReleaseAll()
 
     local entries = {}
-    for _, entry in pairs(DB:Global().entries) do
+    for _, entry in pairs(DB.Global().entries) do
         if matchesFilters(entry) then entries[#entries + 1] = entry end
     end
-    table.sort(entries, T.Counting:Comparator(counts, sortKey == "count", sortAsc))
+    table.sort(entries, T.Counting.Comparator(counts, sortKey == "count", sortAsc))
 
     local y = 0
     for _, entry in ipairs(entries) do
@@ -119,7 +119,7 @@ function KnownList:Refresh(newCounts)
         if not row.name then styleRow(row) end
         row.entryKey = entry.key
         row.icon:SetTexture(entry.icon or 134400)
-        row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
+        row.name:SetText(entry.originalName .. DB.TierMarkup(entry))
         row.count:SetText(BreakUpLargeNumbers(counts[entry.key] or 0))
         row:SetPoint("TOPLEFT", 0, -y)
         row:Show()
@@ -129,7 +129,7 @@ function KnownList:Refresh(newCounts)
     frame.content:SetSize(CONTENT_W, math.max(y, 1))
 end
 
-function KnownList:Create()
+function KnownList.Create()
     if frame then return end
 
     frame = CreateFrame("Frame", "TallymasterKnownListFrame", UIParent, "BackdropTemplate")
@@ -170,7 +170,7 @@ function KnownList:Create()
     search:SetScript("OnEscapePressed", function(box) box:ClearFocus() end)
     search:SetScript("OnTextChanged", function(box)
         searchText = (box:GetText() or ""):lower()
-        KnownList:Refresh()
+        KnownList.Refresh()
     end)
 
     local filter = CreateFrame("DropdownButton", nil, frame, "WowStyle1DropdownTemplate")
@@ -181,14 +181,14 @@ function KnownList:Create()
             function() return filterCategory == nil end,
             function()
                 filterCategory = nil
-                KnownList:Refresh()
+                KnownList.Refresh()
             end)
-        for _, cat in ipairs(DB:AllCategories()) do
+        for _, cat in ipairs(DB.AllCategories()) do
             rootDescription:CreateRadio(cat,
                 function(value) return filterCategory == value end,
                 function(value)
                     filterCategory = value
-                    KnownList:Refresh()
+                    KnownList.Refresh()
                 end, cat)
         end
     end)
@@ -222,12 +222,12 @@ function KnownList:Create()
     if T.SkinElvUI then T.SkinElvUI() end
 end
 
-function KnownList:Toggle()
-    self:Create()
+function KnownList.Toggle()
+    KnownList.Create()
     if frame:IsShown() then
         frame:Hide()
     else
         frame:Show()
-        self:Refresh(T.Counting:Snapshot())
+        KnownList.Refresh(T.Counting.Snapshot())
     end
 end

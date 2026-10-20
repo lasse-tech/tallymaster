@@ -9,7 +9,7 @@ local ROW_H, HEADER_H, WIDTH, PAD = 20, 18, 220, 8
 local frame, content, rowPool, headerPool
 
 function T.AppendCountBreakdown(tooltip, key)
-    local order, realms = DB:AccountBreakdownByRealm(key)
+    local order, realms = DB.AccountBreakdownByRealm(key)
     if #order == 0 then return false end
     tooltip:AddLine(" ")
     tooltip:AddLine(L["Tallymaster"], 1, 0.82, 0)
@@ -26,7 +26,7 @@ function T.AppendCountBreakdown(tooltip, key)
 end
 
 function T.ShowEntryTooltip(owner, entry)
-    if not DB:Profile().showTooltip or not entry then return end
+    if not DB.Profile().showTooltip or not entry then return end
     GameTooltip:SetOwner(owner, "ANCHOR_RIGHT")
     T._ownTooltip = true
     if entry.type == "item" then
@@ -37,7 +37,7 @@ function T.ShowEntryTooltip(owner, entry)
         GameTooltip:SetText(entry.originalName)
     end
     T._ownTooltip = false
-    if DB:Profile().showTooltipCounts then
+    if DB.Profile().showTooltipCounts then
         T.AppendCountBreakdown(GameTooltip, entry.key)
     end
     GameTooltip:Show()
@@ -48,10 +48,10 @@ if TooltipDataProcessor and TooltipDataProcessor.AddTooltipPostCall and Enum and
         if tooltip ~= GameTooltip then return end
         if T._ownTooltip then return end
         if not (T.Addon and T.Addon.db) then return end
-        if not DB:Profile().gameTooltipCounts then return end
+        if not DB.Profile().gameTooltipCounts then return end
         local id = data and data.id
         if not id then return end
-        local entry = DB:GetEntry("item:" .. id)
+        local entry = DB.GetEntry("item:" .. id)
         if not entry then return end
         if T.AppendCountBreakdown(tooltip, entry.key) then tooltip:Show() end
     end)
@@ -77,14 +77,14 @@ local function styleRow(row)
     row.name:SetPoint("RIGHT", row.count, "LEFT", -4, 0)
 
     row:RegisterForClicks("AnyUp")
-    row:SetScript("OnClick", function(self)
-        if T.Addon:ShiftDown() then
-            DB:SetVisible(self.entryKey, false)
-            T.Addon:RefreshTracker()
+    row:SetScript("OnClick", function(button)
+        if T.Addon.ShiftDown() then
+            DB.SetVisible(button.entryKey, false)
+            T.Addon.RefreshTracker()
         end
     end)
-    row:SetScript("OnEnter", function(self)
-        T.ShowEntryTooltip(self, DB:GetEntry(self.entryKey))
+    row:SetScript("OnEnter", function(button)
+        T.ShowEntryTooltip(button, DB.GetEntry(button.entryKey))
     end)
     row:SetScript("OnLeave", function() GameTooltip:Hide() end)
 end
@@ -94,17 +94,17 @@ local function styleHeader(h)
     h.label = h:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     h.label:SetPoint("LEFT", 2, 0)
     h:RegisterForClicks("AnyUp")
-    h:SetScript("OnClick", function(self)
-        DB:ToggleFold(self.category)
-        T.Addon:RefreshTracker()
+    h:SetScript("OnClick", function(button)
+        DB.ToggleFold(button.category)
+        T.Addon.RefreshTracker()
     end)
 end
 
-function Tracker:Initialize()
+function Tracker.Initialize()
     if frame then return end
     frame = CreateFrame("Frame", "TallymasterTrackerFrame", UIParent, "BackdropTemplate")
     frame:SetSize(WIDTH, 120)
-    local pos = DB:TrackerPos()
+    local pos = DB.TrackerPos()
     frame:SetPoint(pos.point or "TOPLEFT", UIParent, pos.relPoint or pos.point or "TOPLEFT",
         pos.x or 16, pos.y or -220)
     frame:SetMovable(true)
@@ -117,7 +117,7 @@ function Tracker:Initialize()
         if left and top then
             window:ClearAllPoints()
             window:SetPoint("TOPLEFT", UIParent, "BOTTOMLEFT", left, top)
-            DB:SaveTrackerPos("TOPLEFT", "BOTTOMLEFT", left, top)
+            DB.SaveTrackerPos("TOPLEFT", "BOTTOMLEFT", left, top)
         end
     end)
     frame:SetClampedToScreen(true)
@@ -125,10 +125,10 @@ function Tracker:Initialize()
     frame:SetScript("OnMouseUp", function(window, button)
         if button ~= "LeftButton" then return end
         if window.didDrag then window.didDrag = false; return end
-        if T.Addon:ShiftDown() then
-            Tracker:SetShown(false)
+        if T.Addon.ShiftDown() then
+            Tracker.SetShown(false)
         else
-            T.AddInput:Toggle()
+            T.AddInput.Toggle()
         end
     end)
     frame:SetBackdrop({
@@ -161,35 +161,35 @@ function Tracker:Initialize()
     rowPool    = CreateFramePool("Button", content, nil, function(_, r) r:Hide() end)
     headerPool = CreateFramePool("Button", content, nil, function(_, h) h:Hide() end)
 
-    self:Refresh()
-    frame:SetShown(DB:TrackerShown())
+    Tracker.Refresh()
+    frame:SetShown(DB.TrackerShown())
 end
 
 -- Show or hide the tracker and remember the state across sessions. Only explicit
 -- user actions go through here; UIParent hiding the frame must not be persisted.
-function Tracker:SetShown(shown)
-    if not frame then self:Initialize() end
-    DB:SetTrackerShown(shown)
+function Tracker.SetShown(shown)
+    if not frame then Tracker.Initialize() end
+    DB.SetTrackerShown(shown)
     frame:SetShown(shown)
-    if shown then self:Refresh() end
+    if shown then Tracker.Refresh() end
 end
 
-function Tracker:Toggle()
-    if not frame then self:Initialize() end
-    self:SetShown(not frame:IsShown())
+function Tracker.Toggle()
+    if not frame then Tracker.Initialize() end
+    Tracker.SetShown(not frame:IsShown())
 end
 
 local function trackerComparator(counts)
-    local byCount = DB:Profile().sortMode == "count"
-    return T.Counting:Comparator(counts, byCount, not byCount)
+    local byCount = DB.Profile().sortMode == "count"
+    return T.Counting.Comparator(counts, byCount, not byCount)
 end
 
 local function buildGroups(counts, sortGroups)
     local groups = {}
-    for key in pairs(DB:Char().visible) do
-        local entry = DB:GetEntry(key)
+    for key in pairs(DB.Char().visible) do
+        local entry = DB.GetEntry(key)
         if entry then
-            local cat = DB:EffectiveCategory(entry)
+            local cat = DB.EffectiveCategory(entry)
             groups[cat] = groups[cat] or {}
             table.insert(groups[cat], entry)
         end
@@ -213,19 +213,19 @@ local function renderRow(entry, y, counts)
     if not row.name then styleRow(row) end
     row.entryKey = entry.key
     row.icon:SetTexture(entry.icon or 134400)
-    row.name:SetText(entry.originalName .. DB:TierMarkup(entry))
+    row.name:SetText(entry.originalName .. DB.TierMarkup(entry))
     row.count:SetText(BreakUpLargeNumbers(counts[entry.key] or 0))
     row:SetPoint("TOPLEFT", 0, -y)
     row:Show()
 end
 
-function Tracker:Refresh(counts)
+function Tracker.Refresh(counts)
     if not frame then return end
-    counts = counts or T.Counting:Snapshot()
+    counts = counts or T.Counting.Snapshot()
     rowPool:ReleaseAll()
     headerPool:ReleaseAll()
 
-    local showCategories = DB:Profile().showCategories
+    local showCategories = DB.Profile().showCategories
     local groups, catNames = buildGroups(counts, showCategories)
 
     if #catNames == 0 then
@@ -242,7 +242,7 @@ function Tracker:Refresh(counts)
 
     if showCategories then
         for _, cat in ipairs(catNames) do
-            local folded = DB:IsFolded(cat)
+            local folded = DB.IsFolded(cat)
             local h = headerPool:Acquire()
             if not h.label then styleHeader(h) end
             h.category = cat
