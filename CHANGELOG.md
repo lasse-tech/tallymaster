@@ -5,6 +5,12 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- The ElvUI skin never applied: it read a setting ElvUI does not have and waited for
+  ElvUI's options to load.
+
 ## [1.1.1] - 2026-10-20
 
 ### Changed

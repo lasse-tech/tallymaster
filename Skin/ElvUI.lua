@@ -1,4 +1,4 @@
-local ADDON, T = ...
+local _, T = ...
 
 local function skinKnownList(S)
     local list = _G.TallymasterKnownListFrame
@@ -51,21 +51,13 @@ function T.SkinElvUI()
     if not S then return end
 
     local function skin()
-        if not E.private or not E.private.skins or not E.private.skins.misc
-           or not E.private.skins.misc.enable then
-            return
-        end
+        local blizzard = E.private and E.private.skins and E.private.skins.blizzard
+        if not (blizzard and blizzard.enable and blizzard.misc) then return end
         skinTracker()
         skinAddFrame(S)
         skinKnownList(S)
     end
 
     T.ApplyElvUISkin = skin
-
-    local EP = LibStub("LibElvUIPlugin-1.0", true)
-    if EP then
-        EP:RegisterPlugin(ADDON, skin)
-    else
-        skin()
-    end
+    skin()
 end
