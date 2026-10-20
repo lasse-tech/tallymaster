@@ -25,6 +25,7 @@ move-folders:
 
 ignore:
   - design
+  - scripts
   - README.md
   - Makefile
   - Makefile.bat

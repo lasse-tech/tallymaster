@@ -1,10 +1,28 @@
-ADDON       := Tallymaster
-FLAVOR      ?= _retail_
+ADDON := Tallymaster
 
-# One folder serves every flavor: the client picks the TOC whose suffix matches,
-# so all three ship together and the version is read from whichever is canonical.
-TOCS        := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
-VERSION     := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
+REQUIRED  := clean distclean debug install uninstall deploy lint
+HELP_VARS := FLAVOR WOW_RETAIL_ADDON_FOLDER WOW_DIR ADDONS_DIR WOW_UI_SIM SIM_BIN
+
+## FLAVOR: client folder: _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)
+FLAVOR ?= _retail_
+
+## WOW_RETAIL_ADDON_FOLDER: retail Interface/AddOns; its WoW folder is also searched for Classic
+WOW_RETAIL_ADDON_FOLDER ?=
+
+## WOW_DIR: World of Warcraft folder, overrides auto-detection
+WOW_DIR ?=
+
+## ADDONS_DIR: Interface/AddOns to install into; default from WOW_RETAIL_ADDON_FOLDER (retail)
+ADDONS_DIR ?= $(if $(filter _retail_,$(FLAVOR)),$(WOW_RETAIL_ADDON_FOLDER))
+
+## WOW_UI_SIM: wow-ui-sim checkout for make test
+WOW_UI_SIM ?= $(HOME)/git/wow-ui-sim
+
+## SIM_BIN: wow-sim binary for make test
+SIM_BIN ?= $(WOW_UI_SIM)/target/release/wow-sim
+
+TOCS    := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
+VERSION := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
 
 INSTALL_FILES := $(TOCS) embeds.xml Bindings.xml CHANGELOG.md LICENSE
 INSTALL_DIRS  := Core UI Locales Skin Media
@@ -12,6 +30,16 @@ KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 Lib
 
 DIST_DIR := dist
 ZIP      := $(DIST_DIR)/$(ADDON)-$(VERSION).zip
+SIM_DIR  := $(DIST_DIR)/sim
+
+# expansion -> TOC suffix, client folder
+FLAVOR_NAMES        := Midnight Mists Vanilla
+FLAVOR_TOC_Midnight := Mainline
+FLAVOR_TOC_Mists    := Mists
+FLAVOR_TOC_Vanilla  := Vanilla
+FLAVOR_DIR_Midnight := _retail_
+FLAVOR_DIR_Mists    := _classic_
+FLAVOR_DIR_Vanilla  := _classic_era_
 
 WOW_CANDIDATES := \
 	"$$PROGRAMFILES/World of Warcraft" \
@@ -20,15 +48,7 @@ WOW_CANDIDATES := \
 	"D:/World of Warcraft" \
 	"C:/Games/World of Warcraft"
 
-# WOW_RETAIL_ADDON_FOLDER points straight at Interface/AddOns and skips the search.
-# It only names the retail folder, so a FLAVOR override falls back to WOW_DIR and
-# auto-detection. Every client sits next to _retail_ in one WoW folder, though, so
-# the last candidate is the folder three levels above it - which is what finds the
-# Classic clients under a Wine prefix, where none of the Windows paths exist.
-ifeq ($(FLAVOR),_retail_)
-ADDONS_DIR ?= $(WOW_RETAIL_ADDON_FOLDER)
-endif
-
+# last candidate: the WoW folder three levels above WOW_RETAIL_ADDON_FOLDER (Wine)
 FIND_WOW = if [ -n "$(WOW_DIR)" ]; then echo "$(WOW_DIR)"; else \
 	retail_root=""; \
 	if [ -n "$(WOW_RETAIL_ADDON_FOLDER)" ]; then retail_root=$$(dirname "$$(dirname "$$(dirname "$(WOW_RETAIL_ADDON_FOLDER)")")"); fi; \
@@ -38,44 +58,36 @@ FIND_ADDONS = if [ -n "$(ADDONS_DIR)" ]; then echo "$(ADDONS_DIR)"; else wow=$$(
 
 NO_ADDONS_MSG = echo "AddOns folder not found. Set WOW_RETAIL_ADDON_FOLDER=/path/to/Interface/AddOns, or pass WOW_DIR=/path/to/World of Warcraft"
 
+HAVE_LIBS = [ -n "$$(ls -A Libs 2>/dev/null)" ]
+
+# .pkgmeta externals -> "<path> <url>" per line
+AWK_EXTERNALS := /^externals:/{e=1;next} /^[a-zA-Z]/{e=0} e&&/^  [^ \#]/{sub(/:$$/,"",$$1);p=$$1;next} e&&p&&$$1=="url:"{print p, $$2; p=""}
+
 .DEFAULT_GOAL := help
-# Expansion -> (TOC suffix, client folder). "stage" builds one ready-to-copy folder
-# per expansion under dist/, each carrying only the TOC that expansion loads.
-FLAVOR_NAMES := Midnight Mists Vanilla
-FLAVOR_TOC_Midnight := Mainline
-FLAVOR_TOC_Mists    := Mists
-FLAVOR_TOC_Vanilla  := Vanilla
-FLAVOR_DIR_Midnight := _retail_
-FLAVOR_DIR_Mists    := _classic_
-FLAVOR_DIR_Vanilla  := _classic_era_
 
-.PHONY: help version check check-tocs luacheck lint test libs fetch-libs install uninstall prune-libs stage dist clean distclean purge
+.PHONY: help version check check-tocs luacheck lint test libs fetch-libs debug install uninstall \
+	prune-libs stage dist deploy clean distclean purge
 
+##@ General
+
+## help: list targets and variables
 help:
 	@echo "$(ADDON) $(VERSION)"
-	@echo ""
-	@echo "  make check        syntax-check every Lua file"
-	@echo "  make check-tocs   verify the flavor TOCs only differ in ## Interface:"
-	@echo "  make libs         report which embedded libraries are missing"
-	@echo "  make fetch-libs   download them into Libs/ (needs svn, and git for one)"
-	@echo "  make install      copy the addon into the live WoW client"
-	@echo "  make uninstall    remove it again (SavedVariables are kept)"
-	@echo "  make prune-libs   drop installed libraries embeds.xml no longer lists"
-	@echo "  make stage        build dist/<expansion>/$(ADDON), ready to copy over"
-	@echo "  make dist         build $(ZIP)"
-	@echo "  make clean        remove build output"
-	@echo "  make distclean    clean + empty Libs/"
-	@echo "  make purge        uninstall + delete SavedVariables (needs CONFIRM=yes)"
-	@echo "  make lint         check + check-tocs + luacheck (any warning fails)"
-	@echo "  make test         run tests/ in wow-ui-sim (WOW_UI_SIM=$(WOW_UI_SIM))"
-	@echo ""
-	@echo "  FLAVOR=$(FLAVOR)   _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)"
-	@echo "  WOW_RETAIL_ADDON_FOLDER  Interface/AddOns to install into (retail only)"
-	@echo "  WOW_DIR           override the auto-detected WoW folder"
+	@$(foreach v,$(HELP_VARS),$(v)='$($(v))') awk -f scripts/make-help.awk $(firstword $(MAKEFILE_LIST))
 
+## version: print the addon version
 version:
 	@echo "$(VERSION)"
 
+##@ Checks
+
+## lint: Lua syntax, TOCs, luacheck, Makefile comments (BLOCKER)
+lint: check check-tocs luacheck
+	@awk -v required="$(REQUIRED)" -f scripts/make-lint.awk $(firstword $(MAKEFILE_LIST))
+	@awk -v required="$(REQUIRED)" -v bat=1 -f scripts/make-lint.awk Makefile.bat
+	@echo "make: comments ok"
+
+## check: syntax-check every Lua file
 check:
 	@files=$$(find Core UI Locales Skin -name '*.lua' | sort); \
 	if command -v luac >/dev/null 2>&1; then \
@@ -83,14 +95,11 @@ check:
 	elif command -v lua >/dev/null 2>&1; then \
 		for f in $$files; do lua -e "assert(loadfile('$$f'))" || exit 1; done; \
 		echo "lua: all files parse"; \
-	elif python -c "import lupa" >/dev/null 2>&1; then \
-		python -c "import io,glob,sys,lupa; m=getattr(lupa,'luajit21',None) or getattr(lupa,'lua51',None) or lupa; L=m.LuaRuntime(); ld=L.eval('function(s,n) local f,e=load(s,n) if f then return true,0 end return false,tostring(e) end'); fs=sorted(glob.glob('Core/*.lua')+glob.glob('UI/*.lua')+glob.glob('Locales/*.lua')+glob.glob('Skin/*.lua')); rs=[(f,)+tuple(ld(io.open(f,encoding='utf-8').read(),'@'+f)) for f in fs]; bad=[r for r in rs if not r[1]]; [print('FAIL',r[0],r[2]) for r in bad]; sys.exit(1) if bad else print('lupa: all files parse (' + str(len(fs)) + ')')"; \
 	else \
-		echo "no Lua available (install lua/luac, or 'pip install lupa') - skipped"; \
+		echo "no lua or luac found"; exit 1; \
 	fi
 
-# The flavor TOCs carry the same file list three times over, so drift is the one
-# way this layout can rot. Compare everything but the Interface line.
+## check-tocs: flavor TOCs differ only in ## Interface:, every listed file exists
 check-tocs:
 	@tmp=$$(mktemp -d); trap 'rm -rf "$$tmp"' EXIT; \
 	ref=""; fail=0; \
@@ -112,33 +121,37 @@ check-tocs:
 	if [ $$missing -eq 1 ]; then exit 1; fi; \
 	echo "tocs: every listed file exists"
 
-# Warnings are errors: luacheck exits non-zero on any warning, and so does lint.
+## luacheck: static analysis, any warning fails
 luacheck:
 	@command -v luacheck >/dev/null 2>&1 || { echo "luacheck not found - install it (luarocks install luacheck)"; exit 1; }
 	@luacheck --no-color -q . && echo "luacheck: no warnings"
 
-lint: check check-tocs luacheck
+## test: run tests/*.lua headless in wow-ui-sim against the retail Blizzard UI
+test:
+	@[ -x "$(SIM_BIN)" ] || { echo "wow-sim not found at $(SIM_BIN)"; \
+		echo "build it: cd $(WOW_UI_SIM) && cargo build --release --no-default-features --features casc,client-retail --bin wow-sim --bin wow-cli"; \
+		exit 1; }
+	@$(HAVE_LIBS) || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }
+	@rm -rf "$(SIM_DIR)"
+	@out="$(SIM_DIR)/Interface/AddOns/$(ADDON)"; mkdir -p "$$out"; \
+	for d in $(INSTALL_DIRS) Libs tests; do cp -r "$$d" "$$out/"; done; \
+	cp embeds.xml Bindings.xml $(ADDON)_Mainline.toc "$$out/"; \
+	cp -r "$(WOW_UI_SIM)/Interface/AddOns/TestFramework" "$(SIM_DIR)/Interface/AddOns/"; \
+	ln -f "$(SIM_BIN)" "$(SIM_DIR)/wow-sim" 2>/dev/null || cp "$(SIM_BIN)" "$(SIM_DIR)/wow-sim"
+	@cd "$(SIM_DIR)" && env -u WOW_SIM_WOW_PATH ./wow-sim --no-saved-vars run-tests $(ADDON)
 
+##@ Libraries
+
+## libs: report embedded libraries missing from Libs/
 libs:
 	@missing=0; \
 	for lib in $$(tr '\134' '/' < embeds.xml | sed -n 's|.*Libs/\([^/]*\)/.*|\1|p' | sort -u); do \
 		if [ -d "Libs/$$lib" ]; then echo "  ok      Libs/$$lib"; \
 		else echo "  MISSING Libs/$$lib"; missing=1; fi; \
 	done; \
-	if [ $$missing -eq 1 ]; then \
-		echo ""; \
-		echo "Run 'make fetch-libs' to download them, or see Libs/README.md."; \
-		echo "'make install' keeps whatever is already installed in the client, so this"; \
-		echo "is only fatal on a first install or for 'make stage' / 'make dist'."; \
-	fi
+	if [ $$missing -eq 1 ]; then echo "run 'make fetch-libs'"; fi
 
-# .pkgmeta stays the single source for what to fetch and from where - the CI
-# packager reads the same file, so hardcoding the URLs here would only invite
-# drift. CurseForge serves SVN; LibDataBroker-1.1 lives in tekkub's git repo.
-# awk walks the externals block and prints "<path> <url>" per external; the
-# ignore block is filtered down to the entries that land inside Libs/.
-AWK_EXTERNALS := /^externals:/{e=1;next} /^[a-zA-Z]/{e=0} e&&/^  [^ \#]/{sub(/:$$/,"",$$1);p=$$1;next} e&&p&&$$1=="url:"{print p, $$2; p=""}
-
+## fetch-libs: download the .pkgmeta externals into Libs/ (needs svn and git)
 fetch-libs:
 	@command -v svn >/dev/null 2>&1 || { echo "svn not found - needed for the CurseForge externals"; exit 1; }
 	@command -v git >/dev/null 2>&1 || { echo "git not found - needed for LibDataBroker-1.1"; exit 1; }
@@ -161,9 +174,13 @@ fetch-libs:
 	@find Libs -name .pkgmeta -delete 2>/dev/null; true
 	@$(MAKE) --no-print-directory libs
 
-# The stray list includes $(ADDON).toc: that is the pre-1.1.0 single TOC, and an
-# install from before the flavor split still carries it, listing a file set that
-# predates Core/Compat.lua.
+##@ Client
+
+## debug: same as install (Lua has no separate debug build)
+debug: install
+
+# $(ADDON).toc in the stray list: pre-1.1.0 single TOC
+## install: copy the addon into the live client (FLAVOR picks the client)
 install:
 	@addons=$$($(FIND_ADDONS)); \
 	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
@@ -172,16 +189,16 @@ install:
 	mkdir -p "$$target"; \
 	for d in $(INSTALL_DIRS); do rm -rf "$$target/$$d"; cp -r "$$d" "$$target/"; done; \
 	for f in $(INSTALL_FILES); do cp "$$f" "$$target/"; done; \
-	if [ -n "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ]; then \
+	if $(HAVE_LIBS); then \
 		cp -r Libs/. "$$target/Libs/"; \
 	elif [ ! -d "$$target/Libs" ]; then \
 		echo "  warning: no Libs/ here and none installed - the addon will not load"; \
 	else \
 		echo "  keeping the libraries already installed in the client"; \
 	fi; \
-	for x in design .claude .git dist README.md .gitignore .pkgmeta Makefile Makefile.bat $(ADDON).toc; do \
+	for x in design scripts .claude .git dist README.md .gitignore .pkgmeta Makefile Makefile.bat $(ADDON).toc; do \
 		if [ -e "$$target/$$x" ]; then \
-			echo "  removing stray $$x (not part of the addon)"; \
+			echo "  removing stray $$x"; \
 			rm -rf "$$target/$$x"; \
 		fi; \
 	done; \
@@ -192,20 +209,32 @@ install:
 		case " $(KEEP_LIBS) " in *" $$name "*) ;; *) stale="$$stale $$name";; esac; \
 	done; \
 	if [ -n "$$stale" ]; then \
-		echo "  stale libraries still installed:$$stale"; \
-		echo "  run 'make prune-libs' to remove them"; \
+		echo "  stale libraries still installed:$$stale - run 'make prune-libs'"; \
 	fi; \
 	echo "done - /reload in game"
 
+## uninstall: remove the addon from the client, SavedVariables stay
 uninstall:
 	@addons=$$($(FIND_ADDONS)); \
 	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
 	target="$$addons/$(ADDON)"; \
 	if [ ! -d "$$target" ]; then echo "not installed: $$target"; exit 0; fi; \
 	rm -rf "$$target"; \
-	echo "removed $$target"; \
-	echo "SavedVariables kept - use 'make purge CONFIRM=yes' to delete those too"
+	echo "removed $$target"
 
+## purge: uninstall and delete the SavedVariables
+purge: uninstall
+	@addons=$$($(FIND_ADDONS)); \
+	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
+	flavor_dir=$$(dirname "$$(dirname "$$addons")"); \
+	found=0; \
+	for f in "$$flavor_dir"/WTF/Account/*/SavedVariables/$(ADDON).lua*; do \
+		[ -e "$$f" ] || continue; \
+		echo "  deleting $$f"; rm -f "$$f"; found=1; \
+	done; \
+	[ $$found -eq 1 ] || echo "  no SavedVariables found"
+
+## prune-libs: delete installed libraries embeds.xml no longer lists
 prune-libs:
 	@addons=$$($(FIND_ADDONS)); \
 	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
@@ -221,89 +250,45 @@ prune-libs:
 	done; \
 	echo "done"
 
+##@ Packages
+
+## stage: dist/<expansion>/Tallymaster per client, each with only its own TOC
 stage:
 	@for name in $(FLAVOR_NAMES); do rm -rf "$(DIST_DIR)/$$name"; done
-	@if [ -z "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ]; then \
-		echo "Libs/ is empty - the staged folders would not load. Populate it first (make libs)."; \
-		exit 1; fi
+	@$(HAVE_LIBS) || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }
 	@$(foreach name,$(FLAVOR_NAMES), \
 		name="$(name)"; toc="$(FLAVOR_TOC_$(name))"; clientdir="$(FLAVOR_DIR_$(name))"; \
 		out="$(DIST_DIR)/$(name)/$(ADDON)"; \
 		mkdir -p "$$out"; \
 		for d in $(INSTALL_DIRS) Libs; do cp -r "$$d" "$$out/"; done; \
-		cp embeds.xml Bindings.xml CHANGELOG.md "$$out/"; \
+		cp embeds.xml Bindings.xml CHANGELOG.md LICENSE "$$out/"; \
 		cp "$(ADDON)_$$toc.toc" "$$out/"; \
-		rm -f "$$out/Libs/README.md" "$$out/Media/README.md"; \
 		printf "  %-10s %-32s -> %s\n" "$$name" "$(DIST_DIR)/$(name)/$(ADDON)" \
 			"$$clientdir/Interface/AddOns/"; \
 	)
-	@echo ""
-	@echo "Copy each $(ADDON) folder into that client's Interface/AddOns."
-	@echo "Each folder carries only its own TOC, so it loads on that expansion alone."
 
+## dist: build dist/Tallymaster-<version>.zip with all three TOCs
 dist:
 	@rm -rf $(DIST_DIR)/$(ADDON); rm -f $(ZIP)
-	@if [ -z "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ]; then \
-		echo "Libs/ is empty - the zip would not load. Populate it first (make libs)."; \
-		exit 1; fi
+	@$(HAVE_LIBS) || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }
+	@command -v zip >/dev/null 2>&1 || { echo "zip not found"; exit 1; }
 	@mkdir -p $(DIST_DIR)/$(ADDON)
 	@for d in $(INSTALL_DIRS) Libs; do cp -r "$$d" $(DIST_DIR)/$(ADDON)/; done
 	@for f in $(INSTALL_FILES); do cp "$$f" $(DIST_DIR)/$(ADDON)/; done
-	@rm -f $(DIST_DIR)/$(ADDON)/Libs/README.md $(DIST_DIR)/$(ADDON)/Media/README.md
-	@if command -v zip >/dev/null 2>&1; then \
-		( cd $(DIST_DIR) && zip -qr "$(ADDON)-$(VERSION).zip" $(ADDON) ); \
-	elif command -v tar >/dev/null 2>&1; then \
-		tar -a -c -f "$(ZIP)" -C "$(DIST_DIR)" "$(ADDON)"; \
-	else \
-		echo "  warning: no zip/tar, falling back to Compress-Archive"; \
-		echo "  (that writes backslash paths - fine on Windows, not for uploads)"; \
-		powershell -NoProfile -Command \
-			"Compress-Archive -Path '$(DIST_DIR)/$(ADDON)' -DestinationPath '$(ZIP)' -Force"; \
-	fi
+	@cd $(DIST_DIR) && zip -qr "$(ADDON)-$(VERSION).zip" $(ADDON)
 	@rm -rf $(DIST_DIR)/$(ADDON)
 	@echo "built $(ZIP)"
 
-# Runs tests/*.lua inside wow-ui-sim (https://github.com/Osso/wow-ui-sim), a
-# headless WoW client that loads the real Blizzard UI. The simulator resolves
-# test addons next to its own binary, so the addon, TestFramework and a hardlink
-# of the binary are staged together under dist/sim. No WoW install is scanned:
-# WOW_SIM_WOW_PATH stays unset, so neither live addons nor SavedVariables leak in.
-WOW_UI_SIM ?= $(HOME)/git/wow-ui-sim
-SIM_BIN    ?= $(WOW_UI_SIM)/target/release/wow-sim
-SIM_DIR    := $(DIST_DIR)/sim
+## deploy: none - releases are published by pushing a v* tag to GitHub
+deploy:
+	@echo "No deploy: a v* tag pushed to github.com/lasse-tech/tallymaster publishes the release."
 
-test:
-	@[ -x "$(SIM_BIN)" ] || { echo "wow-sim not found at $(SIM_BIN)"; \
-		echo "build it: cd $(WOW_UI_SIM) && cargo build --release --no-default-features --features casc,client-retail --bin wow-sim --bin wow-cli"; \
-		exit 1; }
-	@[ -n "$$(ls -A Libs 2>/dev/null | grep -v '^README.md$$')" ] || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }
-	@rm -rf "$(SIM_DIR)"
-	@out="$(SIM_DIR)/Interface/AddOns/$(ADDON)"; mkdir -p "$$out"; \
-	for d in $(INSTALL_DIRS) Libs tests; do cp -r "$$d" "$$out/"; done; \
-	cp embeds.xml Bindings.xml $(ADDON)_Mainline.toc "$$out/"; \
-	cp -r "$(WOW_UI_SIM)/Interface/AddOns/TestFramework" "$(SIM_DIR)/Interface/AddOns/"; \
-	ln -f "$(SIM_BIN)" "$(SIM_DIR)/wow-sim" 2>/dev/null || cp "$(SIM_BIN)" "$(SIM_DIR)/wow-sim"
-	@cd "$(SIM_DIR)" && env -u WOW_SIM_WOW_PATH ./wow-sim --no-saved-vars run-tests $(ADDON)
-
+## clean: remove dist/
 clean:
 	@rm -rf $(DIST_DIR)
 	@echo "cleaned"
 
+## distclean: clean and empty Libs/
 distclean: clean
-	@find Libs -mindepth 1 -maxdepth 1 ! -name README.md -exec rm -rf {} +
-	@echo "emptied Libs/"
-
-purge:
-	@if [ "$(CONFIRM)" != "yes" ]; then \
-		echo "refusing to delete SavedVariables without CONFIRM=yes"; \
-		echo "   make purge CONFIRM=yes"; exit 1; fi
-	@$(MAKE) --no-print-directory uninstall
-	@addons=$$($(FIND_ADDONS)); \
-	if [ -z "$$addons" ]; then $(NO_ADDONS_MSG); exit 1; fi; \
-	flavor_dir=$$(dirname "$$(dirname "$$addons")"); \
-	found=0; \
-	for f in "$$flavor_dir"/WTF/Account/*/SavedVariables/$(ADDON).lua*; do \
-		[ -e "$$f" ] || continue; \
-		echo "  deleting $$f"; rm -f "$$f"; found=1; \
-	done; \
-	[ $$found -eq 1 ] || echo "  no SavedVariables found"
+	@rm -rf Libs
+	@echo "removed Libs/"
