@@ -29,8 +29,6 @@ ignore:
   - Makefile
   - Makefile.bat
   - tests
-  - Libs/README.md
-  - Media/README.md
   # Paths inside externals: release.sh re-parses this list after fetching them.
   - Libs/LibStub/tests
   - Libs/LibDataBroker-1.1/README.textile

@@ -66,7 +66,6 @@ L["Allow ElvUI to skin this addon"] = "Allow ElvUI to skin this addon"
 L["Requires a /reload to take effect."] = "Requires a /reload to take effect."
 
 L["Author: %s"] = "Author: %s"
-L["More: %s"] = "More: %s"
 L["Version: %s"] = "Version: %s"
 
 L["Currencies"] = "Currencies"

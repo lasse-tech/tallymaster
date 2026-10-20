@@ -8,6 +8,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Changed
+- Tallymaster is a lasse tech addon under the MIT licence now. The TOCs, the About
+  block in the options and the README carry the new copyright line and contact, the
+  About block ends with `github.com/lasse-tech · MIT License`, and `LICENSE` ships
+  with the addon.
 - Updated `Tallymaster_Mainline.toc` to Interface 120105 for WoW 12.1.5. Mists (50504)
   and Classic Era (11509) already match their live clients.
 

@@ -13,7 +13,7 @@ set "INSTALL_DIRS=Core UI Locales Skin Media"
 rem One folder serves every flavor: the client picks the TOC whose suffix matches,
 rem so all three ship together and the version comes from the canonical one.
 set "TOCS=%ADDON%_Mainline.toc %ADDON%_Mists.toc %ADDON%_Vanilla.toc"
-set "INSTALL_FILES=%TOCS% embeds.xml Bindings.xml CHANGELOG.md"
+set "INSTALL_FILES=%TOCS% embeds.xml Bindings.xml CHANGELOG.md LICENSE"
 set "KEEP_LIBS= LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0 "
 
 for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%ROOT%\%ADDON%_Mainline.toc"') do set "VERSION=%%v"

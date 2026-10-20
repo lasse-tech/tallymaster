@@ -3,9 +3,10 @@
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
 ## Version: 1.1.0
-## X-Email: tallymaster@incudex.de
-## X-Website: https://www.incudex.de
-## X-Copyright: 2026 incudex, Lars Gossard
+## X-Email: lars@lasse-tech.de
+## X-Website: https://github.com/lasse-tech
+## X-Copyright: 2026 lasse tech, Lars Gossard
+## X-License: MIT
 ## SavedVariables: TallymasterDB
 ## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
 ## X-Curse-Project-ID: 1574454

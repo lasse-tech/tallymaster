@@ -6,7 +6,7 @@ FLAVOR      ?= _retail_
 TOCS        := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
 VERSION     := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
 
-INSTALL_FILES := $(TOCS) embeds.xml Bindings.xml CHANGELOG.md
+INSTALL_FILES := $(TOCS) embeds.xml Bindings.xml CHANGELOG.md LICENSE
 INSTALL_DIRS  := Core UI Locales Skin Media
 KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0
 

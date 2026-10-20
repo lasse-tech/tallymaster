@@ -1,8 +1,5 @@
-# Third-party libraries are pulled at build time by the BigWigs/CurseForge
-# packager (see .pkgmeta). They are not vendored in the repo; only the README
-# documenting the expected layout is tracked.
-/Libs/*
-!/Libs/README.md
+# Pulled by make fetch-libs and the packager (.pkgmeta)
+/Libs/
 
 # Local editor / tooling state
 /.claude/

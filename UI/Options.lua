@@ -4,15 +4,12 @@ local DB = T.DB
 
 local category, layout
 
--- Blizzard's SettingsListMixin lays the list out with a ScrollBox: an element's
--- height is initializer:GetExtent(), or the template's own height when that is
--- nil. We measure the text and report its exact height.
+-- Element height = initializer:GetExtent(), measured from the text.
 local ABOUT_TEMPLATE = "TallymasterAboutTemplate"
 local ABOUT_FONT = "GameFontHighlight"
 local ABOUT_BOTTOM_PAD = 8
 
--- Not localized: the chip reads the same in every locale. Plain ASCII, since the
--- game font has no heart glyph.
+-- Not localized; ASCII "<3" (no heart glyph in the game font).
 local CHIP_TEXT = "Made with <3 in Europe"
 local CHIP_GAP = 6
 local CHIP_HEIGHT = 18
@@ -43,16 +40,18 @@ local function aboutText()
     local author = metadata("Author")
     if author then lines[#lines + 1] = L["Author: %s"]:format(author) end
 
-    local website = metadata("X-Website")
-    if website then lines[#lines + 1] = L["More: %s"]:format((website:gsub("^%a+://", ""))) end
-
     local version = metadata("Version")
     if version then lines[#lines + 1] = L["Version: %s"]:format(version) end
 
-    -- Kept in the TOC rather than here so the three flavor TOCs stay the single
-    -- source and check-tocs catches any drift between them.
     local copyright = metadata("X-Copyright")
     if copyright then lines[#lines + 1] = "\194\169 " .. copyright end
+
+    local footer = {}
+    local website = metadata("X-Website")
+    if website then footer[#footer + 1] = (website:gsub("^%a+://", "")) end
+    local license = metadata("X-License")
+    if license then footer[#footer + 1] = license .. " License" end
+    if #footer > 0 then lines[#lines + 1] = table.concat(footer, " \194\183 ") end
 
     return table.concat(lines, "\n")
 end
