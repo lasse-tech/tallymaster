@@ -30,12 +30,7 @@ end
 -- Modifier keys
 --------------------------------------------------------------------------------
 
--- The client does not hand the keyboard state back to a freshly loaded UI, so
--- right after /reload IsShiftKeyDown() and friends answer "not held" even while
--- the key is down. The first Shift- or Ctrl-click then falls through every
--- branch and looks dead; the second works, because by then the key has been
--- pressed again with the new UI listening. MODIFIER_STATE_CHANGED does arrive,
--- so the state is tracked here.
+-- After /reload IsShiftKeyDown() etc. report "not held" until the key is pressed again.
 local held = {}
 
 Addon.RegisterEvent("MODIFIER_STATE_CHANGED", function(_, key, down)
@@ -43,9 +38,7 @@ Addon.RegisterEvent("MODIFIER_STATE_CHANGED", function(_, key, down)
     held[key] = down == 1
 end)
 
--- The API answers first: when it says the key is down, it is. Only its "no" is
--- worth doubting, and then the tracked state fills in. That way a release the
--- client swallowed cannot leave a key stuck as pressed.
+-- API "yes" wins; tracked state only fills in an API "no".
 local function anyHeld(left, right, api)
     if api and api() then return true end
     return held[left] == true or held[right] == true

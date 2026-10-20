@@ -105,8 +105,6 @@ function DB.SaveTrackerPos(point, relPoint, x, y)
     t.point, t.relPoint, t.x, t.y = point, relPoint, x, y
 end
 
--- Classic has no crafting quality tiers, so entries there never carry a
--- craftingQuality and this always returns the empty string.
 function DB.TierMarkup(entry)
     if entry.respectQuality and entry.craftingQuality and CreateAtlasMarkup then
         return " " .. CreateAtlasMarkup("Professions-ChatIcon-Quality-Tier" .. entry.craftingQuality, 14, 14)

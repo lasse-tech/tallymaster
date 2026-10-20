@@ -1,6 +1,4 @@
--- Runs inside wow-ui-sim (`make test`). The addon's private table is out of
--- reach here, so every test drives the addon through what a player or another
--- addon can see: slash commands, named frames, LibDataBroker and TallymasterDB.
+-- wow-ui-sim (`make test`); public surface only.
 
 local HEARTHSTONE = 6948
 
@@ -61,9 +59,7 @@ test("adding an item by ID stores and shows it", function()
     assertTrue(charDB.visible["item:" .. HEARTHSTONE])
 end)
 
--- Bag events only schedule a debounced refresh (C_Timer, 0.1 s of wall clock),
--- which the simulator's async runner does not wait for. Showing the tracker
--- refreshes synchronously, so hide and show it to take a fresh snapshot.
+-- Hide/show forces a synchronous refresh (the debounced one is not awaited).
 test("counts a tracked item in the bags", function()
     A_Admin.ClearBags()
     A_Admin.AddBagItem(0, 1, HEARTHSTONE, 1)
@@ -78,8 +74,7 @@ test("counts a tracked item in the bags", function()
     assertEquals(1, counts["item:" .. HEARTHSTONE])
 end)
 
--- C_Item.GetItemCount already includes equipped items; adding them again made
--- a single equipped trinket show as 2 (incudex/tallymaster#9).
+-- lasse-tech/tallymaster#9
 test("counts an equipped item once", function()
     local TRINKET = 250223
     A_Admin.ClearBags()
@@ -105,8 +100,6 @@ test("/tally known opens the known list", function()
     assertTrue(TallymasterKnownListFrame:IsShown())
 end)
 
--- Right after /reload the client answers "not held" while the key is down, so
--- the first Shift-click used to fall through and do nothing.
 test("a tracked modifier key stands in for a stale IsShiftKeyDown", function()
     local key = "item:" .. HEARTHSTONE
     SlashCmdList.TALLYMASTERTALLY("")

@@ -3,16 +3,7 @@ local _, T = ...
 local Compat = {}
 T.Compat = Compat
 
--- Everything the retail and Classic clients disagree about lives here, so the
--- rest of the addon can stay flavour-blind. Two rules come out of comparing the
--- per-client API dumps of Midnight, Mists Classic and Classic Era:
---
---  * Probe the function, never the namespace. C_MountJournal, C_PetJournal and
---    C_TransmogCollection are present in every flavour, Classic Era included,
---    where none of those systems exist in the game at all. A namespace guard
---    passes there and then errors on the function that is actually missing.
---  * Classic keeps the pre-10.0 currency globals, and they return a tuple where
---    retail returns a table.
+-- Retail/Classic API differences. Probe functions, not namespaces (empty namespaces exist on Classic Era).
 
 local function apiFunction(namespace, name)
     local ns = _G[namespace]
@@ -25,9 +16,7 @@ end
 -- Currencies
 --------------------------------------------------------------------------------
 
--- Retail lists currencies through C_CurrencyInfo and hands back a table. Classic
--- only has the old globals, where GetCurrencyListInfo returns
--- name, isHeader, isExpanded, isUnused, isWatched, count, icon.
+-- Classic GetCurrencyListInfo: name, isHeader, isExpanded, isUnused, isWatched, count, icon
 local getCurrencyInfo = apiFunction("C_CurrencyInfo", "GetCurrencyInfo")
 local getListSize     = apiFunction("C_CurrencyInfo", "GetCurrencyListSize")
 local getListInfo     = apiFunction("C_CurrencyInfo", "GetCurrencyListInfo")
@@ -39,9 +28,7 @@ getListSize = getListSize or _G.GetCurrencyListSize
 getListInfo = getListInfo or _G.GetCurrencyListInfo
 getListLink = getListLink or _G.GetCurrencyListLink
 
--- True where the client can enumerate the currency list at all. Classic Era has
--- C_CurrencyInfo.GetCurrencyInfo but no list, because vanilla has no currencies:
--- adding one by ID still resolves, adding one by name cannot.
+-- false on Classic Era
 Compat.hasCurrencyList = getListSize ~= nil and getListInfo ~= nil
 
 function Compat.GetCurrencyInfo(currencyID)
@@ -77,13 +64,7 @@ end
 -- Containers
 --------------------------------------------------------------------------------
 
--- Enum.BagIndex is renumbered between the flavours, and each client only names
--- the containers it actually has, so resolve by name and keep both sets:
---   retail   Keyring=-1, CharacterBankTab_1..6=6..11, AccountBankTab_1..5=12..16
---   Classic  Bank=-1, Keyring=-2, Reagentbank=-3, BankBag_1..7=6..12,
---            AccountBankTab_1..5=13..17
--- The purely negative marker values (Bankbag, Characterbanktab, Accountbanktab)
--- are type sentinels rather than container indices and are deliberately left out.
+-- Enum.BagIndex names, resolved per client (indices differ between flavours)
 local EXTRA_BAGS = {
     "ReagentBag",
 
@@ -103,8 +84,6 @@ local EXTRA_BAGS = {
 
 local scanBags
 
--- Every container worth walking slot by slot: the backpack, the four carried
--- bags, and whatever else this client names.
 function Compat.ScanBags()
     if scanBags then return scanBags end
     scanBags = { 0, 1, 2, 3, 4 }
@@ -123,10 +102,7 @@ end
 local reagentQuality = apiFunction("C_TradeSkillUI", "GetItemReagentQualityByItemInfo")
 local craftedQuality = apiFunction("C_TradeSkillUI", "GetItemCraftedQualityByItemInfo")
 
--- Quality tiers arrived with Dragonflight. Neither Classic flavour has the
--- functions, so entries there never carry a craftingQuality and every tier code
--- path — the markup, the "respect quality" checkbox, the name-based count —
--- stays dormant on its own.
+-- false on Classic
 Compat.hasCraftingQuality = (reagentQuality or craftedQuality) ~= nil
 
 function Compat.CraftingQuality(itemInfo)
@@ -145,9 +121,7 @@ local getPetInfoBySpecies = apiFunction("C_PetJournal", "GetPetInfoBySpeciesID")
 local getNumCollectedInfo = apiFunction("C_PetJournal", "GetNumCollectedInfo")
 local playerHasTransmog   = apiFunction("C_TransmogCollection", "PlayerHasTransmog")
 
--- Where the system exists but holds nothing — mounts and pets under Classic Era,
--- appearances before the Legion wardrobe — these simply answer zero, which is
--- the honest count.
+-- Missing systems count zero.
 function Compat.MountCollected(mountID)
     if not getMountInfoByID then return false end
     local _, _, _, _, _, _, _, _, _, _, isCollected = getMountInfoByID(mountID)

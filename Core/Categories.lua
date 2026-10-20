@@ -30,9 +30,7 @@ function Categories.Auto(entryType, id)
     return FIXED_LABELS[entryType]
 end
 
--- The header a currency sits under in the client's own currency tab. Without a
--- currency list (Classic Era) there is no header, and Auto falls back to the
--- generic "Currencies" label.
+-- Currency tab header; nil on Classic Era.
 function Categories.CurrencyHeader(currencyID)
     if not Compat.hasCurrencyList then return nil end
     local currentHeader

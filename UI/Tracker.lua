@@ -165,8 +165,7 @@ function Tracker.Initialize()
     frame:SetShown(DB.TrackerShown())
 end
 
--- Show or hide the tracker and remember the state across sessions. Only explicit
--- user actions go through here; UIParent hiding the frame must not be persisted.
+-- Persisted; user actions only.
 function Tracker.SetShown(shown)
     if not frame then Tracker.Initialize() end
     DB.SetTrackerShown(shown)

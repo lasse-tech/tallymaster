@@ -21,7 +21,7 @@ local function rebuildMailCache()
     end
 end
 
--- GetItemCount already includes equipped items, so only mail is added on top.
+-- GetItemCount includes equipped items.
 local function itemTotal(id)
     local n = C_Item.GetItemCount(id, true, false, true, true) or 0
     return n + (mailCache[id] or 0)

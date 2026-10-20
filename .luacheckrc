@@ -1,6 +1,3 @@
--- luacheck configuration. `make lint` fails on any warning.
--- The WoW client runs Lua 5.1; everything below only names the environment the
--- addon runs in, it does not switch any check off.
 std = "lua51"
 max_line_length = 120
 exclude_files = { "Libs/", "dist/", "tests/" }
@@ -17,7 +14,7 @@ globals = {
     "SlashCmdList",
     "StaticPopupDialogs",
     "UISpecialFrames",
-    -- Named frames, created by the addon and looked up again by the ElvUI skin.
+    -- named frames (ElvUI skin)
     "TallymasterTrackerFrame",
     "TallymasterAddFrame",
     "TallymasterKnownListFrame",

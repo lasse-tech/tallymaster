@@ -1,6 +1,5 @@
 package-as: Tallymaster
 
-# Release notes come from CHANGELOG.md instead of a generated git log.
 manual-changelog:
   filename: CHANGELOG.md
   markup-type: markdown
@@ -11,14 +10,11 @@ externals:
     tag: latest
   Libs/CallbackHandler-1.0:
     url: https://repos.curseforge.com/wow/callbackhandler/trunk/CallbackHandler-1.0
-  # CurseForge's SVN mirror for this one answers HTTP 500, so it comes from
-  # tekkub's repository, which is where the library is actually maintained.
+  # CurseForge SVN mirror answers 500
   Libs/LibDataBroker-1.1:
     url: https://github.com/tekkub/libdatabroker-1-1
   Libs/LibDBIcon-1.0:
     url: https://repos.curseforge.com/wow/libdbicon-1-0/trunk/LibDBIcon-1.0
-  # LibElvUIPlugin-1.0 is not embedded: it requires ElvUI to load, and ElvUI
-  # registers it with LibStub. Skin\ElvUI.lua resolves it at runtime via LibStub.
 
 move-folders:
   Tallymaster/Tallymaster: Tallymaster
@@ -30,6 +26,6 @@ ignore:
   - Makefile
   - Makefile.bat
   - tests
-  # Paths inside externals: release.sh re-parses this list after fetching them.
+  # inside externals
   - Libs/LibStub/tests
   - Libs/LibDataBroker-1.1/README.textile

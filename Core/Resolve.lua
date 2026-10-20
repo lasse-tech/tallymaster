@@ -83,8 +83,7 @@ function Resolve.ByName(name)
         end
     end
 
-    -- Classic Era has no currency list to walk, so a currency can only be added
-    -- by ID there. Every other flavour resolves the name through the list.
+    -- Classic Era: no currency list, ID only
     if Compat.hasCurrencyList then
         for i = 1, Compat.GetCurrencyListSize() do
             local info = Compat.GetCurrencyListInfo(i)

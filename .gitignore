@@ -7,9 +7,6 @@
 # Build output (make dist)
 /dist/
 
-# Intermediate screenshot-cropping scratch files
-/design/_crops/
-
 # OS cruft
 .DS_Store
 Thumbs.db
