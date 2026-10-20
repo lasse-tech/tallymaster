@@ -5,7 +5,7 @@ All notable changes to Tallymaster are documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.1.1] - 2026-10-20
 
 ### Changed
 - Tallymaster is a lasse tech addon under the MIT licence now. The TOCs, the About
@@ -25,12 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   Lua error once the last one arrived, and the tracker did not refresh.
 - Account-wide currencies were counted once per character in the account-wide scope,
   and the tooltip listed a copy for every character.
-- The first Shift- or Ctrl-click after a `/reload` did nothing. The client does
-  not hand the keyboard state to a freshly loaded UI, so `IsShiftKeyDown()` and
-  `IsControlKeyDown()` answered "not held" while the key was down, and the click
-  fell through every branch. The modifier keys are tracked from
-  `MODIFIER_STATE_CHANGED` as well now; the API keeps the first word, so a
-  release the client swallowed cannot leave a key stuck as pressed.
+- The first Shift- or Ctrl-click after a `/reload` did nothing.
 - Equipped items were counted twice: `C_Item.GetItemCount` already includes them, and
   Tallymaster added every equipped copy on top, so a single equipped weapon or trinket
   showed as 2.
