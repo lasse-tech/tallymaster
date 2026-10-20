@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Updated `Tallymaster_Mainline.toc` to Interface 120105 for WoW 12.1.5. Mists (50504)
+  and Classic Era (11509) already match their live clients.
+
 ### Fixed
 - The first Shift- or Ctrl-click after a `/reload` did nothing. The client does
   not hand the keyboard state to a freshly loaded UI, so `IsShiftKeyDown()` and

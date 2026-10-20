@@ -1,4 +1,4 @@
-## Interface: 120100
+## Interface: 120105
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
 ## Author: Lars Gossard
