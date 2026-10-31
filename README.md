@@ -43,6 +43,10 @@ make stage                   # dist/<expansion>/Tallymaster, one folder per clie
 make lint                    # Lua syntax, TOCs, luacheck, Makefile comments
 ```
 
+## Support
+
+[Buy me a coffee](https://buymeacoffee.com/gossardla)
+
 ## Licence and credits
 
 MIT — see [LICENSE](LICENSE). © 2026 lasse tech, Lars Gossard — <lars@lasse-tech.de>
