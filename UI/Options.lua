@@ -9,6 +9,9 @@ local ABOUT_TEMPLATE = "TallymasterAboutTemplate"
 local ABOUT_FONT = "GameFontHighlight"
 local ABOUT_BOTTOM_PAD = 8
 
+-- Embedded libraries, as listed in embeds.xml and the README.
+local LIBRARIES = "LibStub, CallbackHandler-1.0, LibDataBroker-1.1, LibDBIcon-1.0"
+
 -- Not localized; ASCII "<3" (no heart glyph in the game font).
 local CHIP_TEXT = "Made with <3 in Europe"
 local CHIP_GAP = 6
@@ -37,8 +40,11 @@ end
 local function aboutText()
     local lines = {}
 
-    local author = metadata("Author")
-    if author then lines[#lines + 1] = L["Author: %s"]:format(author) end
+    local version = metadata("Version")
+    if version then lines[#lines + 1] = L["Version %s"]:format(version) end
+
+    local copyright = metadata("X-Copyright")
+    if copyright then lines[#lines + 1] = "\194\169 " .. copyright end
 
     local footer = {}
     local website = metadata("X-Website")
@@ -46,6 +52,8 @@ local function aboutText()
     local license = metadata("X-License")
     if license then footer[#footer + 1] = license .. " License" end
     if #footer > 0 then lines[#lines + 1] = table.concat(footer, " \194\183 ") end
+
+    lines[#lines + 1] = L["Libraries: %s"]:format(LIBRARIES)
 
     return table.concat(lines, "\n")
 end
@@ -99,7 +107,7 @@ function T.SetupOptions()
             container:Add("char", L["Per character"])
             container:Add("account", L["Account-wide (all characters)"])
             return container:GetData()
-        end, L["Where item counts are summed from."])
+        end)
     end
 
     do
@@ -114,15 +122,10 @@ function T.SetupOptions()
     end
 
     local toggles = {
-        { "showCategories", L["Group by category"],
-          L["When off, the tracker shows a single flat list instead of category groups."] },
-        { "showTooltip", L["Show item tooltip"],
-          L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each "
-            .. "character's count."] },
-        { "showTooltipCounts", L["Show counts in tooltip"],
-          L["Include each character's count (grouped by realm) in the tracker tooltip."] },
-        { "gameTooltipCounts", L["Show counts on item tooltips"],
-          L["Add the per-character count breakdown to the standard game item tooltip (for tracked items)."] },
+        { "showCategories", L["Group by category"], L["Off: flat list"] },
+        { "showTooltip", L["Show item tooltip"], L["Tracker rows, on hover"] },
+        { "showTooltipCounts", L["Show counts in tooltip"], L["Per character, grouped by realm"] },
+        { "gameTooltipCounts", L["Show counts on item tooltips"], L["Game item tooltip, tracked items only"] },
     }
     for _, t in ipairs(toggles) do
         local setting = profileSetting(t[1], Settings.VarType.Boolean, t[2], true)
@@ -146,7 +149,7 @@ function T.SetupOptions()
     do
         local setting = profileSetting("elvuiSkin", Settings.VarType.Boolean,
             L["Allow ElvUI to skin this addon"], true)
-        Settings.CreateCheckbox(category, setting, L["Requires a /reload to take effect."])
+        Settings.CreateCheckbox(category, setting, L["/reload required"])
     end
 
     Settings.RegisterAddOnCategory(category)

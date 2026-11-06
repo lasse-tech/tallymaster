@@ -1,0 +1,36 @@
+## Interface: 16001
+## Title: Tallymaster
+## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
+## Author: Lars Gossard
+## Version: 1.2.0
+## X-Email: lars@lasse-tech.de
+## X-Website: https://github.com/lasse-tech/tallymaster
+## X-Donate: https://buymeacoffee.com/gossardla
+## X-Copyright: 2026 lasse tech, Lars Gossard
+## X-License: MIT
+## SavedVariables: TallymasterDB
+## IconTexture: Interface\AddOns\Tallymaster\Media\Satchel
+## X-Curse-Project-ID: 1574454
+## X-Wago-ID: bGoyWq60
+
+embeds.xml
+
+Locales\Locale.lua
+Locales\enUS.lua
+Locales\deDE.lua
+
+Core\Addon.lua
+Core\Compat.lua
+Core\Database.lua
+Core\Core.lua
+Core\Categories.lua
+Core\Resolve.lua
+Core\Counting.lua
+
+UI\Tracker.lua
+UI\AddInput.lua
+UI\KnownList.lua
+UI\Options.lua
+UI\Options.xml
+
+Skin\ElvUI.lua

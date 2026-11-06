@@ -9,9 +9,9 @@ if "%ROOT:~-1%"=="\" set "ROOT=%ROOT:~0,-1%"
 if not defined FLAVOR set "FLAVOR=_retail_"
 
 set "INSTALL_DIRS=Core UI Locales Skin Media"
-set "TOCS=%ADDON%_Mainline.toc %ADDON%_Mists.toc %ADDON%_Vanilla.toc"
+set "TOCS=%ADDON%_Mainline.toc %ADDON%_Camelot.toc %ADDON%_Mists.toc %ADDON%_Vanilla.toc"
 set "INSTALL_FILES=%TOCS% embeds.xml Bindings.xml CHANGELOG.md LICENSE"
-set "KEEP_LIBS= LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0 "
+set "KEEP_LIBS= LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 "
 
 for /f "tokens=3" %%v in ('findstr /b /c:"## Version:" "%ROOT%\%ADDON%_Mainline.toc"') do set "VERSION=%%v"
 set "DIST=%ROOT%\dist"
@@ -30,6 +30,8 @@ if /i "%TARGET_NAME%"=="fetch-libs" goto :fetchlibs
 if /i "%TARGET_NAME%"=="debug"      goto :install
 if /i "%TARGET_NAME%"=="install"    goto :install
 if /i "%TARGET_NAME%"=="uninstall"  goto :uninstall
+if /i "%TARGET_NAME%"=="install-forever"   goto :installforever
+if /i "%TARGET_NAME%"=="uninstall-forever" goto :uninstallforever
 if /i "%TARGET_NAME%"=="prune-libs" goto :prunelibs
 if /i "%TARGET_NAME%"=="stage"      goto :stage
 if /i "%TARGET_NAME%"=="dist"       goto :dist
@@ -198,7 +200,7 @@ for %%t in (%TOCS%) do (
 )
 for %%t in (%TOCS%) do del "%TEMP%\tm_%%t.txt" >nul 2>&1
 if "!FAIL!"=="1" exit /b 1
-echo tocs: 3 flavors agree
+echo tocs: 4 flavors agree
 
 set "MISSINGFILE=0"
 for /f "usebackq delims=" %%f in ("%ROOT%\%ADDON%_Mainline.toc") do (
@@ -316,6 +318,16 @@ if defined STALE (
 echo done - /reload in game
 goto :eof
 
+rem install-forever: install into the Forever client (FLAVOR=_forever_)
+:installforever
+set "FLAVOR=_forever_"
+goto :install
+
+rem uninstall-forever: remove the addon from the Forever client, SavedVariables stay
+:uninstallforever
+set "FLAVOR=_forever_"
+goto :uninstall
+
 rem ------------------------------------------------------------------ uninstall
 
 rem uninstall: remove the addon from the client, SavedVariables stay
@@ -354,11 +366,11 @@ rem stage: dist\<expansion>\Tallymaster per client, each with only its own TOC
 set "HAVELIBS=0"
 for /d %%d in ("%ROOT%\Libs\*") do set "HAVELIBS=1"
 if "!HAVELIBS!"=="0" (
-    echo Libs\ is empty - the staged folders would not load. Populate it first ^("Makefile libs"^).
+    echo Libs\ is empty - the staged folders would not load. Run "Makefile fetch-libs" first.
     exit /b 1
 )
 rem Expansion, its TOC suffix, and the client folder it belongs in.
-for %%p in ("Midnight:Mainline:_retail_" "Mists:Mists:_classic_" "Vanilla:Vanilla:_classic_era_") do (
+for %%p in ("Midnight:Mainline:_retail_" "Forever:Camelot:_forever_" "Mists:Mists:_classic_" "Vanilla:Vanilla:_classic_era_") do (
     for /f "tokens=1,2,3 delims=:" %%a in (%%p) do (
         set "OUT=%DIST%\%%a\%ADDON%"
         if exist "%DIST%\%%a" rmdir /s /q "%DIST%\%%a"
@@ -376,12 +388,12 @@ goto :eof
 
 rem ----------------------------------------------------------------------- dist
 
-rem dist: build dist\Tallymaster-<version>.zip with all three TOCs
+rem dist: build dist\Tallymaster-<version>.zip with all four TOCs
 :dist
 set "HAVELIBS=0"
 for /d %%d in ("%ROOT%\Libs\*") do set "HAVELIBS=1"
 if "!HAVELIBS!"=="0" (
-    echo Libs\ is empty - the zip would not load. Populate it first ^("Makefile libs"^).
+    echo Libs\ is empty - the zip would not load. Run "Makefile fetch-libs" first.
     exit /b 1
 )
 if exist "%DIST%\%ADDON%" rmdir /s /q "%DIST%\%ADDON%"

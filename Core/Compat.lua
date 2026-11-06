@@ -68,9 +68,10 @@ end
 local EXTRA_BAGS = {
     "ReagentBag",
 
-    -- retail bank
+    -- retail bank; Forever has nine character and nine account tabs
     "CharacterBankTab_1", "CharacterBankTab_2", "CharacterBankTab_3",
     "CharacterBankTab_4", "CharacterBankTab_5", "CharacterBankTab_6",
+    "CharacterBankTab_7", "CharacterBankTab_8", "CharacterBankTab_9",
 
     -- Classic bank
     "Bank", "Reagentbank", "Keyring",
@@ -79,7 +80,8 @@ local EXTRA_BAGS = {
 
     -- both, but not at the same indices
     "AccountBankTab_1", "AccountBankTab_2", "AccountBankTab_3",
-    "AccountBankTab_4", "AccountBankTab_5",
+    "AccountBankTab_4", "AccountBankTab_5", "AccountBankTab_6",
+    "AccountBankTab_7", "AccountBankTab_8", "AccountBankTab_9",
 }
 
 local scanBags

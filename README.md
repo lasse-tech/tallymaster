@@ -4,7 +4,8 @@ A World of Warcraft addon that keeps a live, on-screen list of items and currenc
 icon, name and a running count — grouped by category, much like Blizzard's
 *Track Recipe* feature.
 
-Runs on **Midnight** (retail), **Mists Classic** and **Classic Era** from one folder.
+Runs on **Midnight** (retail), **World of Warcraft: Forever**, **Mists Classic** and
+**Classic Era** from one folder.
 
 ## Features
 - **Live tracker** — counts update from bags, bank, equipped slots and mail. Grouped by
@@ -25,12 +26,15 @@ Runs on **Midnight** (retail), **Mists Classic** and **Classic Era** from one fo
 
 ## Flavor support
 
-| | Midnight | Mists Classic | Classic Era |
-|---|---|---|---|
-| Items — bags, bank, mail, equipped | yes | yes | yes |
-| Currencies by ID | yes | yes | — |
-| Currencies by name, currency headers | yes | yes | — |
-| Crafting quality tiers | yes | — | — |
+| | Midnight | Forever | Mists Classic | Classic Era |
+|---|---|---|---|---|
+| Items — bags, bank, mail, equipped | yes | yes | yes | yes |
+| Currencies by ID | yes | yes | yes | — |
+| Currencies by name, currency headers | yes | yes | yes | — |
+| Crafting quality tiers | yes | where the game has them | — | — |
+
+Forever loads `Tallymaster_Camelot.toc` (interface 16001) and runs the retail code
+paths; its client has the same `C_Container`, `C_CurrencyInfo` and `C_Item` functions.
 
 ## Building
 
@@ -39,6 +43,7 @@ Runs on **Midnight** (retail), **Mists Classic** and **Classic Era** from one fo
 ```
 make fetch-libs              # download the embedded libraries into Libs/
 make install                 # copy the addon into the live client
+make install-forever         # copy the addon into the Forever client
 make stage                   # dist/<expansion>/Tallymaster, one folder per client
 make lint                    # Lua syntax, TOCs, luacheck, Makefile comments
 ```

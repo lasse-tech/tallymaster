@@ -3,7 +3,7 @@ local L = T.L
 
 L["Tallymaster"] = "Tallymaster"
 L["Add item, currency or collectible"] = "Add item, currency or collectible"
-L["Type a name or ID, then press Enter"] = "Type a name or ID, then press Enter"
+L["Name or ID"] = "Name or ID"
 L["Add"] = "Add"
 L["Known items"] = "Known items"
 L["Search"] = "Search"
@@ -28,44 +28,35 @@ L["Sell"] = "Sell"
 L["Expansion"] = "Expansion"
 L["Bind"] = "Bind"
 L["Respect quality (count only this tier)"] = "Respect quality (count only this tier)"
-L["When on, this entry counts only the exact crafting quality you added. When off, it counts every " ..
-    "quality of the item."]
-    = "When on, this entry counts only the exact crafting quality you added. When off, it counts every " ..
-    "quality of the item."
+L["On: this crafting quality only"] = "On: this crafting quality only"
+L["Off: all qualities"] = "Off: all qualities"
 L["All categories"] = "All categories"
 L["Uncategorized"] = "Uncategorized"
 
-L["The ID %d matches both an item and a currency. Which do you mean?"]
-    = "The ID %d matches both an item and a currency. Which do you mean?"
+L["ID %d: item or currency?"] = "ID %d: item or currency?"
 L["Item"] = "Item"
 L["Currency"] = "Currency"
 
 L["Count scope"] = "Count scope"
-L["Where item counts are summed from."] = "Where item counts are summed from."
 L["Per character"] = "Per character"
 L["Account-wide (all characters)"] = "Account-wide (all characters)"
 L["Sort order"] = "Sort order"
 L["Alphabetical"] = "Alphabetical"
 L["By count"] = "By count"
 L["Group by category"] = "Group by category"
-L["When off, the tracker shows a single flat list instead of category groups."]
-    = "When off, the tracker shows a single flat list instead of category groups."
+L["Off: flat list"] = "Off: flat list"
 L["Show item tooltip"] = "Show item tooltip"
-L["Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's " ..
-    "count."]
-    = "Show a tooltip when hovering an item in the tracker. When account-wide, it lists each character's " ..
-    "count."
+L["Tracker rows, on hover"] = "Tracker rows, on hover"
 L["Show counts in tooltip"] = "Show counts in tooltip"
-L["Include each character's count (grouped by realm) in the tracker tooltip."]
-    = "Include each character's count (grouped by realm) in the tracker tooltip."
+L["Per character, grouped by realm"] = "Per character, grouped by realm"
 L["Show counts on item tooltips"] = "Show counts on item tooltips"
-L["Add the per-character count breakdown to the standard game item tooltip (for tracked items)."]
-    = "Add the per-character count breakdown to the standard game item tooltip (for tracked items)."
+L["Game item tooltip, tracked items only"] = "Game item tooltip, tracked items only"
 L["Show minimap button"] = "Show minimap button"
 L["Allow ElvUI to skin this addon"] = "Allow ElvUI to skin this addon"
-L["Requires a /reload to take effect."] = "Requires a /reload to take effect."
+L["/reload required"] = "/reload required"
 
-L["Author: %s"] = "Author: %s"
+L["Version %s"] = "Version %s"
+L["Libraries: %s"] = "Libraries: %s"
 
 L["Currencies"] = "Currencies"
 L["Mounts"] = "Mounts"
@@ -73,11 +64,9 @@ L["Transmog"] = "Transmog"
 L["Battle Pets"] = "Battle Pets"
 L["Knowledge"] = "Knowledge"
 
-L["No items tracked yet."] = "No items tracked yet."
-L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."]
-    = "Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's name or ID."
-L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."]
-    = "Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."
+L["No items tracked"] = "No items tracked"
+L["Add: /tally, minimap button, keybinding"] = "Add: /tally, minimap button, keybinding"
+L["Shift-Click bag item: insert name"] = "Shift-Click bag item: insert name"
 
 L["Could not find anything matching '%s'."] = "Could not find anything matching '%s'."
 L["Already tracking %s."] = "Already tracking %s."

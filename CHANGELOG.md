@@ -7,9 +7,28 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-11-06
+
+### Added
+- `make install-forever` and `make uninstall-forever` install into and remove from the Forever client
+- World of Warcraft: Forever: `Tallymaster_Camelot.toc` (interface 16001); Forever
+  uses the retail item and currency API and counts all nine character and nine
+  account bank tabs
+
+### Changed
+- The About block in the options shows the version, the copyright line and the
+  embedded libraries again, links `github.com/lasse-tech/tallymaster` and no longer
+  shows the author separately. `## X-Website` in the TOCs points at the repository.
+- Labels instead of sentences: the empty tracker, the setting descriptions, the
+  quality tooltip in the Add window, the edit box hint and the item-or-currency
+  question are short labels now, in English and German.
+
 ### Fixed
 - The ElvUI skin never applied: it read a setting ElvUI does not have and waited for
   ElvUI's options to load.
+- `make install` reports a leftover `Libs/LibElvUIPlugin-1.0` as stale, and
+  `make prune-libs` removes it; nothing loads it any more.
+- `Makefile stage` and `Makefile dist` point at `fetch-libs` when `Libs\` is empty.
 
 ## [1.1.1] - 2026-10-20
 
@@ -80,7 +99,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   the three CurseForge externals and `git` for LibDataBroker-1.1.
 
 ### Changed
-- Contact address is now `tallymaster@incudex.de` (was `lars@lasse-tech.de`).
+- Contact address changed.
 
 ### Fixed
 - **Counting a battle pet could throw** instead of returning a count.

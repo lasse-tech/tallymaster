@@ -1,6 +1,6 @@
 std = "lua51"
 max_line_length = 120
-exclude_files = { "Libs/", "dist/", "tests/" }
+exclude_files = { "Libs/", "dist/" }
 
 -- Written by the addon.
 globals = {
@@ -30,4 +30,14 @@ read_globals = {
     "ITEM_BIND_QUEST", "LibStub", "Settings", "StackSplitFrame", "StaticPopup_Show",
     "strjoin", "tinsert", "TOTAL", "TooltipDataProcessor", "tostringall", "UIParent",
     "UnitName", "wipe",
+}
+
+-- wow-ui-sim TestFramework and the frames the tests drive.
+files["tests/"] = {
+    globals = { "IsShiftKeyDown" },
+    read_globals = {
+        "test", "assertEquals", "assertFalse", "assertNil", "assertNotNil", "assertTrue", "assertType",
+        "A_Admin", "FireEvent", "INVSLOT_TRINKET1", "SLASH_TALLYMASTERTALLY1", "SLASH_TALLYMASTERTALLYMASTER1",
+        "TallymasterAddFrameAddButton", "TallymasterAddFrameEditBox",
+    },
 }

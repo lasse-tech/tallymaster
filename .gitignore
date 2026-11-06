@@ -1,0 +1,13 @@
+# Pulled by make fetch-libs and the packager (.pkgmeta)
+/Libs/
+
+# Local editor / tooling state
+/.claude/
+
+# Build output (make dist)
+/dist/
+
+# OS cruft
+.DS_Store
+Thumbs.db
+.env

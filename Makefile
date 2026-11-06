@@ -3,7 +3,7 @@ ADDON := Tallymaster
 REQUIRED  := clean distclean debug install uninstall deploy lint
 HELP_VARS := FLAVOR WOW_RETAIL_ADDON_FOLDER WOW_DIR ADDONS_DIR WOW_UI_SIM SIM_BIN GITHUB_REPO
 
-## FLAVOR: client folder: _retail_ (Midnight), _classic_ (Mists), _classic_era_ (Vanilla)
+## FLAVOR: client folder: _retail_, _forever_, _classic_ (Mists), _classic_era_ (Vanilla)
 FLAVOR ?= _retail_
 
 ## WOW_RETAIL_ADDON_FOLDER: retail Interface/AddOns; its WoW folder is also searched for Classic
@@ -24,12 +24,12 @@ SIM_BIN ?= $(WOW_UI_SIM)/target/release/wow-sim
 ## GITHUB_REPO: public repository; gets only what the addon needs to run
 GITHUB_REPO ?= git@github.com:lasse-tech/tallymaster.git
 
-TOCS    := $(ADDON)_Mainline.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
+TOCS    := $(ADDON)_Mainline.toc $(ADDON)_Camelot.toc $(ADDON)_Mists.toc $(ADDON)_Vanilla.toc
 VERSION := $(shell sed -n 's/^## Version: //p' $(ADDON)_Mainline.toc)
 
 INSTALL_FILES := $(TOCS) embeds.xml Bindings.xml CHANGELOG.md LICENSE
 INSTALL_DIRS  := Core UI Locales Skin Media
-KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0 LibElvUIPlugin-1.0
+KEEP_LIBS     := LibStub CallbackHandler-1.0 LibDataBroker-1.1 LibDBIcon-1.0
 
 DIST_DIR := dist
 ZIP      := $(DIST_DIR)/$(ADDON)-$(VERSION).zip
@@ -37,14 +37,16 @@ SIM_DIR  := $(DIST_DIR)/sim
 PUB_DIR  := $(DIST_DIR)/public
 
 PUBLIC_PATHS := $(INSTALL_FILES) $(INSTALL_DIRS) README.md .pkgmeta .github \
-	Makefile Makefile.bat scripts .luacheckrc .gitattributes
+	Makefile Makefile.bat scripts .luacheckrc .gitattributes .gitignore
 
 # expansion -> TOC suffix, client folder
-FLAVOR_NAMES        := Midnight Mists Vanilla
+FLAVOR_NAMES        := Midnight Forever Mists Vanilla
 FLAVOR_TOC_Midnight := Mainline
+FLAVOR_TOC_Forever  := Camelot
 FLAVOR_TOC_Mists    := Mists
 FLAVOR_TOC_Vanilla  := Vanilla
 FLAVOR_DIR_Midnight := _retail_
+FLAVOR_DIR_Forever  := _forever_
 FLAVOR_DIR_Mists    := _classic_
 FLAVOR_DIR_Vanilla  := _classic_era_
 
@@ -72,7 +74,7 @@ AWK_EXTERNALS := /^externals:/{e=1;next} /^[a-zA-Z]/{e=0} e&&/^  [^ \#]/{sub(/:$
 
 .DEFAULT_GOAL := help
 
-.PHONY: help version check check-tocs luacheck lint test libs fetch-libs debug install uninstall \
+.PHONY: help version check check-tocs luacheck ruff lint store-images test libs fetch-libs debug install uninstall install-forever uninstall-forever \
 	prune-libs stage dist publish release deploy clean distclean purge
 
 ##@ General
@@ -88,8 +90,8 @@ version:
 
 ##@ Checks
 
-## lint: Lua syntax, TOCs, luacheck, Makefile comments (BLOCKER)
-lint: check check-tocs luacheck
+## lint: Lua syntax, TOCs, luacheck, ruff, Makefile comments (BLOCKER)
+lint: check check-tocs luacheck ruff
 	@awk -v required="$(REQUIRED)" -f scripts/make-lint.awk $(firstword $(MAKEFILE_LIST))
 	@awk -v required="$(REQUIRED)" -v bat=1 -f scripts/make-lint.awk Makefile.bat
 	@echo "make: comments ok"
@@ -133,8 +135,18 @@ luacheck:
 	@command -v luacheck >/dev/null 2>&1 || { echo "luacheck not found - install it (luarocks install luacheck)"; exit 1; }
 	@luacheck --no-color -q . && echo "luacheck: no warnings"
 
+## ruff: Python checks on brand/source/, any finding fails
+ruff:
+	ruff check brand/source
+	ruff format --check brand/source
+
+## store-images: banner and avatar for CurseForge and Wago into brand/images/ (Makefile only)
+store-images:
+	python3 brand/source/store_images.py
+
 ## test: run tests/*.lua headless in wow-ui-sim against the retail Blizzard UI
 test:
+	@[ -d tests ] || { echo "tests/ not found - the tests live in the Forgejo repository, not in the GitHub export"; exit 1; }
 	@[ -x "$(SIM_BIN)" ] || { echo "wow-sim not found at $(SIM_BIN)"; \
 		echo "build it: cd $(WOW_UI_SIM) && cargo build --release --no-default-features --features casc,client-retail --bin wow-sim --bin wow-cli"; \
 		exit 1; }
@@ -229,6 +241,14 @@ uninstall:
 	rm -rf "$$target"; \
 	echo "removed $$target"
 
+## install-forever: install into the Forever client (FLAVOR=_forever_)
+install-forever:
+	@$(MAKE) --no-print-directory install FLAVOR=_forever_
+
+## uninstall-forever: remove the addon from the Forever client, SavedVariables stay
+uninstall-forever:
+	@$(MAKE) --no-print-directory uninstall FLAVOR=_forever_
+
 ## purge: uninstall and delete the SavedVariables
 purge: uninstall
 	@addons=$$($(FIND_ADDONS)); \
@@ -274,7 +294,7 @@ stage:
 			"$$clientdir/Interface/AddOns/"; \
 	)
 
-## dist: build dist/Tallymaster-<version>.zip with all three TOCs
+## dist: build dist/Tallymaster-<version>.zip with all four TOCs
 dist:
 	@rm -rf $(DIST_DIR)/$(ADDON); rm -f $(ZIP)
 	@$(HAVE_LIBS) || { echo "Libs/ is empty - run 'make fetch-libs' first"; exit 1; }

@@ -152,10 +152,9 @@ function Tracker.Initialize()
     frame.empty:SetPoint("TOPRIGHT", -PAD, -HEADER_H - 6)
     frame.empty:SetJustifyH("LEFT")
     frame.empty:SetSpacing(3)
-    frame.empty:SetText(L["No items tracked yet."] .. "\n\n"
-        .. L["Type /tally, click the minimap icon, or use the Add keybinding, then enter an item's "
-            .. "name or ID."] .. "\n\n"
-        .. L["Tip: with the Add window open, Shift-click an item in your bags to copy its name into the box."])
+    frame.empty:SetText(L["No items tracked"] .. "\n\n"
+        .. L["Add: /tally, minimap button, keybinding"] .. "\n"
+        .. L["Shift-Click bag item: insert name"])
     frame.empty:Hide()
 
     rowPool    = CreateFramePool("Button", content, nil, function(_, r) r:Hide() end)

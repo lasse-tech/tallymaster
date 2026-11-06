@@ -24,7 +24,7 @@ function AddInput.Commit(entry)
 end
 
 StaticPopupDialogs["TALLYMASTER_AMBIGUOUS"] = {
-    text = L["The ID %d matches both an item and a currency. Which do you mean?"],
+    text = L["ID %d: item or currency?"],
     button1 = L["Item"],
     button2 = L["Currency"],
     OnAccept = function(dialog) AddInput.Commit(dialog.data.candidates[1]) end,
@@ -226,7 +226,7 @@ function AddInput.Create()
     frame.editInstructions:SetPoint("LEFT", edit, "LEFT", 6, 0)
     frame.editInstructions:SetPoint("RIGHT", edit, "RIGHT", -6, 0)
     frame.editInstructions:SetJustifyH("LEFT")
-    frame.editInstructions:SetText(L["Type a name or ID, then press Enter"])
+    frame.editInstructions:SetText(L["Name or ID"])
     edit:SetScript("OnTextChanged", function(box, userInput)
         frame.editInstructions:SetShown(box:GetText() == "")
         if userInput then
@@ -256,8 +256,8 @@ function AddInput.Create()
     respect.text:SetText(L["Respect quality (count only this tier)"])
     respect:SetScript("OnEnter", function(button)
         GameTooltip:SetOwner(button, "ANCHOR_RIGHT")
-        GameTooltip:AddLine(L["When on, this entry counts only the exact crafting quality you added. "
-            .. "When off, it counts every quality of the item."], 1, 1, 1, true)
+        GameTooltip:AddLine(L["On: this crafting quality only"], 1, 1, 1)
+        GameTooltip:AddLine(L["Off: all qualities"], 1, 1, 1)
         GameTooltip:Show()
     end)
     respect:SetScript("OnLeave", function() GameTooltip:Hide() end)
