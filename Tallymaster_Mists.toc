@@ -2,7 +2,7 @@
 ## Title: Tallymaster
 ## Notes: Live on-screen tracker for items and currencies, grouped by category.
 ## Author: Lars Gossard
-## Version: 1.2.1
+## Version: 1.2.2
 ## X-Email: lars@lasse-tech.de
 ## X-Website: https://github.com/lasse-tech/tallymaster
 ## X-Donate: https://buymeacoffee.com/gossardla
