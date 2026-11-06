@@ -4,6 +4,12 @@ on:
   push:
     tags:
       - 'v*'
+  workflow_dispatch:
+    inputs:
+      curseforge_only:
+        description: Send this tag to CurseForge only (Wago has it already)
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -20,6 +26,6 @@ jobs:
       - name: Package and release
         uses: BigWigsMods/packager@v2
         env:
-          # no CF_API_KEY: CurseForge packages the tag itself
-          WAGO_API_TOKEN: ${{ secrets.WAGO_API_TOKEN }}
+          CF_API_KEY: ${{ secrets.CF_API_KEY }}
+          WAGO_API_TOKEN: ${{ !inputs.curseforge_only && secrets.WAGO_API_TOKEN || '' }}
           GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
