@@ -180,10 +180,6 @@ function DB.CurrentName(entry)
     elseif entry.type == "currency" then
         local info = T.Compat.GetCurrencyInfo(id)
         if info and info.name and info.name ~= "" then return info.name end
-    elseif entry.type == "mount" then
-        return T.Compat.MountName(id)
-    elseif entry.type == "pet" then
-        return T.Compat.PetName(id)
     end
     return nil
 end

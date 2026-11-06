@@ -55,20 +55,6 @@ local typeHandlers = {
         local info = Compat.GetCurrencyInfo(entry.id)
         return (info and info.quantity) or 0
     end,
-
-    mount = function(entry)
-        return Compat.MountCollected(entry.id) and 1 or 0
-    end,
-
-    pet = function(entry)
-        return Compat.PetsCollected(entry.id)
-    end,
-
-    transmog = function(entry)
-        return Compat.HasTransmog(entry.id) and 1 or 0
-    end,
-
-    knowledge = function() return 0 end,
 }
 
 function Counting.LiveCount(entry)
@@ -78,14 +64,10 @@ function Counting.LiveCount(entry)
 end
 
 -- Shared by the whole account: counted once, not per character.
-local ACCOUNT_WIDE = { mount = true, pet = true, transmog = true }
-
 local function isAccountWide(entry)
-    if entry.type == "currency" then
-        local info = Compat.GetCurrencyInfo(entry.id)
-        return info and info.isAccountWide or false
-    end
-    return ACCOUNT_WIDE[entry.type] or false
+    if entry.type ~= "currency" then return false end
+    local info = Compat.GetCurrencyInfo(entry.id)
+    return info and info.isAccountWide or false
 end
 
 function Counting.Snapshot()
@@ -135,9 +117,6 @@ function Counting.Enable()
     addon.RegisterEvent("BANK_TABS_CHANGED", refresh)
     addon.RegisterEvent("PLAYER_EQUIPMENT_CHANGED", refresh)
     addon.RegisterEvent("CURRENCY_DISPLAY_UPDATE", refresh)
-    addon.RegisterEvent("NEW_MOUNT_ADDED", refresh)
-    addon.RegisterEvent("PET_JOURNAL_LIST_UPDATE", refresh)
-    addon.RegisterEvent("TRANSMOG_COLLECTION_UPDATED", refresh)
 
     addon.RegisterEvent("MAIL_INBOX_UPDATE", function()
         rebuildMailCache()

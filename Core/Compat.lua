@@ -114,38 +114,3 @@ function Compat.CraftingQuality(itemInfo)
     return quality
 end
 
---------------------------------------------------------------------------------
--- Collections
---------------------------------------------------------------------------------
-
-local getMountInfoByID    = apiFunction("C_MountJournal", "GetMountInfoByID")
-local getPetInfoBySpecies = apiFunction("C_PetJournal", "GetPetInfoBySpeciesID")
-local getNumCollectedInfo = apiFunction("C_PetJournal", "GetNumCollectedInfo")
-local playerHasTransmog   = apiFunction("C_TransmogCollection", "PlayerHasTransmog")
-
--- Missing systems count zero.
-function Compat.MountCollected(mountID)
-    if not getMountInfoByID then return false end
-    local _, _, _, _, _, _, _, _, _, _, isCollected = getMountInfoByID(mountID)
-    return isCollected and true or false
-end
-
-function Compat.MountName(mountID)
-    if not getMountInfoByID then return nil end
-    return (getMountInfoByID(mountID))
-end
-
-function Compat.PetsCollected(speciesID)
-    if not getNumCollectedInfo then return 0 end
-    return getNumCollectedInfo(speciesID) or 0
-end
-
-function Compat.PetName(speciesID)
-    if not getPetInfoBySpecies then return nil end
-    return (getPetInfoBySpecies(speciesID))
-end
-
-function Compat.HasTransmog(itemID)
-    if not playerHasTransmog then return false end
-    return playerHasTransmog(itemID) and true or false
-end

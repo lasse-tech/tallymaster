@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-11-06
+
+### Changed
+- The Add window, the minimap tooltip and the addon list say "item or currency": collectibles were promised but could never be added (#19)
+
+### Removed
+- Unused counting for mounts, battle pets and transmog
+
 ## [1.2.0] - 2026-11-06
 
 ### Added

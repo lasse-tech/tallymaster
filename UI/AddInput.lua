@@ -194,7 +194,7 @@ function AddInput.Create()
 
     frame.title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
     frame.title:SetPoint("TOP", 0, -16)
-    frame.title:SetText(L["Add item, currency or collectible"])
+    frame.title:SetText(L["Add item or currency"])
 
     frame.close = CreateFrame("Button", "TallymasterAddFrameCloseButton", frame, "UIPanelCloseButton")
     frame.close:SetPoint("TOPRIGHT", 2, 2)

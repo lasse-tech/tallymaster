@@ -3,7 +3,7 @@ if GetLocale() ~= "deDE" then return end
 local L = T.L
 
 L["Tallymaster"] = "Tallymaster"
-L["Add item, currency or collectible"] = "Gegenstand, Währung oder Sammelobjekt hinzufügen"
+L["Add item or currency"] = "Gegenstand oder Währung hinzufügen"
 L["Name or ID"] = "Name oder ID"
 L["Add"] = "Hinzufügen"
 L["Known items"] = "Bekannte Gegenstände"
@@ -60,10 +60,6 @@ L["Version %s"] = "Version %s"
 L["Libraries: %s"] = "Bibliotheken: %s"
 
 L["Currencies"] = "Währungen"
-L["Mounts"] = "Reittiere"
-L["Transmog"] = "Transmogrifikation"
-L["Battle Pets"] = "Kampfhaustiere"
-L["Knowledge"] = "Wissen"
 
 L["No items tracked"] = "Keine Gegenstände verfolgt"
 L["Add: /tally, minimap button, keybinding"] = "Hinzufügen: /tally, Minimap-Knopf, Tastenbelegung"

@@ -7,10 +7,6 @@ T.Categories = Categories
 
 local FIXED_LABELS = {
     currency  = L["Currencies"],
-    mount     = L["Mounts"],
-    transmog  = L["Transmog"],
-    pet       = L["Battle Pets"],
-    knowledge = L["Knowledge"],
 }
 
 function Categories.Auto(entryType, id)

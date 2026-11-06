@@ -2,7 +2,7 @@ local _, T = ...
 local L = T.L
 
 L["Tallymaster"] = "Tallymaster"
-L["Add item, currency or collectible"] = "Add item, currency or collectible"
+L["Add item or currency"] = "Add item or currency"
 L["Name or ID"] = "Name or ID"
 L["Add"] = "Add"
 L["Known items"] = "Known items"
@@ -59,10 +59,6 @@ L["Version %s"] = "Version %s"
 L["Libraries: %s"] = "Libraries: %s"
 
 L["Currencies"] = "Currencies"
-L["Mounts"] = "Mounts"
-L["Transmog"] = "Transmog"
-L["Battle Pets"] = "Battle Pets"
-L["Knowledge"] = "Knowledge"
 
 L["No items tracked"] = "No items tracked"
 L["Add: /tally, minimap button, keybinding"] = "Add: /tally, minimap button, keybinding"

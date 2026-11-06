@@ -1,8 +1,8 @@
 ## Interface: 120105
 ## Title: Tallymaster
-## Notes: Live on-screen tracker for items, currencies and collectibles, grouped by category.
+## Notes: Live on-screen tracker for items and currencies, grouped by category.
 ## Author: Lars Gossard
-## Version: 1.2.0
+## Version: 1.2.1
 ## X-Email: lars@lasse-tech.de
 ## X-Website: https://github.com/lasse-tech/tallymaster
 ## X-Donate: https://buymeacoffee.com/gossardla
